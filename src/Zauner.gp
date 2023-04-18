@@ -292,6 +292,29 @@ dsPowerSeries(w,b1,b2,eps) =
 
 
 
+\\ Compute the nodes and weights for n-point Gauss-Legendre quadrature
+gausslegendre(n) = 
+{
+    my( t, ww, w);
+
+    t = polrootsreal(pollegendre(n));
+    ww = vector(#t, k, pollegendre(n,t[k],1));
+    w = vector(#t, k , 2*(1-t[k]^2)/(n^2*(ww[k][1] - t[k]*ww[k][2])^2) );
+    [t,w]
+}
+
+\\ Compute the nodes and weights for n-point Gauss-Laguerre quadrature
+gausslaguerre(n) = 
+{
+    my( t, w);
+
+    t = polrootsreal(pollaguerre(n));
+    w = vector(#t, k , t[k]/((n+1)^2*(pollaguerre(n+1,0,t[k]))^2) );
+    [t,w]
+}
+
+
+
 
 addhelp(qp,"qp(a,q,n): the finite q-Pochhammer symbol (a,q)_n.")
 
@@ -323,7 +346,7 @@ sds(z,beta) =
 
 shin(A,d,p,beta) = 
 {
-    my( W, z, m, B = A, J, zvals = List([]), bvals = List([]), yvals = List([]), S);
+    my( W, z, m, B = A, J, zvals = List([]), bvals = List([]), S);
     
     z = ((A^-1*[p[1];p[2]])~ * [0,-1;1,0] * [beta;1])[1,1] / d;
     W = psl2word(A);
@@ -345,7 +368,7 @@ shin(A,d,p,beta) =
 
 
 
-nu(A,d,p,beta,q) = 
+nu(A,d,p,beta,q=[0,0]) = 
 {
     if( p % d  == [0,0], return(1) );
     
@@ -357,6 +380,152 @@ nu(A,d,p,beta,q) =
     return( real(f * shin(A, d, p, beta)) )
 }
 
+
+
+
+\\ from (d,Q), compute (A,beta).
+qdata(d,Q) = {
+    my(L, A, a, b, c, w);
+
+    L = stabilizer(Q);
+    a = stabilizersl2order(L,d);
+    A = L^a;
+
+    [a,b,c] = Vec(Q);
+    w = quadgen(b^2-4*a*c,'w); \\ quadratic generator for disc_Q
+    beta = (-b+2*w-(b^2%4))/(2*a); \\ a positive root of Q
+    [A,beta]
+}
+
+
+
+
+\\ For a given d, find a (reduced) Q for each allowed equivalence class.
+allQ(d) = {
+    my( Delta0, f, qb, p, c, r, Q = List());
+
+    [Delta0,f] = D0(d);
+    f = divisors(f);
+    
+    for( j=1, #f,
+        [qb, p, c] = ghostbasis(d,f[j]^2*Delta0);
+        for( k=0, c-1,  
+            r = radix(k,p);
+            listput(Q,prod( n=1, #r, qb[n]^(r[n]) ) );
+        );
+    );
+    Vec(Q)
+}
+
+
+
+
+\\ create the ghost associated to (d,Q).
+ghost(d,Q,q=[0,0]) = 
+{
+    my(A, beta, go);
+    [A,beta] = qdata(d,Q);
+    go = matrix(d,d,p1,p2, nu(A,d,[p1-1,p2-1],beta,q) );
+    sum(p1=0,d-1, sum(p2=0,d-1, go[p1+1,p2+1]*WH(p1,p2,d) ))/d
+}
+
+
+
+
+\\ create the ghost associated to (d,Q).
+/*
+ghost(d,Q,q=[0,0]) = 
+{
+    my( Delta0, f, Dq, fq, A, B, J, beta, W);
+    my( z=List(), b=List(), m, p1, p2, nu, S);
+    my( zeta = -e(1/(2*d)), s, QA, g, h, z0);
+    
+    [Delta0,f] = D0(d);
+    [Dq,fq] = coredisc(-4*matdet(Mat(Q)),1);
+    
+    if( (Dq == Delta0) && (f % fq == 0), 
+        Dq = fq^2*Dq; \\ If disc(Q) is valid, redefine Dq = disc(Q).
+        ,
+        error("Discriminant of Q should divide (d+1)(d-3).");
+    );
+    
+    [A,beta] = qdata(d,Q);
+    W = psl2word(A);
+    B = A;
+
+    nu = matrix(d,d);
+    nu[1,1] = 1;
+    
+    QA = Mat(Qfb(A[2,1],A[2,2]-A[1,1],-A[1,2]))/(d*(d-2));
+    h = e(-rademacher(A)/24) / (d*sqrt(d+1));
+    
+    for( j=2, #W,
+        B = [0,1;-1,W[j-1]]*B;
+        J = (B[2,1]*beta+B[2,2]);
+        listput(z, 1/J );
+        listput(b, (B[1,1]*beta+B[1,2])/J );
+    );
+    z = Vec(z);
+    b = Vec(b);
+
+    
+    for(p=1,d^2-1,
+        [p1,p2] = radix(p,[d,d]);
+        z0 = ((A^-1*[p1;p2])~ * [0,-1;1,0] * [beta;1])[1,1] / d;
+        m = (-A[2,1]*p1+(A[1,1]-1)*p2)/d;
+        
+        S = prod(k=1, #z, sds(z0*z[k],b[k]) ) / qpe( (p2*beta-p1)/d, beta, m );
+
+        s = if( d%2 == 1, 1, (1+p1)*(1+p2)+q[1]*p2-q[2]*p1);
+        g = zeta^(-([p1,p2]*QA*[p1;p2])[1]) * (-1)^s;
+        nu[p1+1,p2+1] = real(g * h * S);
+    );
+
+    sum(p1=0,d-1, sum(p2=0,d-1, nu[p1+1,p2+1]*WH(p1,p2,d) ))
+    
+}
+
+
+
+vals(A,W,beta,d,p1,p2) = 
+{
+    my( z, m, B = A, J, zvals = List([]), bvals = List([]), S);
+    
+    z = ((A^-1*[p1;p2])~ * [0,-1;1,0] * [beta;1])[1,1] / d;
+    for( j=2, #W,
+        B = [0,1;-1,W[j-1]]*B;
+        J = (B[2,1]*beta+B[2,2]);
+        listput(zvals, z/J );
+        listput(bvals, (B[1,1]*beta+B[1,2])/J );
+    );
+    zvals = Vec(zvals);
+    bvals = Vec(bvals);
+    m = (-A[2,1]*p1+(A[1,1]-1)*p2)/d;
+    [zvals, bvals, m]
+}
+
+
+shin2(A,d,beta,W,p) = 
+{
+    my( z, m, B = A, J, zvals = List([]), bvals = List([]), S);
+    
+    z = ((A^-1*[p[1];p[2]])~ * [0,-1;1,0] * [beta;1])[1,1] / d;
+    for( j=2, #W,
+        B = [0,1;-1,W[j-1]]*B;
+        J = (B[2,1]*beta+B[2,2]);
+        listput(zvals, z/J );
+        listput(bvals, (B[1,1]*beta+B[1,2])/J );
+    );
+    zvals = Vec(zvals);
+    bvals = Vec(bvals);
+    m = (-A[2,1]*p[1]+(A[1,1]-1)*p[2])/d;
+    
+    S = prod(k=1, #zvals, sds(zvals[k],bvals[k]) );
+    
+    S / qpe( (p[2]*beta-p[1])/d, beta, m ) 
+}
+
+*/
 
 
 
