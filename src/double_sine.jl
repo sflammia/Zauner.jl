@@ -92,7 +92,7 @@ function dsIntGQ2(w, b1, b2, t0, w0, t1, w1)
     # integrate using gauss-legendre quadrature
     a = BigFloat(1)/2 * w0' * _g0.(w,b1,b2,(t0.+1)./2)
     # boundary term
-    b = -(b1+b2-2w)/(b1*b2)    
+    b = -(b1+b2-2w)/(b1*b2)
     # integrate using gauss-laguerre quadrature
     c = w1' * _g(w,b1,b2,t1)
     exp(a+b+c)
