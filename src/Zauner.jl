@@ -1,7 +1,9 @@
 module Zauner
 
-using Reexport, GaussQuadrature, QuadGK, Documenter#, LaTeXStrings
+using Reexport, Documenter#, LaTeXStrings
 @reexport using Hecke
+import QuadGK: quadgk
+import GenericFFT: ifft, fft
 import Hecke.conductor, Hecke.reduction, Hecke.cycle, Hecke.stabilizer
 export reduction, conductor, cycle, stabilizer
 
