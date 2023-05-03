@@ -7,13 +7,9 @@ double_sine(w,b1,b2,pts=21)
 Real double sine function. Numerical integration is done via adaptive Gauss quadrature with `pts` points, 21 by default. 
 """
 function double_sine( w, b1, b2, pts=21)
-    if b1 == 0 || b2 == 0
-        error("Domain error, b1*b2 == 0.")
-    elseif !all(is_real.([w, b1, b2]))
-        error("Only real values supported by this function.")
-    elseif sign(b1) != sign(b2)
-        error("Signs of b1 and b2 must agree.")
-    end
+    @assert b1 != 0 && b2 != 0 "Domain error, b1*b2 == 0."
+    @assert all(is_real.([w, b1, b2])) "Only real values supported by this function."
+    @assert sign(b1) == sign(b2) "Signs of b1 and b2 must agree."
 
     # return double sine with positive periods and BigFloat
     z, w1, w2 = BigFloat.(flipsign.([w,b1,b2],b1))
@@ -36,22 +32,6 @@ _g1(w,b1,b2,t) = exp.(-w)./(expm1.(-b1.*(t./w .+ 1)).*expm1.(-b2.*(t./w.+1)).*(t
 _g(w,b1,b2,t)  = _g1(w,b1,b2,t) .- _g1(b1+b2-w,b1,b2,t)
 
 
-# do the integral with QuadGK.jl, and count the number of function evals.
-# function dsIntQGK(w, b1, b2, pts)
-#     # integrate from [0,1]
-#     a = quadgk_count(t -> _g0(w,b1,b2,t), BigFloat(0), BigFloat(1), order = pts)
-        
-#     # boundary term
-#     b = -(b1+b2-2w)/(b1*b2)
-
-#     # integrate the rest
-#     c = quadgk_count(t -> exp(-t).*_g(w,b1,b2,t), BigFloat(0), BigFloat(Inf), order = pts)
-
-#     println((a[3],c[3],w,b1))
-#     exp(a[1]+b+c[1])
-# end
-
-
 function dsIntQGK(w, b1, b2, pts)
     # integrate from [0,1]
     a = quadgk(t -> _g0(w,b1,b2,t), BigFloat(0), BigFloat(1), order = pts)[1]
@@ -66,35 +46,67 @@ function dsIntQGK(w, b1, b2, pts)
 end
 
 
+# _g12(w,b1,b2,t) = exp(((b1+b2-w)*(t*(1-w)+w))/((1-t)*w))/(expm1(b1+(b1*t)/(w-t*w))*expm1(b2+(b2*t)/(w-t*w))*(1-t)*(t*(1-w)+w))
+# _g2(w,b1,b2,t) = _g12(w,b1,b2,t) .- _g12(b1+b2-w,b1,b2,t)
+
+
+
+# do the integral with QuadGK.jl, and count the number of function evals.
+# function dsIntQGK(w, b1, b2, pts)
+#     # integrate from [0,1]
+#     a = quadgk_count(t -> _g0(w,b1,b2,t), BigFloat(0), BigFloat(1), order = pts)
+    
+#     # boundary term
+#     b = -(b1+b2-2w)/(b1*b2)
+    
+#     # integrate the rest
+#     t = @elapsed c = quadgk_count(t -> exp(-t).*_g(w,b1,b2,t), BigFloat(0), BigFloat(Inf), order = pts)
+#     # println("  ",c[3]," evaluations for STANDARD, ",c[1])
+
+#     t2 = @elapsed c2 = quadgk_count(t -> _g2(w,b1,b2,t), BigFloat(0), BigFloat(1), order = pts)
+#     # println("  ",c2[3]," evaluations for t-TRANS., ",c[1])
+
+#     # println("t transform with QuadGK")
+#     # @time c4 = quadgk_count(t -> 0.5.*sin(t).*_g(w,b1,b2,-log.((1 .+cos.(t))./2)), BigFloat(0), BigFloat(1), order = pts)    
+#     # println("  ",c4[3]," evaluations")
+
+    
+#     exp(a[1]+b+c[1])
+    
+    
+# end
+
+
+
 # do the integral with GaussQuadrature.jl
 # slower, but if we do it multiple times then we can reuse the nodes and weights
-function dsIntGQ(w, b1, b2, pts)    
-    # compute the nodes and weights for the [0,1] piece
-    t0, w0 = legendre(BigFloat, pts)
+# function dsIntGQ(w, b1, b2, pts)    
+#     # compute the nodes and weights for the [0,1] piece
+#     t0, w0 = legendre(BigFloat, pts)
     
-    # integrate using gauss-legendre quadrature
-    a = BigFloat(1)/2 * w0' * _g0.(w,b1,b2,(t0.+1)./2)
+#     # integrate using gauss-legendre quadrature
+#     a = BigFloat(1)/2 * w0' * _g0.(w,b1,b2,(t0.+1)./2)
         
-    # boundary term
-    b = -(b1+b2-2w)/(b1*b2)
+#     # boundary term
+#     b = -(b1+b2-2w)/(b1*b2)
 
-    # compute the nodes and weights for the [1,∞) piece
-    t1, w1 = laguerre(pts, BigFloat(0))
+#     # compute the nodes and weights for the [1,∞) piece
+#     t1, w1 = laguerre(pts, BigFloat(0))
     
-    # integrate using gauss-laguerre quadrature
-    c = w1' * _g(w,b1,b2,t1)
+#     # integrate using gauss-laguerre quadrature
+#     c = w1' * _g(w,b1,b2,t1)
 
-    exp(a+b+c)
-end
+#     exp(a+b+c)
+# end
 
 
-function dsIntGQ2(w, b1, b2, t0, w0, t1, w1)
-    # integrate using gauss-legendre quadrature
-    a = BigFloat(1)/2 * w0' * _g0.(w,b1,b2,(t0.+1)./2)
-    # boundary term
-    b = -(b1+b2-2w)/(b1*b2)
-    # integrate using gauss-laguerre quadrature
-    c = w1' * _g(w,b1,b2,t1)
-    exp(a+b+c)
-end
+# function dsIntGQ2(w, b1, b2, t0, w0, t1, w1)
+#     # integrate using gauss-legendre quadrature
+#     a = BigFloat(1)/2 * w0' * _g0.(w,b1,b2,(t0.+1)./2)
+#     # boundary term
+#     b = -(b1+b2-2w)/(b1*b2)
+#     # integrate using gauss-laguerre quadrature
+#     c = w1' * _g(w,b1,b2,t1)
+#     exp(a+b+c)
+# end
 
