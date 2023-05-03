@@ -14,7 +14,10 @@ q_pochhammer_exp(z, τ, n)
 Finite exponentiated q-Pochhammer symbol, extended to ``n < 0``.
 """
 q_pochhammer_exp(z, tau, n) = ( n ≥ 0 ? q_pochhammer(e(z),e(tau),n) : (1-e(z))/q_pochhammer(e(z),e(-tau),1-n) )
-
+# function q_pochhammer_exp(z, tau, n) 
+#     println(round(Int,max(n,1-n)))
+#     ( n ≥ 0 ? q_pochhammer(e(z),e(tau),n) : (1-e(z))/q_pochhammer(e(z),e(-tau),1-n) )
+# end
 
 @doc raw"""
 e(z)
@@ -40,9 +43,8 @@ function shin(A,d,p,β)
     z = (-(β*B[2,1]+B[2,2])*p[1] + (β*B[1,1]+B[1,2])*p[2])/d
     W = psl2word(A)
     n = length(W)-1
-    
+
     vals = Vector{Tuple{typeof(z),typeof(z)}}(undef,n)
-    
     for j=1:n
         B = [0 1; -1 W[j]]*B
         J = (B[2,1]*β+B[2,2])
@@ -88,8 +90,62 @@ function ghost(A,d,β,q=[0,0])
     G /= d
 end
 
-# function ghost(d,Q,q=[0,0])
+
+function ghost(d,Q::QuadBin,q=[0,0])
+    D = discriminant(Q)
     
-#     nothing
-# end
+    # test compatability of arguments
+    t =  coredisc( (d+1)*(d-3) ) .// coredisc(D)
+    @assert t[1] == 1 "Fundamental discriminant of the quadratic form must equal the fundamental discriminant of Q(√a) where a=(d+1)*(d-3)."
+    @assert isinteger(t[2]) "Conductor of the quadratic form must divide the conductor of Q(√a) where a=(d+1)*(d-3)."
     
+    L = stabilizer(Q)
+    A = L^sl2zorder(L,d)
+    β = (-BigFloat(Q.b)+sqrt(BigFloat(D)))/(2Q.a)
+    ζ = -cispi(BigFloat(1)/d)
+    QQ = QuadBin(A[2,1],A[2,2]-A[1,1],-A[1,2])
+    c = e(-BigFloat(rademacher(A))/24) / sqrt(BigFloat(d+1))
+    W = psl2word(A)
+    n = length(W)-1
+    
+    B = zeros(eltype(A),n+2,2)
+    B[1:2,1:2] = A
+    for j=1:n
+        B[j+2,:] = [-1 W[j]]*B[j:j+1,:]
+    end
+    ω = BigFloat.(B)*[β; BigFloat(1)]
+    r = ω ./ circshift(ω,-1)
+
+    χ = zeros(Complex{BigFloat},d,2)
+    χ[1,1] = 1
+    for j = 1:2*d-1
+        p = radix(j,[d,d])
+        z = (ω[1]*p[2]-ω[2]*p[1])/d
+        m = Int((-A[2,1]*p[1]+(A[1,1]-1)*p[2])/d)
+
+        QA = BigFloat(-QQ(p...)/(d*(d-2)))
+        s = ( d%2 == 1 ? 1 : (1+p[1])*(1+p[2])+q[1]*p[2]-q[2]*p[1] )
+        nu = ζ^QA * (-1)^s * c / q_pochhammer_exp( (p[2]*β-p[1])/d, β, m )
+        for i=1:n
+            nu *= sigma_S(z/ω[i+2],r[i+1])
+        end
+    
+        χ[p[2]+1,p[1]+1] = ζ^(p[2]*p[1])*real(nu)
+    end
+    χ = ifft(χ,1)
+    sqrt(abs(χ[1,1]))*circshift(cumprod(χ[:,2]./χ[:,1]), 1)
+    # to obtain Ghost projector:
+    # ψ = ghost(d,q) 
+    # ϕ = circshift(reverse(ψ),1)
+    # G = ψ*ϕ'/ϕ'ψ
+end
+
+
+function sigma_S(z,β)
+    n = floor(Int, -z) + floor(Int, β/2)
+    a = q_pochhammer_exp( z/β, -1/β, -n)
+    b = e( (6*(z+n)^2+6*(1-β)*(z+n)+β^2-3*β+1)/(24*β) )
+    c = dsIntQGK( z+n+1, β, BigFloat(1), 21)
+    a*b*c
+end
+
