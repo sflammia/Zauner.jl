@@ -7,8 +7,8 @@ export WH, coredisc, conductor, pell, towerh, quadclassunit
 
 Weyl-Heisenberg displacement operators.
 """
-WH(m,n,d,T::Type=Complex{Float64}) = [ (-e(T(1)/(2*d)))^(m*n) * (rem(j-k-m,d) == 0) * e((k-1)*T(n)/d) for j=1:d, k=1:d]
-WH(p,d,T::Type=Complex{Float64}) = WH(p[1],p[2],d,T)
+WH(m,n,d,T::Type=BigFloat) = [ (-e(T(1)/(2*d)))^(m*n) * (rem(j-k-m,d) == 0) * e((k-1)*T(n)/d) for j=1:d, k=1:d]
+WH(p,d,T::Type=BigFloat) = WH(p[1],p[2],d,T)
 
 
 @doc """
