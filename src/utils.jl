@@ -1,4 +1,7 @@
-export radix
+export radix, hash
+
+# Define a hash for QuadBin type. Useful for a Dict{QuadBin}.
+Base.hash(q::QuadBin{ZZRingElem}, h::UInt) = hash( q.a, hash( q.b, hash( q.c, h)))
 
 @doc raw"""
     radix(n,r)
