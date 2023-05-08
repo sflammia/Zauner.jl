@@ -127,6 +127,28 @@ Since $\beta > 0$, the correct domain for us to shift to can always be found wit
 
 
 
+### Hirzebruch-Jung reduced forms
+
+For a quadratic form $Q = ⟨ a,b,c\rangle$ with discriminant $\Delta$ and $L \in \mathrm{GL}(2,\mathbb{Z})$, we define
+    $$ Q_L = (\det L) L^T Q L \ , \quad \beta_{Q,\pm} = \frac{-b\pm \sqrt{\Delta}}{2a}\,.$$
+Recall of course that $\Delta$ is a class invariant, so although $\beta_{Q,\pm}$ changes under the action of $L$, only $b$ and $a$ change. 
+
+A result that is useful for us is that $\beta_{Q,\pm}$ has an HJ-continued fraction expansion that is purely periodic if and only if $\beta > 1 > \beta^\prime > 0$, where $\beta^\prime$ is the Galois conjugate of $\beta$. 
+
+Recall the notion of ``ordinary'' or Euclidean reduction. A quadratic form $Q$ is Euclidean reduced if 
+    $$0 < \sqrt{\Delta} − b < 2|a| < \sqrt{\Delta} + b\,.$$
+The number $b+\sqrt{\Delta}/2|a|$ has a purely periodic Euclidean continued fraction expansion if and only if $Q$ is Euclidean reduced. Corresponding to this we say $Q$ is Hirzebruch-Jung (HJ-) reduced if
+    $$0 < −\sqrt{\Delta} − b < 2|a| < \sqrt{\Delta} − b\,.$$
+The number $−b+\sqrt{\Delta}/2|a|$ has a purely periodic HJ-continued fraction expansion if and only if $Q$ is
+HJ-reduced. 
+
+Now notice that $Q_J := \langle -a,b,-c\rangle$ is conjugate to $Q$. Morefover, it is HJ reduced iff $Q$ is HJ reduced. Therefore we can consider $a > 0$ without loss of generality. Then the map taking $Q$ to $\beta_{Q,+}$ is a bijection between the set of HJ reduced forms and purely periodic HJ continued fractions. 
+
+Now let $W$ be the set of forms on a given $\mathrm{GL}(2,\mathbb{Z})$ orbit such that $a > 0$. Then the following two sets are precisely the sets of Euclidean or HJ reduced forms in $W$. 
+    $$ W_E = \{Q\in W : \beta_{Q,-} < -1 < 0 < \beta_{Q,+} < 1\}$$
+    $$ W_{HJ} = \{Q\in W : 0< \beta_{Q,-} < 1 < \beta_{Q,+} < 1\}$$
+Then $W_E$ and $W_{HJ}$ are precisely the set of Euclidean and HJ reduced forms respectively in $W$. 
+
 
 
 
