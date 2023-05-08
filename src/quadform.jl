@@ -45,7 +45,7 @@ function quadbinid(D)
         b = D%2
     end
     
-    QuadBin( 1, b, div(b^2-D,4) )
+    QuadBin( one(D), b, div(b^2-D,4) )
 end
 
 
@@ -56,3 +56,16 @@ The matrix of a quadratic form `Q`.
 """
 qmat(Q::QuadBin) = [Q.a Q.b//2; Q.b//2 Q.c]
 
+
+function QuadBin(M::Matrix{QQFieldElem})
+    @req size(M) == (2,2) "Size of M must be (2,2)"
+    @req M[2,1] == M[1,2] "M must be symmetric"
+    @req isinteger(2M[1,2]) "M[1,2] must be a half-integer"
+    QuadBin(M[1,1],2M[2,1],M[2,2])
+end
+function QuadBin(M::Matrix{ZZRingElem})
+    @req size(M) == (2,2) "Size of M must be (2,2)"
+    @req M[2,1] == M[1,2] "M must be symmetric"
+    @req isinteger(2M[1,2]) "M[1,2] must be a half-integer"
+    QuadBin(M[1,1],2M[2,1],M[2,2])
+end
