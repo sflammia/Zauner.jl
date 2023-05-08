@@ -159,3 +159,90 @@ function sicnum(d)
     s
 end
 
+
+
+@doc raw"""
+    ghostbasis(d)
+
+Compute a basis for the allowed quadratic forms in dimension d. 
+
+For each conductor, the output adheres to Smith normal form, in the sense that it outputs 
+"""
+function ghostbasis(d)
+    D = (d+1)*(d-3)
+    Δ,f0 = coredisc(D)
+    F = sort(divisors(f0))
+    B = Dict{ZZRingElem,Tuple{Vector{ZZRingElem},Vector{QuadBin}}}()
+    for f in F
+        D = f^2*Δ
+        K, a = quadratic_field(D)
+        ω = (D%4 + a)//2
+        # generate the quadratic order from the standard basis
+        Zω = Order( [one(ω), ω])
+        # compute the class group and generator map
+        cg, cm = picard_group(Zω)
+        
+        # the generators, cycle decomposition, and (reduced) quadratic form generators
+        gcg = gens(cg)
+        gbcyc = (order(cg) == 1 ? [ZZ(1)] : diagonal(rels(cg)) )
+        gbgens = (length(gcg) == 0 ? [quadbinid(D)] : [QuadBin(cm(g)) for g in gcg])
+       
+        gbgens = reduction.(gbgens)
+        B[f] = (gbcyc, gbgens)
+    end
+    B
+end
+
+
+@doc raw"""
+    ghostelements(d)
+
+Compute a class representative for each ghost class in dimension d.
+"""
+function ghostelements(d)
+    D = (d+1)*(d-3)
+    Δ,f0 = coredisc(D)
+    F = sort(divisors(f0))
+    B = QuadBin[]
+    for f in F
+        D = f^2*Δ
+        K, a = quadratic_field(D)
+        ω = (D%4 + a)//2
+        # generate the quadratic order from the standard basis
+        Zω = Order( [one(ω), ω])
+        # compute the class group and generator map
+        cg, cm = picard_group(Zω)
+        cgcn = order(cg)
+        
+        # the generators, cycle decomposition, and (reduced) quadratic form generators
+        gcg = gens(cg)
+        gbcyc = (cgcn == 1 ? [ZZ(1)] : diagonal(rels(cg)) )
+        gbgens = (length(gcg) == 0 ? [quadbinid(D)] : [QuadBin(cm(g)) for g in gcg])
+       
+        gbgens = reduction.(gbgens)
+        
+        for k = 0:cgcn-1
+            a = radix(k,gbcyc)
+            push!( B, reduction(prod(gbgens .^ a)) )
+        end
+    end
+    B
+end
+
+
+
+HJ(Q::QuadBin,n) = QuadBin(Q.c*(1+n)^2+n*(Q.b+(Q.a+Q.b)*n), -Q.b-2(Q.c+(Q.a+Q.b+Q.c)*n), Q.a+Q.b+Q.c)
+
+
+
+function minimum_HJ_orbit(Q::QuadBin)
+    D = discriminant(Q)
+    Q = reduction(Q)
+    cycle(Q)
+    V = Q.nonproper_cycle
+    
+
+    
+    
+    
+end
