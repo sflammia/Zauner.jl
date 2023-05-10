@@ -203,7 +203,7 @@ function ghostelements(d)
     D = (d+1)*(d-3)
     Δ,f0 = coredisc(D)
     F = sort(divisors(f0))
-    B = QuadBin[]
+    B = QuadBin{ZZRingElem}[]
     for f in F
         D = f^2*Δ
         K, a = quadratic_field(D)
@@ -223,7 +223,7 @@ function ghostelements(d)
         
         for k = 0:cgcn-1
             a = radix(k,gbcyc)
-            push!( B, reduction(prod(gbgens .^ a)) )
+            push!( B, prod(gbgens .^ a) )
         end
     end
     B
@@ -231,18 +231,59 @@ end
 
 
 
-HJ(Q::QuadBin,n) = QuadBin(Q.c*(1+n)^2+n*(Q.b+(Q.a+Q.b)*n), -Q.b-2(Q.c+(Q.a+Q.b+Q.c)*n), Q.a+Q.b+Q.c)
+@doc raw"""
+    hj(Q,n=0)
+
+Takes a quadratic form Q and applies the Hirzebruch-Jung map to convert a Euclidean reduced form to an HJ reduced form at level `n`.
+"""
+hj(Q::QuadBin,n=0) = QuadBin([-1 1; -n-1 n]'*qmat(Q)*[-1 1; -n-1 n]) 
+# inverse of [n -1; n+1 -1].
 
 
+function reduced_HJ_orbit(q::QuadBin{ZZRingElem})
+    rootD = sqrt(1.0*discriminant(q))
+    Q = reduction(q)
+    V = cycle(Q)
+    n0 = ceil(Int,1/maximum(map( x -> (-1.0x.b+rootD)/(2*abs(x.a)), V ))-1)
+    R = hj.(V)
+    for n=1:n0
+        append!(R,hj.(V,n))
+    end
+    R    
+end
 
-function minimum_HJ_orbit(Q::QuadBin)
-    D = discriminant(Q)
-    Q = reduction(Q)
-    cycle(Q)
-    V = Q.nonproper_cycle
-    
 
-    
-    
-    
+function minimal_HJ_stabilizer(V::Vector{QuadBin{ZZRingElem}},d)
+    Q = deepcopy(V)
+    # Flip to an equivalent form with Q.a > 0.
+    for q in Q
+        x = sign(q.a)
+        q.a, q.c = x*q.a, x*q.c
+    end
+    L = stabilizer.(Q)
+    n = sl2zorder.(L,d)
+    A = L.^n
+    W = psl2word.(A)
+    l = minimum(length.(W))
+    k = findall(x->length(x) == l,W)
+    # these are the HJ reduced forms of shortest word length
+    # Q, L, n, A, W = Q[k], L[k], n[k], A[k], W[k]
+    Q = Q[k]    
+    sort!(Q; lt = (x,y) -> quadcompare_sum_then_max(x,y))
+    Q[1]
+end
+
+
+# use this to sort a list of binary quadratic forms
+function quadcompare_sum_then_max(P::QuadBin,Q::QuadBin)
+    p = abs.([P.a, P.b, P.c])
+    q = abs.([Q.a, Q.b, Q.c])
+    diff = sum(p .- q)
+    if diff < 0 # sum(p) < sum(q)
+        return true
+    elseif diff > 0
+        return false
+    else
+        return maximum(p) < maximum(q)
+    end
 end
