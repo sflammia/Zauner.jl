@@ -26,13 +26,9 @@ TODO list:
     @test (x-1//x)^2 == 5
 
     y=pell(QuadBin(1,1,-1))
-    # note: it if false that x == y (!)
+    # note: it is false that x == y (!)
     # presumably this is due to partial type initialization
     @test x.elem_in_nf == y.elem_in_nf
-    
-    @test towerh.([4,8,19]) == [1,2,3]
-    @test towerh.([5,15]) == [1,2]
-    
     
     # stabilizer tests for d=4:16
     L =[[3 -1; 1 0], [4 -1; 1 0], [5 -1; 1 0], [7 -2; 4 -1], [6 -1; 1 0], 
@@ -51,8 +47,8 @@ TODO list:
     @test WH(0,1,3,BigFloat)[2,2] ≈ (-1+sqrt(3)*im)/2
     @test WH(0,1,3)[3,3] ≈ (-1-sqrt(3)*im)/2
     @test WH(1,0,3) == [ 0  0  1; 1  0  0; 0  1  0]
-    @test WH([1,0],3) == [ 0  0  1; 1  0  0; 0  1  0]
-end
+    @test WH([1; 0],3) == [ 0  0  1; 1  0  0; 0  1  0]
+end # end algebraic testset
 
 
 @testset "Zauner analytic tests" begin
@@ -72,7 +68,7 @@ end
     
     @test q_pochhammer_exp(rand(),rand(),0) == 1
     @test q_pochhammer_exp(sqrt(2),1,-3) ≈ (1-e(sqrt(2)))^(-3)
-end
+end # end analytic testset
 
 
 @testset "Zauner quadform tests" begin
@@ -102,10 +98,10 @@ end
     @test Q0*Q1 == Q1
     @test Q1*Q1 == Q0
     @test Q1^2 == Q0
-end
+end # end quadform testset
 
 
-@testset "Zauner SL(2,Z) tests" begin
+@testset "Zauner SL(2,ℤ) tests" begin
     S = [0 -1; 1 0]
     T = [1  1; 0 1]
     U = [1  0; 1 1]
@@ -182,7 +178,7 @@ end # SL(2,Z) testset
 
 # Unit tests for the real double sine function
 @testset "Zauner double sine tests" begin
-    # Our convention for doulble sine follows Shintani (and is reciprical to K & K).
+    # Our convention for double sine follows Shintani (and is reciprical to K & K).
     t0 = sqrt(BigFloat(21))
     sq2 = sqrt(BigFloat(2))
     sq3 = sqrt(BigFloat(3))
@@ -237,19 +233,126 @@ end # double sine testset
     @test radix(86400,[24,60,60]) == [0,0,0]
     @test radix(86400,[7,24,60,60]) == [1,0,0,0]
     
+    # Test AdmissibleTuple
+    F = AdmissibleTuple(5)
+    @test F.d == 5
+    @test F.r == 1
+    @test F.n == 6
+    @test F.D == 12
+    @test F.f == 1
+    @test F.q == 1
+    @test F.j == 1
+    @test F.m == 1
+    @test F.Q.a == 1 && F.Q.b == -4 && F.Q.c == 1
+    @test coordinates(F.u) == [ 2; 1]
+    @test F.L == [4 -1; 1 0]
+    @test F.k == 3
+    @test F.A == [56 -15; 15 -4]
+    @test F.x ≈ (5-1 + sqrt((5-1)^2-4))/2
+    @test F.R ≈ log((5-1 + sqrt((5-1)^2-4))/2)
+    
+    F = AdmissibleTuple(11,3)
+    @test F.r == 3
+    
+    F = AdmissibleTuple(5,1,1) # K = ℚ(√5)
+    @test F.d == 4
+    @test F.r == 1
+    @test F.j == 1
+    @test F.m == 1
+    @test F == AdmissibleTuple(4)
+    @test F == AdmissibleTuple(4, 1)
+    @test F == AdmissibleTuple(4, QuadBin(1,-3,1))
+    
+    F = AdmissibleTuple(11,3,QuadBin(1,-3,1))
+    @test F.d == 11
+    @test F.r == 3
+    @test F.Q.a == 1 && F.Q.b == -3 && F.Q.c == 1
+    
+    @test is_admissible(5,1)
+    @test !(is_admissible(5,2))
+    @test is_admissible(5, 1, 1)
+    @test is_admissible(5, 2, 1, QuadBin(1,-7,1))
+    @test is_admissible(11, 1, QuadBin(3,-12,4))
+    
 end # utils testset
 
 @testset "Zauner ghost tests" begin
+    
+    # check the first 25 ghosts for all overlaps.
     q = map(x->QuadBin(x...),
-      [[1 -3 1], [1 -4 1], [1 -5 1], [2 -4 1], [1 -6 1], [1 -3 1], [1 -7 1], [1 -8 1], [2 -10 5], 
-      [1 -9 1], [3 -6 1], [1 -10 1], [3 -12 4], [3 -5 1], [1 -11 1], [1 -12 1], [2 -14 7], [1 -13 1], 
-      [3 -15 5], [1 -4 1], [4 -8 1], [1 -14 1], [3 -18 11], [1 -15 1], [5 -21 11]])
+          [ ( 1,  -3,  1), 
+            ( 1,  -4,  1),
+            ( 1,  -5,  1), 
+            ( 2,  -4,  1), 
+            ( 1,  -6,  1), 
+            ( 1,  -3,  1), 
+            ( 1,  -7,  1), 
+            ( 1,  -8,  1),
+            ( 2, -10,  5),
+            ( 1,  -9,  1),
+            ( 3,  -6,  1),
+            ( 1, -10,  1),
+            ( 3, -12,  4),
+            ( 3,  -5,  1),
+            ( 1, -11,  1),
+            ( 1, -12,  1),
+            ( 2, -14,  7),
+            ( 1, -13,  1),
+            ( 3, -15,  5),
+            ( 1,  -4,  1),
+            ( 4,  -8,  1),
+            ( 1, -14,  1),
+            ( 3, -18, 11),
+            ( 1, -15,  1),
+            ( 5, -21, 11) ]
+        )
     d = [4; 5; 6; 7; 7; 8; 8; 9; 9; 10; 11; 11; 11; 12; 12; 13; 13; 14; 14; 15; 15; 15; 15; 16; 16]
-    S = deserialize("../data/ghosts")
-    for k=1:25
-        ψ = ghost(d[k],q[k])
-        ϕ = circshift(reverse(ψ),1)
-        @test abs2(ϕ'ψ) ≈ 1.0
-        @test S[(d[k],q[k])] ≈ ψ
+    # S = deserialize("../data/ghosts")
+    setprecision(BigFloat,128) do 
+        for k=1:25
+            F = AdmissibleTuple(d[k],q[k])
+            ψ = ghost(F)
+            ϕ = circshift(reverse(ψ),1)
+            ov = [ϕ'*WH([p,q],ψ)*ϕ'*WH(-[p,q],ψ) for p=0:F.d-1, q=0:F.d-1]./(ϕ'ψ)^2
+            
+            # check reality
+            @test all(ov .≈ real.(ov))
+            ov = real.(ov)
+            
+            # check normalization
+            @test ov[1,1] ≈ 1
+            
+            # check equality of all non-identity overlaps
+            @test all(ov[2:end] .≈ 1/(F.d + one(BigFloat)))
+            
+            # G is manifestly idempotent, but check anyway
+            # G = ψ*ϕ'/ϕ'ψ
+            # @test all(G*G .≈ G)
+        end
     end
-end
+end # end ghost testset
+
+
+@testset "Zauner precision_bump tests" begin
+    
+    @test all(re_im_proj( BigFloat[ 1.0; 1.0]) .≈ Complex{BigFloat}[1.0; 1.0 + im*1.0])
+    @test all(re_im_proj( Complex{BigFloat}[1.0; 1.0 + im*1.0]) .≈ BigFloat[ 1.0; 1.0])
+    
+    F = AdmissibleTuple(4)
+    ψ = ghost(F)
+    z = re_im_proj(ψ) # represent as 2d-2 real coordinates
+    prec = 100
+    precision_bump!( z, prec; base = 10, verbose = false)
+    @test precision(z[1]; base = 10) ≥ prec
+    @test all(isapprox.(Zauner._ghost_olp_func(z), BigFloat(0); atol = BigFloat(10)^(-prec)))
+    
+    @test all(pow_to_elem_sym_poly([1.0; 1.0; 1.0]) .≈ [1.0; 1.0; 0.0; 0.0])
+    
+    
+end # end precision_bump tests
+
+
+@testset "Zauner galois tests" begin
+    # TODO: write some tests here...
+    @test 1 == 1
+end # end galois tests

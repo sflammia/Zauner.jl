@@ -5,7 +5,6 @@ import Base.*, Base.^
 
 *(Q1::QuadBin,Q2::QuadBin) = reduction(compose(Q1,Q2))
 
-
 function ^(Q::QuadBin,n::Integer)
     @req n ≥ 0 "Negative powers not supported yet for type QuadBin."
     n == 0 ? quadbinid(discriminant(Q)) : reduction(reduce(*,[Q for k=1:n]))
@@ -14,7 +13,6 @@ function ^(Q::QuadBin,n::ZZRingElem)
     @req n ≥ 0 "Negative powers not supported yet for type QuadBin."
     n == 0 ? quadbinid(discriminant(Q)) : reduction(reduce(*,[Q for k=1:n]))
 end
-
 
 
 # Convert an ideal to the associated quadratic form

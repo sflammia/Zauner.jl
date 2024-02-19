@@ -1,19 +1,34 @@
-export WH, coredisc, conductor, pell, towerh, quadclassunit
+export WH, coredisc, conductor, pell, pellreg, quadclassunit
 
 
 @doc raw"""
-  WH(p,d)
-  WH(m,n,d)
+    WH( p::Vector{Integer}, d::Integer [, T::Type = BigFloat])
+    WH( m::Integer, n::Integer, d::Integer [, T::Type = BigFloat])
 
 Weyl-Heisenberg displacement operators.
+
+----------
+    WH( p::Vector{<:Integer}, v::Vector)
+    WH( m::Integer, n::Integer, v::Vector)
+
+Action of `WH(p,length(v))` or `WH(m,n,length(v))` onto the vector `v` without explicitly forming the matrix. 
+The output type is `typeof(v)`. 
 """
-WH(m,n,d,T::Type=BigFloat) = [ (-e(T(1)/(2*d)))^(m*n) * (rem(j-k-m,d) == 0) * e((k-1)*T(n)/d) for j=1:d, k=1:d]
-WH(p,d,T::Type=BigFloat) = WH(p[1],p[2],d,T)
+WH( m::Integer, n::Integer, d::Integer, T::Type=BigFloat) = 
+    [ (-e(T(1)/(2*d)))^(m*n) * (rem(j-k-m,d) == 0) * e((k-1)*T(n)/d) for j=1:d, k=1:d]
+
+WH( p::Vector{<:Integer}, d::Integer, T::Type=BigFloat) = WH(p[1],p[2],d,T)
+
+WH( m::Integer, n::Integer, v::Vector) = 
+    [ (-e( eltype(v)(1)/(2*length(v))) )^((2k-m)*n) * v[mod(k-m,length(v))+1] for k=0:length(v)-1]
+
+WH( p::Vector{<:Integer}, v::Vector) = WH(p[1],p[2],v)
+
 
 
 @doc """
-  coredisc(D)
-  coredisc(Q::QuadBin)
+    coredisc(D)
+    coredisc(Q::QuadBin)
 
 Outputs a tuple `(Δ,f)` of the fundamental discriminant and conductor of `D`, or 
 of a binary quadratic form with discriminant D.
@@ -24,7 +39,7 @@ coredisc(Q::QuadBin) = coredisc(discriminant(Q))
 
 
 @doc raw"""
-  conductor(Q::QuadBin)
+    conductor(Q::QuadBin)
 
 The conductor of discriminant of the integral binary quadratic form Q.
 """
@@ -33,16 +48,16 @@ conductor(Q::QuadBin) = conductor(discriminant(Q))
 
 
 @doc raw"""
-  pell(D)
-  pell(Q::QuadBin)
-  pell(Zω::NfOrd)
+    pell(D)
+    pell(Q::QuadBin)
+    pell(Zω::NfOrd)
 
-Finds a totally positive fundamental unit of norm 1 for the discriminant `D`, 
-for the binary quadratic form with some discriminant `D`, 
+Finds the least unit > 1 having norm 1 for the discriminant `D`, 
+for the binary quadratic form with discriminant `D`, 
 or the quadratic order Zω.
 """
 function pell(D)
-    @assert D>0 && is_discriminant(D) error("D must be a positive discriminant.")
+    @req D>0 && is_discriminant(D) "D must be a positive discriminant."
     Δ, f = coredisc(D)
     K, a = quadratic_field(Δ)
     ω = (D%4 + f*a)//2
@@ -51,47 +66,87 @@ function pell(D)
     pell(Zω)
 end
 function pell(Zω::NfOrd)
-    @assert degree(Zω)==2 # only do this for quadratic orders
+    @req degree(Zω)==2 "Order must have degree 2."
     
     Ug, fu = unit_group(Zω)
     u = fu(Ug[2])
     x, y = Int.(sign.(coordinates(one(Zω.nf)*u))) # coordinates wrt K basis, not Zω.
-    u = ( x*y > 0 ? x*u : x*norm(u)*u^(-1))
-    if norm(u) == -1 u=u^2 end
+    n = norm(u)
+    u = ( x*y > 0 ? x*u : x*n*u^(-1)) # choose totally positive unit
+    if n == -1 u=u^2 end
     u
 end
 pell(Q::QuadBin) = pell(discriminant(Q))
 
 
-
 @doc raw"""
-  towerh(d)
-  towerh(d, u::NfOrdElem)
+    pellreg(D)
+    pellreg(Q::QuadBin)
+    pellreg(Zω::NfOrd)
 
-
-Tower height of a unit `u` for dimension `d`. 
-If no unit is given, compute the tower height of dimension `d` for the fundamental discriminant by computing a fundamental unit.
+Finds the least unit > 1 having norm 1 for the discriminant `D`, 
+for the binary quadratic form with discriminant `D`, 
+or the quadratic order Zω. 
+The output is a tuple with the unit and the log of that unit (which is either the regulator, or twice the regulator) as a BigFloat.
 """
-function towerh(u::NfOrdElem,d)
-    em = complex_embedding(u.parent.nf, sqrt(Int(discriminant(u.parent.nf)/4)) )
-    reg = Float64(log(abs(em))(u, 128))
-    round(Int,acosh((d-1)/2)/reg)
+function pellreg(D)
+    @req D>0 && is_discriminant(D) "D must be a positive discriminant."
+    Δ, f = coredisc(D)
+    K, a = quadratic_field(Δ)
+    ω = (D%4 + f*a)//2
+    # generate the quadratic order from the standard basis
+    Zω = Order([one(ω), ω])
+    pellreg(Zω)
 end
-function towerh(d)
-    D = (d+1)*(d-3)
-    Δ = fundamental_discriminant(D)
-    u = pell(Δ)
+function pellreg(Zω::NfOrd)
+    @req degree(Zω)==2 "Order must have degree 2."
+    
+    Ug, fu = unit_group(Zω)
+    u = fu(Ug[2])
+    x, y = Int.(sign.(coordinates(one(Zω.nf)*u))) # coordinates wrt K basis, not Zω.
+    n = norm(u)
+    u = ( x*y > 0 ? x*u : x*n*u^(-1)) # choose totally positive unit
+    if n == -1 u=u^2 end
+    u, BigFloat(regulator(Zω)*(3-n)/2) # only accurate to about 127 bits, in fact.
+end
+pellreg(Q::QuadBin) = pellreg(discriminant(Q))    
 
-    em = complex_embedding(u.parent.nf, sqrt(Float64(Δ)) )
-    reg = Float64(log(abs(em))(u, 128))
-    round(Int,acosh((d-1)/2)/reg)
+
+# Note: no unit tests yet for this function
+@doc raw"""
+    ghostclassfield( K::AnticNumberField, q)
+
+Compute the ring class field for the order q*Z(K) where Z(K) is the maximal order in K. 
+The output is an `AnticNumberField`, and so is an absolute field rather than a relative extension. 
+"""
+function ghostclassfield( K::AnticNumberField, q::Integer)
+    # @assert degree(K) == 2
+    rcf = Hecke.ring_class_field( Order(K, q*basis(maximal_order(K))))
+    simplify(absolute_simple_field(number_field(rcf))[1])[1]
 end
 
+
+
+# Note: no unit tests yet for this function
+@doc raw"""
+    signswitch( H::AnticNumberField, D::Integer)
+
+If `H` is the (absolute) ring class field for a ghost with fundamental discriminant `D` with some conductor, then this finds a sign-switching Galois automorphism `g` on `H`, that is `g(√D) = -√D`. 
+"""
+function signswitch( H::AnticNumberField, D::Integer)
+    _, x = H["x"]
+    f = collect(keys((factor(x^2 - D).fac))) 
+    @assert length(f) == 2 # (x^2 - D) should factor completely in H
+    r = evaluate(f[1],0) # a root of x^2 – D
+    @assert r^2 == D # sanity check
+    auts = automorphism_list(H)
+    return auts[findfirst([ s(r) == -r for s in auts])]
+end
 
 
 
 @doc raw"""
-  quadclassunit(D)
+    quadclassunit(D)
 
 Returns class group and unit group data for the quadratic order with disciminant D. 
 Let ``\omega = \bigl(\Delta\bmod 4 + \sqrt{\Delta}\bigr)/2``, so that a ``\mathbb{Z}`` basis is ``\mathbb{Z}+\mathbb{Z}[\omega]``.  
@@ -133,7 +188,7 @@ end
 
 
 @doc raw"""
-  sicnum(d)
+    sicnum(d)
 
 Number of WH SICs in dimension d, modulo EC orbits.
 """
@@ -166,7 +221,7 @@ end
 
 Compute a basis for the allowed quadratic forms in dimension d. 
 
-For each conductor, the output adheres to Smith normal form, in the sense that it outputs 
+For each conductor, 
 """
 function ghostbasis(d)
     D = (d+1)*(d-3)
@@ -244,10 +299,10 @@ function reduced_HJ_orbit(q::QuadBin{ZZRingElem})
     rootD = sqrt(1.0*discriminant(q))
     Q = reduction(q)
     V = cycle(Q)
-    n0 = ceil(Int,1/maximum(map( x -> (-1.0x.b+rootD)/(2*abs(x.a)), V ))-1)
-    R = hj.(V)
-    for n=1:n0
-        append!(R,hj.(V,n))
+    n0 = map( x -> ceil(Int,(2.0*abs(x.a))/(-1.0x.b+rootD))-2, V )
+    R = typeof(V[1])[]
+    for k = 1:length(n0), n=0:n0[k]
+        push!( R, hj(V[k],n) )
     end
     R    
 end

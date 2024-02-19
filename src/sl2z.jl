@@ -1,7 +1,7 @@
 export is_sl2z, sl2zorder, rademacher, psl2word, stabilizer
 
 @doc raw"""
-is_sl2z(M)
+    is_sl2z(M)
 
 Returns `true` if the matrix `M` is a 2x2 integer matrix with determinant 1.   
 """
@@ -15,7 +15,7 @@ end
 
 
 @doc raw"""
-sl2zorder(L, d)
+    sl2zorder(L, d)
 
 Find the order of ``L \bmod d`` where ``L`` is in ``\mathrm{SL}(2,\mathbb{Z})``. Brute force algorithm. 
 """
@@ -33,27 +33,32 @@ function sl2zorder(L,d)
 end
 
 @doc raw"""
-rademacher(M)
+    rademacher(M)
 
 Rademacher invariant of the ``\mathrm{SL}(2,\mathbb{Z})`` matrix `M`.
+Reference: 
+Hans Rademacher
+Zur Theorie der Dedekindschen Summen
+Mathematische Zeitschriften vol 63, pp. 445--463 (1955).
 """
 function rademacher(M)
     @assert is_sl2z(M) error("Input matrix should be in SL(2,Z).")
-    
+
     a, c, b, d = M
     t = a + d
-    (c == 0 ? div(b,d) : t//c - 12*sign(c)*dedekind_sum(a, abs(c)) - 3*sign(c*t) )
+
+    ( c == 0 ? b//d : t//c - 3*sign(c*t) - 12*sign(c)*dedekind_sum(a, abs(c)) )
 end
 
 
 
 @doc raw"""
-psl2word(v::Vector)
+    psl2word(v::Vector)
 
 Return the product ``T^{v_1} S T^{v_2} S...S T^{v_n}`` where ``S`` and ``T`` are the standard generators of ``\mathrm{SL}(2,\mathbb{Z})``.
 
 --------
-psl2word(A::Matrix)
+    psl2word(A::Matrix)
 
 Decompose a matrix `A` in ``\mathrm{SL}(2,\mathbb{Z})`` into a product of ``S`` and ``T`` generators, modulo ``-I``. 
 Reduction is done using rounding up with ceiling (Hirzebruch-Jung or negative regular continued fraction reduction) and returning a product strictly in terms of ``S`` and ``T`` except for the first or final element, which might be negative.
@@ -83,8 +88,8 @@ end
 
 
 @doc raw"""
-  stabilizer(Q::QuadBin, u::NfOrdElem)
-  stabilizer(Q::QuadBin)
+    stabilizer(Q::QuadBin, u::NfOrdElem)
+    stabilizer(Q::QuadBin)
 
 
 Compute the stabilizer of `Q` in ``\mathrm{SL}(2,\mathbb{Z})``, that is, compute the matrix ``L`` such that ``L^TQL=Q``, where ``Q`` is the matrix of the quadratic form. 
