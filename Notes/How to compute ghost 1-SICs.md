@@ -27,8 +27,6 @@ Decompose $A = T^{e_1}ST^{e_2}\cdots ST^{e_{n+1}}$. If we made a sensible choice
 
 Next, compute $\psi(A)$, the Rademacher invariant of $A$, which is a class invariant of $\mathrm{SL}_2(\mathbb{Z})$. (The closely related Meyer invariant $\phi(A) = -\psi(A)/3$ for hyperbolic elements $A$, and is given by Eq. (5.34) in draft.tex.) An explicit form for an element of $\gamma \in \mathrm{SL}_2(\mathbb{Z})$ with $\gamma = \begin{pmatrix}a&b\\c&d\end{pmatrix}$ is given as follows. Let $t = \mathrm{tr(\gamma)}$ be the matrix trace of $\gamma$, so $t = a+d$. Then 
 
-###### (**COMMENT**:  I think this may assume $c>0$ and $t>2$.  STF:Probably not c > 0 since there is an explicit sign(c) in one of the equations. But t > 2 maybe. I got this from Ghys (I think). )
-
 ​    $\displaystyle \psi(\gamma) = \begin{cases}b/d & \mbox{if }c=0,\\ t/c - 12\,
 \mathrm{sign}(c) s(a,|c|) - 3\,\mathrm{sign}(ct) & \mbox{otherwise}.\end{cases} $ 
 
@@ -114,9 +112,13 @@ Here $S_2(z,(\omega_1,\omega_2))$ is the double sine function, and $S_2(z,\beta)
 
 When $S_2(z,(\omega_1,\omega_2))$ takes arguments obeying $0<\mathrm{Re}(z) < \mathrm{Re}(\omega_1+\omega_2)$, then we have the following integral representation:
 
-​    $$\displaystyle S_2(z,(\omega_1,\omega_2)) = \exp\biggl(\int_0^\infty \biggl(\frac{\sinh\bigl((\omega_1+\omega_2-2z)t/2\bigr)}{2\sinh(\omega_1 t/2)\sinh(\omega_2 t/2)} - \frac{\omega_1+\omega_2 - 2 z}{t} \biggr) \frac{\mathrm{d}t}{t} \biggr) \,.$$  
+​    $$\displaystyle S_2(z,(\omega_1,\omega_2)) = \exp\biggl(\frac12 \int_0^\infty \biggl(\frac{\sinh\bigl((\omega_1+\omega_2-2z)t\bigr)}{\sinh(\omega_1 t)\sinh(\omega_2 t)} - \frac{\omega_1+\omega_2 - 2 z}{\omega_1 \omega_2 t} \biggr) \frac{\mathrm{d}t}{t} \biggr) \,.$$  
 
-Note that this definition comes from Shintani, and Kurokawa and others would use a minus sign in front of the integral. We should adjust our formulas accordingly to match the contemporary (Kurokawa) definitions.  When the double sine function does not satisfy that domain constraint, then we can use the transformation laws to shift the double sine into that domain, picking up additional factors. Specifically, we have the following transformation law.
+In the special case where $z= 1+u$ and $\omega = (x,1)$, then we have
+
+​    $$\displaystyle S_2(1+u,(x,1)) = \exp\biggl(\frac12 \int_0^\infty \biggl(\frac{\sinh\bigl((x-1-2u)t\bigr)}{\sinh(t)\sinh(x t)} - \frac{x-1-2u}{x t} \biggr) \frac{\mathrm{d}t}{t} \biggr) \,.$$  
+
+Note that this definition comes from Shintani, and Kurokawa and others would use a minus sign in front of the integral. When the double sine function does not satisfy that domain constraint, then we can use the transformation laws to shift the double sine into that domain, picking up additional factors. Specifically, we have the following transformation law.
 
 ​    $$ \displaystyle \sigma_S(z,\beta) = \sigma_S(z+m\beta+n,\beta)\varpi_{-n}\biggl(\frac{z}{\beta},\frac{-1}{\beta}\biggr) \varpi_{m}^{-1}(z,\beta)$$
 
@@ -158,3 +160,7 @@ Then $W_E$ and $W_{HJ}$ are precisely the set of Euclidean and HJ reduced forms 
 ### Comments:
 
 This exercise has illuminated for me some weaknesses that we want to address when we write up the paper. First, we don't have anything close to even this meager version of a straight-line view of the entire construction. This is essential. Second, It seems to me that many of these moving parts from the construction could be profitably synthesized into tighter units if only we could manage to get the entire thing into view to see what best to combine. So I hope that progress on the first point will lead to a simpler form of the construction. Third, I've said this before, but we really should somehow make explicit that the ghost transforms covariantly with the Clifford group, so that the ghosts modulo extended Clifford group elements are class invariants. We've proven one direction: that if two points are SL(2,Z) related, then they are also Clifford related. To prove the converse, maybe we can use the triple products? Fourth, I know enough by now to know that there is quite a lot of geometry happening here under the surface. Perhaps this is too much to ask for the present paper, but I feel like this geometric perspective needs a much more prominent role in our discussions. Personally, I believe that understanding the geometric perspective is the only way that I'll ever really intuitively grasp this construction. 
+
+
+
+Exp[Integrate[1/Sqrt[x^2 + 1], {x, 0, 1/2}]] == (1 + Sqrt[5])/2
