@@ -30,6 +30,37 @@ julia> radix(86400,[7 24 60 60])
 radix(n,r) = [div(n,prod(r[k+1:end])) % r[k] for k=1:length(r)]
 
 
+
+@lazy struct AdmissibleTuple
+    d::Integer             # dimension
+    r::Integer             # rank
+    n::Integer             # (d^2-1)/(r*(d-r))
+    D::Integer             # fundamental discriminant of K
+    f::Integer             # sequence of conductors f_j
+    q::Integer             # conductor of Q
+    j::Integer             # grid vertical
+    m::Integer             # grid horozontal
+    k::Integer             # L^k = I mod d
+    K::AnticNumberField    # associated field K = ℚ(√n(n-4))
+    a::nf_elem             # associated field generator √D
+    u::NfOrdElem           # Zauner unit
+    @lazy H::AnticNumberField    # ring class field for q*Z(K)
+    @lazy g::NfToNfMor           # Galois automorphism in H s.t. g(√D) = -√D
+    h::Integer             # class number, or degree of H/K
+    G::Vector{Integer}     # orders of class group generators
+    c::Vector{QuadBin}     # basis of generator Q's for the class group
+    Q::QuadBin             # integral binary quadratic form
+    L::Matrix{ZZRingElem}  # S(Q) generator
+    A::Matrix{ZZRingElem}  # S_d(Q) generator
+    x::BigFloat            # positive root of Q
+    R::BigFloat            # log of u
+end
+
+
+Base.show(io::IO, ::MIME"text/plain", F::AdmissibleTuple) = print(io,"AdmissibleTuple( d = $(F.d), r = $(F.r), K = ℚ(√$(F.D)), q = $(F.q), Q = ⟨$(F.Q.a),$(F.Q.b),$(F.Q.c)⟩, h = $(F.h) )")
+Base.show(io::IO, F::AdmissibleTuple) = print(io,"AdmissibleTuple( d = $(F.d), r = $(F.r), K = ℚ(√$(F.D)), q = $(F.q), Q = ⟨$(F.Q.a),$(F.Q.b),$(F.Q.c)⟩, h = $(F.h) )")
+
+
 @doc raw"""
     AdmissibleTuple( d::Integer [, Q::QuadBin])
     AdmissibleTuple( d::Integer, r::Integer [, Q::QuadBin])
@@ -61,8 +92,10 @@ The defined (and precomputed) fields in an `AdmissibleTuple` are given by:
     a ::nf_elem             # associated field generator √D
     u ::NfOrdElem           # Zauner unit
     H ::AnticNumberField    # ring class field for q*Z(K)
-    h ::Integer             # class number, or degree of H/K
     g ::NfToNfMor           # Galois automorphism in H s.t. g(√D) = -√D
+    h ::Integer             # class number, or degree of H/K
+    G ::Vector{Integer}     # orders of class group generators
+    c ::Vector{QuadBin}     # basis of generator Q's for the class group
     Q ::QuadBin             # form
     L ::Matrix{ZZRingElem}  # S(Q) generator
     k ::Integer             # L^k = I mod d
@@ -92,36 +125,6 @@ julia> AdmissibleTuple(11,3,QuadBin(3,-12,4))
 AdmissibleTuple( d = 11, r = 3, K = ℚ(√5), Q = ⟨3,-12,4⟩ )
 ```
 """
-struct AdmissibleTuple
-    d::Integer             # dimension
-    r::Integer             # rank
-    n::Integer             # (d^2-1)/(r*(d-r))
-    D::Integer             # fundamental discriminant of K
-    f::Integer             # sequence of conductors f_j
-    q::Integer             # conductor of Q
-    j::Integer             # grid vertical
-    m::Integer             # grid horozontal
-    k::Integer             # L^k = I mod d
-    K::AnticNumberField    # associated field K = ℚ(√n(n-4))
-    a::nf_elem             # associated field generator √D
-    u::NfOrdElem           # Zauner unit
-    H::AnticNumberField    # ring class field for q*Z(K)
-    h::Integer             # class number, or degree of H/K
-    g::NfToNfMor           # Galois automorphism in H s.t. g(√D) = -√D
-    # G::Vector{Integer}     # orders of class group generators
-    # c::Vector{QuadBin}     # basis of generator Q's for the class group
-    Q::QuadBin             # integral binary quadratic form
-    L::Matrix{ZZRingElem}  # S(Q) generator
-    A::Matrix{ZZRingElem}  # S_d(Q) generator
-    x::BigFloat            # positive root of Q
-    R::BigFloat            # log of u
-end
-
-
-Base.show(io::IO, ::MIME"text/plain", F::AdmissibleTuple) = print(io,"AdmissibleTuple( d = $(F.d), r = $(F.r), K = ℚ(√$(F.D)), q = $(F.q), Q = ⟨$(F.Q.a),$(F.Q.b),$(F.Q.c)⟩, h = $(F.h) )")
-Base.show(io::IO, F::AdmissibleTuple) = print(io,"AdmissibleTuple( d = $(F.d), r = $(F.r), K = ℚ(√$(F.D)), q = $(F.q), Q = ⟨$(F.Q.a),$(F.Q.b),$(F.Q.c)⟩, h = $(F.h) )")
-
-
 AdmissibleTuple(d::Integer) = AdmissibleTuple(d,1)
 
 function AdmissibleTuple(d::Integer,r::Integer)
@@ -131,19 +134,21 @@ function AdmissibleTuple(d::Integer,r::Integer)
     D, f = Int.(coredisc(n*(n-4)))
     K, a = quadratic_field(D)
     u, R = pellreg(D)
-    c = sqrt(BigFloat(D))*f/2
-    j = round(Int,asinh(c)/R)
-    m = round(Int,asinh(c*r)/asinh(c))
+    t = sqrt(BigFloat(D))*f/2
+    j = round(Int,asinh(t)/R)
+    m = round(Int,asinh(t*r)/asinh(t))
     Q = QuadBin(one(ZZ),2one(ZZ)-ZZ(n),one(ZZ)) # disc(Q) = n*(n-4)
     q = Int(conductor(Q))
-    H = ghostclassfield(K,q)
-    h = degree(H)÷2
-    g = signswitch(H,D)
+    # H = ghostclassfield(K,q)
+    # g = signswitch(H,D)
+    h, G, c, _, _ = quadclassunit(D)
+    h = Int(h)
+    G = Int.(G)
     L = [ZZ(n)-2one(ZZ) -one(ZZ); one(ZZ) zero(ZZ)]
     k = Int(sl2zorder(L, d))
     A = L^k
     x = (-BigInt(Q.b) + sqrt(BigInt(discriminant(Q)))) / (2BigInt(Q.a))
-    return AdmissibleTuple(d,r,n,D,f,q,j,m,k,K,a,u,H,h,g,Q,L,A,x,R)
+    return AdmissibleTuple(d,r,n,D,f,q,j,m,k,K,a,u,uninit,uninit,h,G,c,Q,L,A,x,R)
 end
 
 AdmissibleTuple(d::Integer,Q::QuadBin) = AdmissibleTuple(d,1,Q)
@@ -159,17 +164,19 @@ function AdmissibleTuple(d::Integer,r::Integer,Q::QuadBin)
     @req f % q == 0 "Conductor q of Q must divide f_j."
     K, a = quadratic_field(D)
     u, R = pellreg(D)
-    H = ghostclassfield(K,q)
-    h = degree(H)÷2
-    g = signswitch(H,D)
-    c = sqrt(BigFloat(D))*f/2
-    j = round(Int,asinh(c)/R)
-    m = round(Int,asinh(c*r)/asinh(c))
+    # H = ghostclassfield(K,q)
+    # g = signswitch(H,D)
+    h, G, c, _, _ = quadclassunit(D)
+    h = Int(h)
+    G = Int.(G)
+    t = sqrt(BigFloat(D))*f/2
+    j = round(Int,asinh(t)/R)
+    m = round(Int,asinh(t*r)/asinh(t))
     L = stabilizer(Q)
     k = Int(sl2zorder(L, d))
     A = L^k
     x = (-BigInt(Q.b) + sqrt(BigInt(discriminant(Q)))) / (2BigInt(Q.a))
-    return AdmissibleTuple(d,r,n,D,f,q,j,m,k,K,a,u,H,h,g,Q,L,A,x,R)
+    return AdmissibleTuple(d,r,n,D,f,q,j,m,k,K,a,u,uninit,uninit,h,G,c,Q,L,A,x,R)
 end
 
 
@@ -184,14 +191,16 @@ function AdmissibleTuple(D::Integer,j::Integer,m::Integer)
     n = Int((d^2-1)//(r*(d-r))) # throws an error if (d,r) is not admissible
     Q = QuadBin(one(ZZ),2one(ZZ)-ZZ(n),one(ZZ)) # disc(Q) = n*(n-4)
     q = Int(conductor(Q))
-    H = ghostclassfield(K,q)
-    h = degree(H)÷2
-    g = signswitch(H,D)
+    # H = ghostclassfield(K,q)
+    # g = signswitch(H,D)
+    h, G, c, _, _ = quadclassunit(D)
+    h = Int(h)
+    G = Int.(G)
     L = [ZZ(n)-2one(ZZ) -one(ZZ); one(ZZ) zero(ZZ)]
     k = Int(sl2zorder(L, d))
     A = L^k
     x = (-BigInt(Q.b) + sqrt(BigInt(discriminant(Q)))) / (2BigInt(Q.a))
-    return AdmissibleTuple(d,r,n,D,f,q,j,m,k,K,a,u,H,h,g,Q,L,A,x,R)
+    return AdmissibleTuple(d,r,n,D,f,q,j,m,k,K,a,u,uninit,uninit,h,G,c,Q,L,A,x,R)
 end
 
 
@@ -205,9 +214,11 @@ function AdmissibleTuple(D::Integer,j::Integer,m::Integer,Q::QuadBin)
     q = Int(q)
     @req DQ == D "Fundamental discriminant of Q and K must match."
     @req f % q == 0 "Conductor of Q must divide f_j."
-    H = ghostclassfield(K,q)
-    h = degree(H)÷2
-    g = signswitch(H,D)
+    # H = ghostclassfield(K,q)
+    # g = signswitch(H,D)
+    h, G, c, _, _ = quadclassunit(D)
+    h = Int(h)
+    G = Int.(G)
     r = Int((u^(j*m) - u^(-j*m))//(f*a))
     d = Int((u^(j*(m+1)) - u^(-j*(m+1)))//(f*a)) - r
     n = Int((d^2-1)//(r*(d-r))) # throws an error if (d,r) is not admissible
@@ -215,7 +226,7 @@ function AdmissibleTuple(D::Integer,j::Integer,m::Integer,Q::QuadBin)
     k = Int(sl2zorder(L, d))
     A = L^k
     x = (-BigInt(Q.b) + sqrt(BigInt(discriminant(Q)))) / (2BigInt(Q.a))
-    return AdmissibleTuple(d,r,n,D,f,q,j,m,k,K,a,u,H,h,g,Q,L,A,x,R)
+    return AdmissibleTuple(d,r,n,D,f,q,j,m,k,K,a,u,uninit,uninit,h,G,c,Q,L,A,x,R)
 end
 
 
@@ -295,50 +306,6 @@ function ==(F::AdmissibleTuple, G::AdmissibleTuple)
 end
 
 
-
-
-
-
-@doc raw"""
-    Multiplet( d::Integer [, Q::QuadBin])
-    Multiplet( d::Integer, r::Integer [, Q::QuadBin])
-    Multiplet( D::Integer, j::Integer, m::Integer [, Q::QuadBin])
-
-\\
-Container type for the multiplet associated to an admissible tuple.
-\\
-
-
-"""
-struct Multiplet
-    d::Integer             # dimension
-    r::Integer             # rank
-    n::Integer             # (d^2-1)/(r*(d-r))
-    D::Integer             # fundamental discriminant of K
-    f::Integer             # sequence of conductors f_j
-    q::Integer             # conductor of Q
-    c::Vector{QuadBin}     # basis of generator Q's for the class group
-    h::Integer             # class number
-    G::Vector{Integer}     # orders of class group generators
-    j::Integer             # grid vertical
-    m::Integer             # grid horozontal
-    k::Integer             # L^k = I mod d
-    K::AnticNumberField    # associated field K = ℚ(√n(n-4))
-    a::nf_elem             # associated field generator √D
-    u::NfOrdElem           # Zauner unit
-    Q::QuadBin             # integral binary quadratic form
-    L::Matrix{ZZRingElem}  # S(Q) generator
-    A::Matrix{ZZRingElem}  # S_d(Q) generator
-    x::BigFloat            # positive root of Q
-    R::BigFloat            # log of u
-end
-
-
-function Multiplet(d::Integer)
-    F = AdmissibleTuple(d)
-    q = conductor(F.Q)
-    h,c,bv,uu = quadclassunit( F.D*F.f^2÷q^2 )
-end
 
 
 # Def 7.20, Lemma 7.21, and Def. 4.31 of main.tex

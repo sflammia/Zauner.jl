@@ -125,7 +125,7 @@ function ghostclassfield( K::AnticNumberField, q::Integer)
     simplify(absolute_simple_field(number_field(rcf))[1])[1]
 end
 
-
+ghostclassfield( F::AdmissibleTuple ) = ( (@isinit F.H) ? F.H : (@init! F.H = ghostclassfield(F.K,F.q)); F.H)
 
 # Note: no unit tests yet for this function
 @doc raw"""
@@ -143,6 +143,7 @@ function signswitch( H::AnticNumberField, D::Integer)
     return auts[findfirst([ s(r) == -r for s in auts])]
 end
 
+signswitch( F::AdmissibleTuple) = ( (@isinit F.g) ? F.g : (@init! F.g = signswitch(F.H,F.D)); F.g)
 
 
 @doc raw"""
