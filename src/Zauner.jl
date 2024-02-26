@@ -3,12 +3,13 @@ module Zauner
 using LazilyInitializedFields
 using Reexport, Documenter#, LaTeXStrings
 @reexport using Hecke
-using AMRVW
+using SpecialMatrices: Vandermonde
+using AMRVW: roots
 using ForwardDiff: jacobian
 using GenericFFT: ifft, fft
 using QuadGK: quadgk
-import Hecke.conductor, Hecke.reduction, Hecke.cycle, Hecke.stabilizer
-export reduction, conductor, cycle, stabilizer
+import Hecke.conductor, Hecke.cycle, Hecke.reduction, Hecke.stabilizer
+export conductor, cycle, reduction, stabilizer
 
 include("utils.jl")
 include("algebraic.jl")

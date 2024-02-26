@@ -12,14 +12,14 @@ Base.hash(q::QuadBin{ZZRingElem}, h::UInt) = hash( q.a, hash( q.b, hash( q.c, h)
 The `length(r)` least significant digits of the integer `n` in mixed radix `r = [r1,r2,...,rk]`. 
 # Examples
 ```jldoctest
-julia> radix(5,[2 2 2 2 2])
+julia> radix(5,[2; 2; 2; 2; 2])
 5-element Vector{Int64}:
  0
  0
  1
  0
  1
-julia> radix(86400,[7 24 60 60])
+julia> radix(86400,[7; 24; 60; 60])
 4-element Vector{Int64}:
  1
  0
@@ -30,30 +30,33 @@ julia> radix(86400,[7 24 60 60])
 radix(n,r) = [div(n,prod(r[k+1:end])) % r[k] for k=1:length(r)]
 
 
+# convert expansion n back from mixed radix r
+# fromradix(n,r) = dot( cumprod(reverse(push!(r,1)))[end-1:-1:1], n)
+
 
 @lazy struct AdmissibleTuple
-    d::Integer             # dimension
-    r::Integer             # rank
-    n::Integer             # (d^2-1)/(r*(d-r))
-    D::Integer             # fundamental discriminant of K
-    f::Integer             # sequence of conductors f_j
-    q::Integer             # conductor of Q
-    j::Integer             # grid vertical
-    m::Integer             # grid horozontal
-    k::Integer             # L^k = I mod d
-    K::AnticNumberField    # associated field K = ℚ(√n(n-4))
-    a::nf_elem             # associated field generator √D
-    u::NfOrdElem           # Zauner unit
-    @lazy H::AnticNumberField    # ring class field for q*Z(K)
-    @lazy g::NfToNfMor           # Galois automorphism in H s.t. g(√D) = -√D
-    h::Integer             # class number, or degree of H/K
-    G::Vector{Integer}     # orders of class group generators
-    c::Vector{QuadBin}     # basis of generator Q's for the class group
-    Q::QuadBin             # integral binary quadratic form
-    L::Matrix{ZZRingElem}  # S(Q) generator
-    A::Matrix{ZZRingElem}  # S_d(Q) generator
-    x::BigFloat            # positive root of Q
-    R::BigFloat            # log of u
+    d::Integer                 # dimension
+    r::Integer                 # rank
+    n::Integer                 # (d^2-1)/(r*(d-r))
+    D::Integer                 # fundamental discriminant of K
+    f::Integer                 # sequence of conductors f_j
+    q::Integer                 # conductor of Q
+    j::Integer                 # grid vertical
+    m::Integer                 # grid horozontal
+    k::Integer                 # L^k = I mod d
+    K::AnticNumberField        # associated field K = ℚ(√n(n-4))
+    a::nf_elem                 # associated field generator √D
+    u::NfOrdElem               # Zauner unit
+    @lazy H::AnticNumberField  # ring class field for q*Z(K)
+    @lazy g::NfToNfMor         # Galois automorphism in H s.t. g(√D) = -√D
+    h::Integer                 # class number, or degree of H/K
+    G::Vector{Integer}         # orders of class group generators
+    c::Vector{QuadBin}         # basis of generator Q's for the class group
+    Q::QuadBin                 # integral binary quadratic form
+    L::Matrix{ZZRingElem}      # S(Q) generator
+    A::Matrix{ZZRingElem}      # S_d(Q) generator
+    x::BigFloat                # positive root of Q
+    R::BigFloat                # log of u
 end
 
 
@@ -91,8 +94,8 @@ The defined (and precomputed) fields in an `AdmissibleTuple` are given by:
     m ::Integer             # grid horozontal position
     a ::nf_elem             # associated field generator √D
     u ::NfOrdElem           # Zauner unit
-    H ::AnticNumberField    # ring class field for q*Z(K)
-    g ::NfToNfMor           # Galois automorphism in H s.t. g(√D) = -√D
+    H ::AnticNumberField    # (lazy) ring class field for q*Z(K)
+    g ::NfToNfMor           # (lazy) Galois automorphism in H s.t. g(√D) = -√D
     h ::Integer             # class number, or degree of H/K
     G ::Vector{Integer}     # orders of class group generators
     c ::Vector{QuadBin}     # basis of generator Q's for the class group
@@ -103,6 +106,10 @@ The defined (and precomputed) fields in an `AdmissibleTuple` are given by:
     x ::BigFloat            # positive root of Q
     R ::BigFloat            # log of u
 ```
+
+\\
+The fields marked '(lazy)', namely 'H' and 'g', are not initialized at first since their computation is substantially more expensive than the other fields. 
+Once they have been computed their values are memoized and do not have to be recomputed. 
 
 From the way that `H` is computed currently, `K` is not recognized as a subfield. 
 This could lead to some non-intuitive results. 
@@ -291,7 +298,7 @@ end
 
 
 # Equality testing for AdmissibleTuples
-# need to add a test for :g, the sign-switching automorphism
+# need to add a tests for :H and :g with conditions for if they are defined.
 function ==(F::AdmissibleTuple, G::AdmissibleTuple)
     test  = F.Q.a == G.Q.a
     test &= F.Q.b == G.Q.b
@@ -299,7 +306,7 @@ function ==(F::AdmissibleTuple, G::AdmissibleTuple)
     test &= coordinates(F.u) == coordinates(G.u)
     test &= F.x ≈ G.x
     test &= isapprox( F.R, G.R, atol = 2^-120) # only good to about half BigFloat default prec.
-    for p in  (:d, :r, :n, :D, :f, :q, :j, :m, :k, :K, :a, :H, :h, :L, :A)
+    for p in  (:d, :r, :n, :D, :f, :q, :j, :m, :k, :K, :a, :h, :L, :A)
         test &= getfield(F,p) == getfield(G,p)
     end
     return test    
@@ -373,7 +380,7 @@ function is_antiunitary_with_generator(F::AdmissibleTuple)
     else
         test, k = is_square_with_sqrt(dmin - 3)
         if test && (fmin % (k*fQ) == 0)
-            M = Int.( k//2*[1 0; 0 1] + [0 -1; 1 0]*qmat(F.Q).*fmin//(k*fQ) )
+            M = ZZ.( k//2*[1 0; 0 1] + [0 -1; 1 0]*qmat(F.Q).*fmin//(k*fQ) )
             return true, M
         else
             return false, [0 0; 0 0]

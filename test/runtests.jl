@@ -353,6 +353,43 @@ end # end precision_bump tests
 
 
 @testset "Zauner galois tests" begin
-    # TODO: write some tests here...
-    @test 1 == 1
+    # check the first 25 ghosts
+    q = map(x->QuadBin(x...),
+          [ ( 1,  -3,  1), 
+            ( 1,  -4,  1),
+            ( 1,  -5,  1), 
+            ( 2,  -4,  1), 
+            ( 1,  -6,  1), 
+            ( 1,  -3,  1), 
+            ( 1,  -7,  1), 
+            ( 1,  -8,  1),
+            ( 2, -10,  5),
+            ( 1,  -9,  1),
+            ( 3,  -6,  1),
+            ( 1, -10,  1),
+            ( 3, -12,  4),
+            ( 3,  -5,  1),
+            ( 1, -11,  1),
+            ( 1, -12,  1),
+            ( 2, -14,  7),
+            ( 1, -13,  1),
+            ( 3, -15,  5),
+            ( 1,  -4,  1),
+            ( 4,  -8,  1),
+            ( 1, -14,  1),
+            ( 3, -18, 11),
+            ( 1, -15,  1),
+            ( 5, -21, 11) ]
+        )
+    d = [4; 5; 6; 7; 7; 8; 8; 9; 9; 10; 11; 11; 11; 12; 12; 13; 13; 14; 14; 15; 15; 15; 15; 16; 16]
+    # This test set tests that the galois normal form and centralizer elements are compatible.
+    for k=1:25
+        # remove this if statement once even dimensions are supported.
+        if isodd(d[k])
+            F = AdmissibleTuple(d[k],q[k])
+            g, n = galois_normal_form(F)
+            c = length(Zauner.centralizer_elements(F))
+            @test c == prod(n)*2^is_antiunitary(F)*F.k
+        end
+    end
 end # end galois tests

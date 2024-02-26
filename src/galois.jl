@@ -1,4 +1,4 @@
-export galois_orbit
+export galois_orbit, galois_normal_form
 
 # Compute the maximal Galois orbit 
 function galois_orbit(F::AdmissibleTuple)
@@ -96,21 +96,14 @@ julia> centralizer_elements(F)
 ```
 """
 function centralizer_elements(F::AdmissibleTuple)
-    # NOTE: You only need the Zauner matrix to compute the centralizer. 
-    # The stabilizer needs L of course. 
     # Need a caveat here about F_a orbits. Will add support later.
     d = F.d
-    if rem(d,9) == 3 && rem(ZZ(F.f//F.q),3) == 0
-        error("F_a orbits not supported yet")
-        # this condition for F_a orbits is on p. 83 of main.tex, Thm 7.28.
-    end
+    # this condition for F_a orbits is on p. 83 of main.tex, Thm 7.28.
+    rem(d,9) == 3 && rem(ZZ(F.f//F.q),3) == 0 && error("F_a orbits not supported yet")
     # not supporting even dimensions yet.
-    if rem(d,2) == 0
-        error("Even dimensions not supported yet")
-    end
+    iseven(d) && error("Even dimensions not supported yet")
 
     dd = 2^iseven(d) * d #  d'
-    Z   = [0 -1;  1  0]*qmat(F.Q) # this is one choice of Zauner; could use [0 -1; 1 -1] instead
     Z = F.L
     eye = [ 1  0;  0  1]
     
@@ -129,44 +122,128 @@ end
 
 
 
-# This isn't used currently
-function galois_reps(F::AdmissibleTuple)
-    # Need a caveat here about F_a orbits. Will add support later.
+@doc raw"""
+    galois_normal_form(F::AdmissibleTuple)
+
+\\
+Compute the normal form of the group `M/S` where `M` is a maximal abelian subgroup of `GL(2,ℤ/d')` and `S` is the stabilizer of `F`. 
+This is group is (conjecturally) isomorphic to the Galois group. 
+The output is a tuple `(g,n)` where `g` is a vector of generator matrices and `n` is a vector of the orders of those matrices in `M/S`. 
+This corresponds to the canonical decomposition `ℤ/n_1 ⊕ ℤ/n_2 ⊕ ... ⊕ ℤ/n_k` where the `n_j` are each prime powers. 
+The factors are canonical up to permutation (though the generators are not). 
+
+# Examples
+```jldoctest
+julia> F = AdmissibleTuple( 7, QuadBin(2,-4,1))
+AdmissibleTuple( d = 7, r = 1, K = ℚ(√8), q = 1, Q = ⟨2,-4,1⟩, h = 1 )
+
+julia> g, n = galois_normal_form(F)
+(Matrix{ZZRingElem}[[6 0; 0 6], [2 0; 0 2]], [2, 3])
+
+julia> F = AdmissibleTuple(9)
+AdmissibleTuple( d = 9, r = 1, K = ℚ(√60), q = 1, Q = ⟨1,-8,1⟩, h = 2 )
+
+julia> g, n = galois_normal_form(F)
+(Matrix{ZZRingElem}[[8 5; 4 3], [8 0; 0 8], [7 0; 0 7]], [3, 2, 3])
+```
+"""
+function galois_normal_form(F::AdmissibleTuple)
     d = F.d
-    if rem(d,9) == 3 && rem(ZZ(F.f//f.q),3) == 0
+    if (d % 9) == 3 && rem(ZZ(F.f//F.q),3) == 0
         error("F_a orbits not supported yet")
         # this condition for F_a orbits is on p. 83 of main.tex, Thm 7.28.
     end
     # not supporting even dimensions yet.
-    if rem(d,2) == 0
+    if iseven(d)
         error("Even dimensions not supported yet")
     end
-    
-    # Need to test for anti-unitary symmetry
-    # Def 7.20, Lemma 7.21, and Def. 4.31
-    if is_antiunitary(F)
-        error("Anti-unitary symmetry not supported yet")
-    end
 
-    # first compute the elements of the centralizer
-    cents = centralizer_elements(F)
-
-    # compute the elements of the stabilizer group
-    L = Matrix{Integer}(F.L)
     dd = 2^iseven(d)*d
-    stab = [ mod.(L,dd) ]
+
+    # G is the centralizer of H (the stabilizer)
+    # compute the nontrivial centralizer orbits
+    G = Matrix{ZZRingElem}.(centralizer_elements(F))
+    sizeofG = length(G)
+    
+    # compute the elements of the stabilizer group H
+    # if F is anti-unitary, this gives the generator.
+    test, L = is_antiunitary_with_generator(F)
+    
+    # if F is unitary, then F.L is the stabilizer generator.
+    if !test
+        L = F.L
+    end
+    H = [ mod.(L,dd) ]
     k=1
-    while stab[k] != [1 0; 0 1]
-        push!(stab, mod.(L*stab[k], dd))
+    while H[k] != [1 0; 0 1]
+        push!(H, mod.(L*H[k], dd))
         k += 1
     end
-
-    reps = Matrix{Integer}[]
-    while !isempty(cents)
-        M = popfirst!(cents)
-        push!( reps, M)
-        orb = map( x -> mod.(x*M,dd) , stab)
-        setdiff!( cents, orb)
+    H0 = copy(H) # save a copy of the stabilizer group for later
+    # stabilizer elements are now in `H` with generator `L`
+    # print(H0)
+    
+    gens = Matrix{ZZRingElem}[]     # generators
+    ords = Int[]                    # orders
+    setdiff!( G, H)
+    
+    while !isempty(G)
+        p = popfirst!(G)
+        push!( gens, p) # add this generator to the list
+        k = 0
+        old_length = 0
+        while length(H) > old_length
+            old_length = length(H)
+            union!( H, map( h -> mod.(h*p, dd), H) )
+            k += 1
+        end
+        push!( ords, k) # order of p
+        setdiff!( G, H)  # trim elements from G
     end
-    reps
+    # we need the Smith normal form of this matrix
+    A = diagonal_matrix(ZZ.(ords))
+
+    # Fill in the relations to get the lower triangular part of A
+    for k = 1:length(ords)-1
+        p = mod.(gens[k+1]^ords[k+1],dd)
+        j = -1
+        r = zeros(Int,k)
+        g = [0 0; 0 0]
+        while !(g ∈ H0)
+            j += 1
+            r = radix( j , ords[1:k])
+            g = mod.( foldl( (x,y) -> mod.(x*y, dd) , gens[1:k].^r[1:k]) * p, dd)
+        end
+        for j=1:k
+            A[k+1,j] = r[j]
+        end
+    end
+    # Now A offers complete information about the generators and relations
+
+    # Smith normal form: U*A*V = D, where D is diagonal and D[j,j] | D[j+1,j+1].
+    D, _, V = snf_with_transform(A)
+    V = mod.(Int.(inv(V)), sizeofG) # make sure all entries are nonnegative
+    q = [ foldl( (x,y) -> mod.(x*y, dd) , gens[:].^V[j,:] ) for j=1:length(gens)]
+
+    # We only need diagonal entries > 1, so drop the rest
+    D = diagonal(D)
+    q = q[ D.>1 ]
+    D = D[ D.>1 ]
+
+    # Finally, split things further into elements with prime power order
+    g = Matrix{ZZRingElem}[]
+    n = Int[]
+    for k=1:length(D)
+        f = factor(D[k]).fac
+        pp = Int.(keys(f).^values(f))
+        P = prod(pp)
+        for p in pp
+            push!( g, mod.(q[k]^Int(P/p),F.d) )
+            push!( n, p)
+        end
+    end
+
+    # output is a list of independent generators and their orders
+    return g, n
 end
+
