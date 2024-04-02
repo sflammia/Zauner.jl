@@ -137,7 +137,7 @@ function signswitch( H::AnticNumberField, D::Integer)
     _, x = H["x"]
     f = collect(keys((factor(x^2 - D).fac))) 
     @assert length(f) == 2 # (x^2 - D) should factor completely in H
-    r = evaluate(f[1],0) # a root of x^2 – D
+    r = Hecke.evaluate(f[1],0) # a root of x^2 – D
     @assert r^2 == D # sanity check
     auts = automorphism_list(H)
     return auts[findfirst([ s(r) == -r for s in auts])]

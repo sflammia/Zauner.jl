@@ -46,7 +46,7 @@ radix(n,r) = [div(n,prod(r[k+1:end])) % r[k] for k=1:length(r)]
     k::Integer                 # L^k = I mod d
     K::AnticNumberField        # associated field K = ℚ(√n(n-4))
     a::nf_elem                 # associated field generator √D
-    u::NfOrdElem               # Zauner unit
+    u::NfOrdElem               # totally positive fundamental unit > 1
     @lazy H::AnticNumberField  # ring class field for q*Z(K)
     @lazy g::NfToNfMor         # Galois automorphism in H s.t. g(√D) = -√D
     h::Integer                 # class number, or degree of H/K
@@ -60,8 +60,8 @@ radix(n,r) = [div(n,prod(r[k+1:end])) % r[k] for k=1:length(r)]
 end
 
 
-Base.show(io::IO, ::MIME"text/plain", F::AdmissibleTuple) = print(io,"AdmissibleTuple( d = $(F.d), r = $(F.r), K = ℚ(√$(F.D)), q = $(F.q), Q = ⟨$(F.Q.a),$(F.Q.b),$(F.Q.c)⟩, h = $(F.h) )")
-Base.show(io::IO, F::AdmissibleTuple) = print(io,"AdmissibleTuple( d = $(F.d), r = $(F.r), K = ℚ(√$(F.D)), q = $(F.q), Q = ⟨$(F.Q.a),$(F.Q.b),$(F.Q.c)⟩, h = $(F.h) )")
+Base.show(io::IO, ::MIME"text/plain", F::AdmissibleTuple) = print(io,"AdmissibleTuple( d = $(F.d), ",(F.r==1 ? "" : "r = $(F.r), "),"K = ℚ(√$(F.D)), q = $(F.q), Q = ⟨$(F.Q.a),$(F.Q.b),$(F.Q.c)⟩, h = $(F.h) )")
+Base.show(io::IO, F::AdmissibleTuple) = print(io,"AdmissibleTuple( d = $(F.d), ",(F.r==1 ? "" : "r = $(F.r), "),", K = ℚ(√$(F.D)), q = $(F.q), Q = ⟨$(F.Q.a),$(F.Q.b),$(F.Q.c)⟩, h = $(F.h) )")
 
 
 @doc raw"""
@@ -376,14 +376,14 @@ function is_antiunitary_with_generator(F::AdmissibleTuple)
     end
 
     if iseven(jmin)
-        return false, [0 0; 0 0]
+        return false, ZZ.([0 0; 0 0])
     else
         test, k = is_square_with_sqrt(dmin - 3)
         if test && (fmin % (k*fQ) == 0)
             M = ZZ.( k//2*[1 0; 0 1] + [0 -1; 1 0]*qmat(F.Q).*fmin//(k*fQ) )
             return true, M
         else
-            return false, [0 0; 0 0]
+            return false, ZZ.([0 0; 0 0])
         end
     end
 

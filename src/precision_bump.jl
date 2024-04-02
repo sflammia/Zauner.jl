@@ -111,6 +111,70 @@ function _ghost_olp_func(z)
 end
 
 
+# now we do the same thing for standard overlaps
+
+function _olp_func(z,r,p,q)
+    T = eltype(z)
+    d  = 1+length(z)÷2
+    x0 = [  one(T); z[1:d-1] ] # real part of ψ
+    y0 = [ zero(T); z[d:end]]  # imag part of ψ
+    xp = circshift(x0,-p)
+    yp = circshift(y0,-p)
+    xq = circshift(x0,-q)
+    yq = circshift(y0,-q)
+    xr = circshift(x0,-p-q)
+    yr = circshift(y0,-p-q)
+    
+    # real and imaginary parts.
+    if r == 0
+        # real part
+        sum((xq .* xr + yq .* yr) .* (x0 .* xp + y0 .* yp) + 
+            (xr .* yq - xq .* yr) .* (xp .* y0 - x0 .* yp) ) - 
+        ((p==0) + (q==0))/(d+one(T)) * sum(x0.*x0 + y0.*y0)^2
+    elseif r==1
+        # imaginary part
+        if ( p==0 || q == 0 || 2p == d || 2q == d )
+            zero(T) # these values are manifestly real and don't contribute.
+        else
+            sum((xq .* yr - yq .* xr) .* (x0 .* xp + y0 .* yp) + 
+                (yr .* yq + xq .* xr) .* (xp .* y0 - x0 .* yp) )
+        end
+    end
+end
+
+
+# both real and imaginary parts on a combined index
+_olp_func(z,n::Integer) = _olp_func(z, radix(n, [2,1+(length(z)÷2),1+(length(z)÷2)])... )
+
+# list over a vector
+_olp_func(z,v::AbstractVector) = [ _olp_func(z,n) for n in v ]
+
+
+function _olp_func(z)
+    d = 1+length(z)÷2
+    #=
+        *Empirically*, the following list is sufficient to get a 
+        square and full-rank Jacobian. There is room to optimize this.
+        *No check* is done to ensure that the Jacobian is full rank, 
+        nor is any effort spent on optimizing the condition number through
+        a judicious choice of rows. However, after taking the symmetries of 
+        the function into account, and dropping the (p,q) == (0,0) equation,
+        these are the lexigraphically first independent terms in the real 
+        and imaginary parts. It is thus plausible that they should give a 
+        full-rank Jacobian, at least for generic perturbations. 
+    =#
+    v = [ [            q for q=1:d÷2];        # real part, first row
+          [        d + q for q=1:d÷2];        # real part, second row
+          [       2d + q for q=2:d÷2];        # real part, third row
+          [ d^2 +  d + q for q=1:(d-1)÷2];    # imag part, second row
+          [ d^2 + 2d + q for q=2:(1-(-1)^d)]  # imag part, one element in the third row for odd d
+        ]
+    _olp_func(z,v)
+end
+
+
+
+
 @doc raw"""
     precision_bump(ψ::Vector{Complex{BigFloat}}, prec::Integer [; base::Integer = 10, verbose::Bool = true])
 
@@ -122,13 +186,15 @@ function precision_bump(ψ::Vector{Complex{BigFloat}}, prec::Integer; base::Inte
     re_im_proj(z)
 end
 
+
+
 @doc raw"""
     precision_bump!(z::Vector{BigFloat}, prec::Integer [; base::Integer = 10, verbose::Bool = true])
 
 Attempt to use Newton's method to improve the precision of `z` to at least `prec` digits in base `base`, 
 where `z` is the real projective representation of `ψ`. 
 """
-function precision_bump!(z::Vector{BigFloat}, prec::Integer; base::Integer = 10, verbose::Bool = true)
+function precision_bump!(z::Vector{BigFloat}, prec::Integer; base::Integer = 2, verbose::Bool = true)
     @assert base > 1 "base must be an integer ≥ 2"
     if base == 2
         basename = "bits"
@@ -156,18 +222,51 @@ function precision_bump!(z::Vector{BigFloat}, prec::Integer; base::Integer = 10,
 end
 
 
+# Here is a version that allows for a function input. 
+# This can be used with _olp_func to improve the precision of a SIC
+function precision_bump!(z::Vector{BigFloat}, f::Function, prec::Integer; base::Integer = 2, verbose::Bool = true)
+    @assert base > 1 "base must be an integer ≥ 2"
+    if base == 2
+        basename = "bits"
+    elseif base == 10
+        basename = "digits"
+    else
+        basename = "digits base $base"
+    end
+    verbose && println("Increase precision...")
+    digits = floor( Int, -log( base, maximum(abs.(f(z)))) )
+    digits = maximum([digits; 32])
+    while digits < prec
+        setprecision( BigFloat, 2*digits; base = base)
+        verbose && println("Current precision is $digits $basename.")
+        # Run an iteration of Newton's method
+        if verbose
+            @time z .-= jacobian(f, z)\f(z)
+        else
+            z .-= jacobian(f, z)\f(z)
+        end
+        digits = floor( Int, -log( base, maximum(abs.(f(z)))) )
+        digits = maximum([digits; 32])
+    end
+    verbose && println("Precision of BigFloat is now ", precision(BigFloat; base = base), " $basename.")
+    verbose && println("Final precision is $digits $basename.")
+    return z
+end
+
+
+
 
 @doc raw"""
-    pow_to_elem_sym_poly( p::Vector{<:AbstractFloat}) 
+    pow_to_elem_sym_poly( p::AbstractVector) 
 
 \\
 Take an abstract vector `p` and apply the recursion relation for 
 converting power sums to elementary symmetric polynomials assuming 
-that `p[1]` is the first power sum. 
+that `p[1]` is the power sum of degree 1. 
 Output `e` is indexed so that `e[1] == 1` is the zeroth elementary 
 symmetric polynomial and `length(e) == length(p)+1`. 
 """
-function pow_to_elem_sym_poly(p::Vector{<:AbstractFloat})
+function pow_to_elem_sym_poly(p::AbstractVector)
     L = length(p)
     esp = copy(p)
     pushfirst!( esp, one(eltype(p))) # e0 = 1
@@ -175,195 +274,4 @@ function pow_to_elem_sym_poly(p::Vector{<:AbstractFloat})
         esp[k + 1] = sum( [ (-1)^(j-1)*esp[k-j+1]*p[j]/k for j=1:k] )
     end
     esp
-end
-
-
-
-@doc raw"""
-    to_quadratic( x::BigFloat) 
-
-\\
-Find quadratic integer relations for real numbers. 
-
-If only one argument is specified, then the output is a purported integer relation `y` of type `Vector{BigInt}`, meaning `v` is such that `v' * [1; x; x^2]` is approximately zero to within the precision with which `x` is specified. 
-That is, `v` are the purported coefficients of a quadratic polynomial for which `x` is a numerical (real) root. 
-
-----
-
-    to_quadratic( x::BigFloat, y::Integer)
-    to_quadratic( x::BigFloat, y::ZZRingElem)
-
-\\
-If a positive integer `y` is specified, then it looks for integer relations `v` which approximately nullify `[x; 1; sqrt(y)]`. 
-
-----
-
-    to_quadratic( x::BigFloat, K::AnticNumberField)
-
-\\
-If a number field `K` is specified, then it looks for integer relations `v` which approximately nullify `[x; 1; y]` where `y = K[1]` is the generator of `K`. 
-In this case however, the result is returned as type `nf_elem` in the number field `K`. 
-No test is done to check if `K` is a real quadratic field, so the results will be unpredictable garbage if a general field is used here.
-
-----
-
-    to_quadratic( x::BigFloat, y::nf_elem)
-
-\\
-If `K = y.parent` is the parent number field of `y`, this is equivalent to `to_quadratic( x,  K)`. 
-
-# Examples
-
-TBD...
-
-"""
-function to_quadratic( x::BigFloat)
-    prec = precision( x; base = 10)-10
-    n = ZZ(10)^prec
-    nx = ZZ(round(n*x))
-    nx2 = ZZ(round(n*x^2))
-    L = matrix_space(ZZ,3,4)
-    T = L([1 0 0 n; 0 1 0 nx; 0 0 1 nx2])
-    B = dropdims(BigInt.(lll(T)[1,:]),dims=1)[1:3]
-    B #, floor(Int,-log10(abs([1; x; x^2]'*B)))
-end
-
-function to_quadratic( x::BigFloat, y::Union{Integer,ZZRingElem})
-    @assert y > 0
-    prec = precision( x; base = 10)-10
-    n = ZZ(10)^prec
-    nx = ZZ(round(n*x))
-    ny = ZZ(round(n*sqrt(BigFloat(y))))
-    L = matrix_space(ZZ,3,4)
-    T = L([1 0 0 nx; 0 1 0 n; 0 0 1 ny])
-    B = dropdims(BigInt.(lll(T)[1,:]),dims=1)[1:3]
-    B #, floor(Int,-log10(abs([x; 1; sqrt(BigFloat(y))]'*B)))
-end
-
-function to_quadratic( x::BigFloat, K::AnticNumberField)
-    v = to_quadratic( x, ZZ(K[1]^2))
-    (v[2] + v[3]*K[1])/(-v[1])
-end
-
-to_quadratic( x::BigFloat, y::nf_elem) = to_quadratic( x, y.parent)
-
-
-
-@doc raw"""
-    guess_algebraic( x::BigFloat, n::Integer [; warn::Bool=false]) 
-
-\\
-Attempt to find an integer relation between `x^k` for `k = 0:n`. 
-If `x` is a degree-`d` algebraic number with `d ≤ n`, then given sufficient precision this algorithm should find the minimal polynomial for `x`. 
-If `p = [ x^(j-1) for j=1:n+1 ]` is the vector of the first `n+1` powers of `x`, then the output `v` is of type `Vector{BigInt}` and, if successful, is such that the dot product `p'*v` is approximately zero to within close to the input precision of `x`. 
-No guarantees are provided for the suggested relation. 
-
-If the optional keyword `warn` is set to `true`, then we throw a warning when `p'*v` does not vanish to at least `precision(x) - 2*n` bits of precision.
-
-# Examples
-The number `x` is a root of the minimal polynomial `-12 - 9x + x^3`. 
-```jldoctest
-julia> x = BigFloat(3)^(1/BigFloat(3))+BigFloat(3)^(2/BigFloat(3));
-
-julia> guess_algebraic( x, 3)
-4-element Vector{BigInt}:
- -12
-  -9
-   0
-   1
-```
-However, there is no guarantee that the "correct" integer relation is found. 
-The following degree-6 relation is correct, but is not minimal.
-```jldoctest
-julia> guess_algebraic( x, 6)
-7-element Vector{BigInt}:
- -12
- -21
-  15
-   7
-  -8
-  -2
-   1
-```
-Starting with degree 2 gives nonsensically large integers without warning. 
-```
-julia> guess_algebraic( x, 2)
-3-element Vector{BigInt}:
- -589849553474396944841650177372651089432036255660583
-  174719368381549603416539665878016040927750384288501
-   -2060986329311871092129641387934536051174286616312
-```
-"""
-function guess_algebraic( x::BigFloat, n::Integer; warn::Bool = false)
-    prec = precision(x)
-    t = ZZ(2)^prec
-    v = [ ZZ(round(t*x^k)) for k=0:n ]
-    L = matrix_space(ZZ,n+1,n+2)
-    T = L([ ZZ(j==k) + (k==n+1)*v[j+1] for j=0:n, k=0:n+1])
-    B = dropdims(BigInt.(lll_with_removal(T,t)[2][1,:]),dims=1)[1:n+1]
-    
-    if warn && -log2( abs([ x^(j-1) for j=1:n+1 ]'*B) ) - prec + 2n < 0
-        @warn "Precision of dot product is low; integer relation may be spurious."
-    end
-    
-    return B
-end
-
-
-# algebraic of degree n over a quadratic base field with known discriminant √D
-function guess_algebraic_over_quadratic( x::BigFloat, n::Integer, D::Integer; warn::Bool = false)
-    prec = precision(x)
-    t = ZZ(2)^prec
-    s = sqrt(BigFloat(D))
-    v = [ ZZ(round(t*s^j*x^k)) for k=0:n, j=0:1][1:end-1]
-    L = matrix_space(ZZ,2n+1,2n+2)
-    T = L([ ZZ(j==k) + (k==2n+1)*v[j+1] for j=0:2n, k=0:2n+1])
-    B = dropdims(BigInt.(lll_with_removal(T,t)[2][1,:]),dims=1)[1:2n+1]
-    
-    if warn && -log2( abs([ x^(j-1) for j=1:n+1 ]'*B) ) - prec + 2n < 0
-        @warn "Precision of dot product is low; integer relation may be spurious."
-    end
-    
-    return B
-end
-
-
-
-# find an integer relation between the elements of x
-function guess_int_null_vec( x::Vector{BigFloat}; warn::Bool = false)
-    prec = precision(x[1])
-    t = ZZ(2)^prec
-    n = length(x)
-    v = ZZ.(round.(t .* x))
-    L = matrix_space(ZZ,n,n+1)
-    T = L([ ZZ(j==k) + (k==n+1)*v[j] for j=1:n, k=1:n+1])
-    B = dropdims(BigInt.(lll_with_removal(T,t)[2][1,:]),dims=1)[1:n]
-    
-    if warn && -log2( abs([ x^(j-1) for j=1:n ]'*B) ) - prec + 2n < 0
-        @warn "Precision of dot product is low; integer relation may be spurious."
-    end
-    
-    return B
-end
-
-
-
-# Round into the class field H and then Galois conjugate
-function round_conj( F::AdmissibleTuple, V::Vector{BigFloat})
-    hb = lll(maximal_order(F.H)).basis_nf # find a good basis
-    eH = real_embeddings(F.H)[1] # need to pick a real embedding
-    prec = precision(V[1])
-    fH = x -> BigFloat.(real.(evaluation_function( eH, prec).(x)))
-    primalbasis = fH.(hb)
-    dualbasis = fH.(F.g.(hb))
-    W = copy(V)
-
-    k = 1
-    for v in V
-        t = Zauner.guess_int_null_vec( [ primalbasis; v] )
-        x = -t[1:end-1]/t[end]
-        W[k] = dot( dualbasis, x )
-        k += 1
-    end
-    W
 end
