@@ -235,7 +235,7 @@ function precision_bump!(z::Vector{BigFloat}, f::Function, prec::Integer; base::
     end
     verbose && println("Increase precision...")
     digits = floor( Int, -log( base, maximum(abs.(f(z)))) )
-    digits = maximum([digits; 32])
+    digits = maximum([digits; 32]) # minimum precision is single-float, hard-coded
     while digits < prec
         setprecision( BigFloat, 2*digits; base = base)
         verbose && println("Current precision is $digits $basename.")
@@ -246,7 +246,7 @@ function precision_bump!(z::Vector{BigFloat}, f::Function, prec::Integer; base::
             z .-= jacobian(f, z)\f(z)
         end
         digits = floor( Int, -log( base, maximum(abs.(f(z)))) )
-        digits = maximum([digits; 32])
+        digits = maximum([digits; 32]) # minimum precision is single-float
     end
     verbose && println("Precision of BigFloat is now ", precision(BigFloat; base = base), " $basename.")
     verbose && println("Final precision is $digits $basename.")
