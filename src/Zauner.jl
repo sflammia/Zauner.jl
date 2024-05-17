@@ -1,8 +1,8 @@
 module Zauner
 
-using LazilyInitializedFields
 using Reexport, Documenter#, LaTeXStrings
 @reexport using Hecke
+using LazilyInitializedFields
 using LinearAlgebra
 using SpecialMatrices: Vandermonde
 using AMRVW: roots

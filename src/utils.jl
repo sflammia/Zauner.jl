@@ -440,3 +440,10 @@ function _sic_validation_norm(z::Vector{BigFloat})
     norm( ov[2:end] .- one(BigFloat)/(d+1) )
 end
 
+function sic_overlap_test(ψ::AbstractVector)
+    d = length(ψ)
+    ov = [abs2(ψ'*WH(p,q,ψ)) for p=0:d-1, q=0:d-1]
+    
+    # quantify the deviation from equiangularity
+    maximum( abs.(ov[2:end] .- one(BigFloat)/(d+1)) )
+end

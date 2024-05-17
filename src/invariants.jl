@@ -75,7 +75,7 @@ AdmissibleTuple( d = 5, r = 1, K = ℚ(√12), Q = ⟨1,-4,1⟩ )
 julia> necromancy(F)
 ```
 """
-function necromancy(F::AdmissibleTuple; max_prec::Int = 2^23, verbose::Bool = false)
+function necromancy(F::AdmissibleTuple; max_prec::Int = 2^23, overlap_precision_max_tol::Float64 = 1e-6, overlap_target_prec::Int = 30, base::Int = 2, verbose::Bool = false)
     # Ensure that we have initialized the class field for F
     ghostclassfield(F)
     signswitch(F)
@@ -92,6 +92,7 @@ function necromancy(F::AdmissibleTuple; max_prec::Int = 2^23, verbose::Bool = fa
     setprecision(BigFloat, prec; base = 2)
     verbose && println("Computing the ghost.")
     ψ = (verbose ? (@time ghost(F)) : ghost(F) )
+    x = zeros(Complex{Float64},F.d)
 
     # new target precision.
     max_prec < 128 && error("max_prec should be at least 128 bits.")
@@ -185,7 +186,9 @@ function necromancy(F::AdmissibleTuple; max_prec::Int = 2^23, verbose::Bool = fa
                 setprecision( BigFloat, 256; base=2)
                 x = complex.( BigFloat.(real.(x)), BigFloat.(imag.(x)) )
                 if all(abs.(x[:]) .≈ 1.0)
-                    return x
+                    # return x # this will just return the overlap phases
+                    verbose && println("All SIC overlaps are phases!")
+                    break # break the while loop
                 else
                     verbose && println("Some outputs aren't complex phases.\n    Doubling precision.")
                 end
@@ -200,7 +203,23 @@ function necromancy(F::AdmissibleTuple; max_prec::Int = 2^23, verbose::Bool = fa
         # print("\n")
     end # while
 
-    
+    # Now try every shift in the Galois group until one of them gives a SIC
+    verbose && println("Now searching through Galois shifts using matrix completion.")
+    for k = 0:n-1
+        ψ = matrix_completion(circshift(x,radix(k,ords)),F)
+        sot = sic_overlap_test(ψ)
+        if sot < overlap_precision_max_tol
+            verbose && println("Fiducial vector found with all overlaps correct to ≤ $sot.")
+            break
+        end
+    end
+
+    verbose && println("Increasing precision...")
+    # need to implement precision bumping for SICs. 
+    z = re_im_proj(Complex{BigFloat}.(ψ))
+    precision_bump!(z, _olp_func, overlap_target_prec; base = base, verbose = verbose)
+    ψ = re_im_proj(z)
+    return ψ/sqrt(ψ'ψ)
 end
 
 
