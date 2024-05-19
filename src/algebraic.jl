@@ -50,7 +50,7 @@ conductor(Q::QuadBin) = conductor(discriminant(Q))
 @doc raw"""
     pell(D)
     pell(Q::QuadBin)
-    pell(Zω::NfOrd)
+    pell(Zω::AbsSimpleNumFieldOrder)
 
 Finds the least unit > 1 having norm 1 for the discriminant `D`, 
 for the binary quadratic form with discriminant `D`, 
@@ -65,7 +65,7 @@ function pell(D)
     Zω = Order([one(ω), ω])
     pell(Zω)
 end
-function pell(Zω::NfOrd)
+function pell(Zω::AbsSimpleNumFieldOrder)
     @req degree(Zω)==2 "Order must have degree 2."
     
     Ug, fu = unit_group(Zω)
@@ -82,7 +82,7 @@ pell(Q::QuadBin) = pell(discriminant(Q))
 @doc raw"""
     pellreg(D)
     pellreg(Q::QuadBin)
-    pellreg(Zω::NfOrd)
+    pellreg(Zω::AbsSimpleNumFieldOrder)
 
 Finds the least unit > 1 having norm 1 for the discriminant `D`, 
 for the binary quadratic form with discriminant `D`, 
@@ -98,7 +98,7 @@ function pellreg(D)
     Zω = Order([one(ω), ω])
     pellreg(Zω)
 end
-function pellreg(Zω::NfOrd)
+function pellreg(Zω::AbsSimpleNumFieldOrder)
     @req degree(Zω)==2 "Order must have degree 2."
     
     Ug, fu = unit_group(Zω)

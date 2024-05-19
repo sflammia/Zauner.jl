@@ -35,28 +35,28 @@ radix(n,r) = [div(n,prod(r[k+1:end])) % r[k] for k=1:length(r)]
 
 
 @lazy struct AdmissibleTuple
-    d::Integer                 # dimension
-    r::Integer                 # rank
-    n::Integer                 # (d^2-1)/(r*(d-r))
-    D::Integer                 # fundamental discriminant of K
-    f::Integer                 # sequence of conductors f_j
-    q::Integer                 # conductor of Q
-    j::Integer                 # grid vertical
-    m::Integer                 # grid horozontal
-    k::Integer                 # L^k = I mod d
-    K::AnticNumberField        # associated field K = ℚ(√n(n-4))
-    a::nf_elem                 # associated field generator √D
-    u::NfOrdElem               # totally positive fundamental unit > 1
-    @lazy H::AnticNumberField  # ring class field for q*Z(K)
-    @lazy g::NfToNfMor         # Galois automorphism in H s.t. g(√D) = -√D
-    h::Integer                 # class number, or degree of H/K
-    G::Vector{Integer}         # orders of class group generators
-    c::Vector{QuadBin}         # basis of generator Q's for the class group
-    Q::QuadBin                 # integral binary quadratic form
-    L::Matrix{ZZRingElem}      # S(Q) generator
-    A::Matrix{ZZRingElem}      # S_d(Q) generator
-    x::BigFloat                # positive root of Q
-    R::BigFloat                # log of u
+    d::Integer                     # dimension
+    r::Integer                     # rank
+    n::Integer                     # (d^2-1)/(r*(d-r))
+    D::Integer                     # fundamental discriminant of K
+    f::Integer                     # sequence of conductors f_j
+    q::Integer                     # conductor of Q
+    j::Integer                     # grid vertical
+    m::Integer                     # grid horozontal
+    k::Integer                     # L^k = I mod d
+    K::AbsSimpleNumField           # associated field K = ℚ(√n(n-4))
+    a::nf_elem                     # associated field generator √D
+    u::AbsSimpleNumFieldOrderElem  # totally positive fundamental unit > 1
+    @lazy H::AbsSimpleNumField     # ring class field for q*Z(K)
+    @lazy g::NumFieldHom           # Galois automorphism in H s.t. g(√D) = -√D
+    h::Integer                     # class number, or degree of H/K
+    G::Vector{Integer}             # orders of class group generators
+    c::Vector{QuadBin}             # basis of generator Q's for the class group
+    Q::QuadBin                     # integral binary quadratic form
+    L::Matrix{ZZRingElem}          # S(Q) generator
+    A::Matrix{ZZRingElem}          # S_d(Q) generator
+    x::BigFloat                    # positive root of Q
+    R::BigFloat                    # log of u
 end
 
 
@@ -83,28 +83,28 @@ In all three cases, if the optional argument `Q` is left unspecified, then it de
 The defined (and precomputed) fields in an `AdmissibleTuple` are given by:
 
 ```
-    d ::Integer             # dimension
-    r ::Integer             # rank
-    n ::Integer             # (d^2-1)/(r*(d-r))
-    K ::AnticNumberField    # associated field K = ℚ(√n(n-4))
-    D ::Integer             # fundamental discriminant of K
-    f ::Integer             # conductor, where n*(n-4) = D*f^2
-    q ::Integer             # conductor of Q
-    j ::Integer             # grid vertical position
-    m ::Integer             # grid horozontal position
-    a ::nf_elem             # associated field generator √D
-    u ::NfOrdElem           # Zauner unit
-    H ::AnticNumberField    # (lazy) ring class field for q*Z(K)
-    g ::NfToNfMor           # (lazy) Galois automorphism in H s.t. g(√D) = -√D
-    h ::Integer             # class number, or degree of H/K
-    G ::Vector{Integer}     # orders of class group generators
-    c ::Vector{QuadBin}     # basis of generator Q's for the class group
-    Q ::QuadBin             # form
-    L ::Matrix{ZZRingElem}  # S(Q) generator
-    k ::Integer             # L^k = I mod d
-    A ::Matrix{ZZRingElem}  # S_d(Q) generator
-    x ::BigFloat            # positive root of Q
-    R ::BigFloat            # log of u
+    d ::Integer                     # dimension
+    r ::Integer                     # rank
+    n ::Integer                     # (d^2-1)/(r*(d-r))
+    K ::AbsSimpleNumField           # associated field K = ℚ(√n(n-4))
+    D ::Integer                     # fundamental discriminant of K
+    f ::Integer                     # conductor, where n*(n-4) = D*f^2
+    q ::Integer                     # conductor of Q
+    j ::Integer                     # grid vertical position
+    m ::Integer                     # grid horozontal position
+    a ::nf_elem                     # associated field generator √D
+    u ::AbsSimpleNumFieldOrderElem  # Zauner unit
+    H ::AbsSimpleNumField           # (lazy) ring class field for q*Z(K)
+    g ::NumFieldAut                 # (lazy) Galois automorphism in H s.t. g(√D) = -√D
+    h ::Integer                     # class number, or degree of H/K
+    G ::Vector{Integer}             # orders of class group generators
+    c ::Vector{QuadBin}             # basis of generator Q's for the class group
+    Q ::QuadBin                     # form
+    L ::Matrix{ZZRingElem}          # S(Q) generator
+    k ::Integer                     # L^k = I mod d
+    A ::Matrix{ZZRingElem}          # S_d(Q) generator
+    x ::BigFloat                    # positive root of Q
+    R ::BigFloat                    # log of u
 ```
 
 \\

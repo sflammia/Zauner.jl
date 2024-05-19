@@ -88,7 +88,7 @@ end
 
 
 @doc raw"""
-    stabilizer(Q::QuadBin, u::NfOrdElem)
+    stabilizer(Q::QuadBin, u::AbsSimpleNumFieldOrderElem)
     stabilizer(Q::QuadBin)
 
 
@@ -96,7 +96,7 @@ Compute the stabilizer of `Q` in ``\mathrm{SL}(2,\mathbb{Z})``, that is, compute
 The first input `Q` is a binary quadratic form and the second input `u` is a fundamental totally positive unit with norm 1 in the ring of integers ``\mathbb{Z}[\omega]``, where ``\omega = \bigl(\Delta\bmod 4 + \sqrt{\Delta}\bigr)/2``. 
 If the second argument is not specified, the unit is computed.
 """
-function stabilizer(Q::QuadBin,u::NfOrdElem)
+function stabilizer(Q::QuadBin,u::AbsSimpleNumFieldOrderElem)
     x = trace(u)//2
     y = coordinates(u)[2]
     ZZ.(x.*[1 0; 0 1] + y.*[0 -1; 1 0]*qmat(Q))

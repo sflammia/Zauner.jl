@@ -16,7 +16,7 @@ end
 
 
 # Convert an ideal to the associated quadratic form
-function QuadBin(x::NfOrdIdl) 
+function QuadBin(x::AbsSimpleNumFieldOrderIdeal) 
     x1, x2 = basis(x)
     n1, n2 = norm(x1), norm(x2)
     a, b, c = ZZ.( (n1, n1*x2//x1 + n2*x1//x2, n2) .//norm(x) )
