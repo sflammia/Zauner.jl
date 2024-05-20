@@ -4,7 +4,6 @@
 
 # Zauner
 
-Zauner.jl / Zauner.gp:
+Zauner.jl:
 
-Julia and PARI/GP packages for computing the conjectural properties of SICs and related objects.
-
+Julia package for computing the conjectural properties of SICs and related objects.
