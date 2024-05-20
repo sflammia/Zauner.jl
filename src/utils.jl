@@ -45,7 +45,7 @@ radix(n,r) = [div(n,prod(r[k+1:end])) % r[k] for k=1:length(r)]
     m::Integer                     # grid horozontal
     k::Integer                     # L^k = I mod d
     K::AbsSimpleNumField           # associated field K = ℚ(√n(n-4))
-    a::nf_elem                     # associated field generator √D
+    a::AbsSimpleNumFieldElem       # associated field generator √D
     u::AbsSimpleNumFieldOrderElem  # totally positive fundamental unit > 1
     @lazy H::AbsSimpleNumField     # ring class field for q*Z(K)
     @lazy g::NumFieldHom           # Galois automorphism in H s.t. g(√D) = -√D
@@ -92,7 +92,7 @@ The defined (and precomputed) fields in an `AdmissibleTuple` are given by:
     q ::Integer                     # conductor of Q
     j ::Integer                     # grid vertical position
     m ::Integer                     # grid horozontal position
-    a ::nf_elem                     # associated field generator √D
+    a ::AbsSimpleNumFieldElem       # associated field generator √D
     u ::AbsSimpleNumFieldOrderElem  # Zauner unit
     H ::AbsSimpleNumField           # (lazy) ring class field for q*Z(K)
     g ::NumFieldAut                 # (lazy) Galois automorphism in H s.t. g(√D) = -√D

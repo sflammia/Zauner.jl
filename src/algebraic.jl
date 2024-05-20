@@ -114,12 +114,12 @@ pellreg(Q::QuadBin) = pellreg(discriminant(Q))
 
 # Note: no unit tests yet for this function
 @doc raw"""
-    ghostclassfield( K::AnticNumberField, q)
+    ghostclassfield( K::AbsSimpleNumField, q)
 
 Compute the ring class field for the order q*Z(K) where Z(K) is the maximal order in K. 
-The output is an `AnticNumberField`, and so is an absolute field rather than a relative extension. 
+The output is an `AbsSimpleNumField`, and so is an absolute field rather than a relative extension. 
 """
-function ghostclassfield( K::AnticNumberField, q::Integer)
+function ghostclassfield( K::AbsSimpleNumField, q::Integer)
     # @assert degree(K) == 2
     rcf = Hecke.ring_class_field( Order(K, q*basis(maximal_order(K))))
     simplify(absolute_simple_field(number_field(rcf))[1])[1]
@@ -129,11 +129,11 @@ ghostclassfield( F::AdmissibleTuple ) = ( (@isinit F.H) ? F.H : (@init! F.H = gh
 
 # Note: no unit tests yet for this function
 @doc raw"""
-    signswitch( H::AnticNumberField, D::Integer)
+    signswitch( H::AbsSimpleNumField, D::Integer)
 
 If `H` is the (absolute) ring class field for a ghost with fundamental discriminant `D` with some conductor, then this finds a sign-switching Galois automorphism `g` on `H`, that is `g(√D) = -√D`. 
 """
-function signswitch( H::AnticNumberField, D::Integer)
+function signswitch( H::AbsSimpleNumField, D::Integer)
     _, x = H["x"]
     f = collect(keys((factor(x^2 - D).fac))) 
     @assert length(f) == 2 # (x^2 - D) should factor completely in H
