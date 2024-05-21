@@ -35,14 +35,14 @@ jobs:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
       # Cache Julia packages
-        uses: actions/cache@v2
+      - uses: actions/cache@v2
         with:
           path: ~/.julia/compiled
           key: ${{ runner.os }}-julia-${{ matrix.version }}-compiled-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}
           restore-keys: |
             ${{ runner.os }}-julia-${{ matrix.version }}-compiled-
       # Cache Julia artifacts
-        uses: actions/cache@v2
+      - uses: actions/cache@v2
         with:
           path: ~/.julia/artifacts
           key: ${{ runner.os }}-julia-${{ matrix.version }}-artifacts-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}
