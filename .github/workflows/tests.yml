@@ -35,7 +35,6 @@ jobs:
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
-      
       - name: Cache Julia packages
         uses: actions/cache@v2
         with:
@@ -43,7 +42,6 @@ jobs:
           key: ${{ runner.os }}-julia-${{ matrix.version }}-compiled-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}
           restore-keys: |
             ${{ runner.os }}-julia-${{ matrix.version }}-compiled-
-      
       - name: Cache Julia artifacts
         uses: actions/cache@v2
         with:
@@ -51,13 +49,10 @@ jobs:
           key: ${{ runner.os }}-julia-${{ matrix.version }}-artifacts-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}
           restore-keys: |
             ${{ runner.os }}-julia-${{ matrix.version }}-artifacts-
-      
       - name: Build package
       - uses: julia-actions/julia-buildpkg@latest
-
       - name: Run tests
       - uses: julia-actions/julia-runtest@latest
-
       - name: Upload coverage to Codecov
       - uses: julia-actions/julia-uploadcodecov@latest
         env:
