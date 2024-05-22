@@ -1,6 +1,6 @@
 module Zauner
 
-using Reexport, Documenter#, LaTeXStrings
+using Reexport, Documenter
 @reexport using Hecke
 using LazilyInitializedFields
 using LinearAlgebra
