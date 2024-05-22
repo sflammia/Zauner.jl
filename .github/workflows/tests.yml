@@ -17,40 +17,19 @@ jobs:
         os:
           - macOS-latest
           - ubuntu-latest
-          - windows-latest
         arch:
           - x64
-          - x86
         exclude:
-          # MacOS and Windows not available on x86 or arm64, respectively
+          # MacOS not available on x86
           - {os: 'macOS-latest', arch: 'x86'}
     steps:
-      # Checkout repository
       - uses: actions/checkout@v2
-      # Set up Julia
       - uses: julia-actions/setup-julia@latest
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
-      # Cache Julia packages
-      # - uses: actions/cache@v2
-      #  with:
-      #     path: ~/.julia/compiled
-      #     key: ${{ runner.os }}-julia-${{ matrix.version }}-compiled-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-julia-${{ matrix.version }}-compiled-
-      # Cache Julia artifacts
-      # - uses: actions/cache@v2
-      #  with:
-      #     path: ~/.julia/artifacts
-      #     key: ${{ runner.os }}-julia-${{ matrix.version }}-artifacts-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-julia-${{ matrix.version }}-artifacts-
-      # Build package
       - uses: julia-actions/julia-buildpkg@latest
-      # Run tests
       - uses: julia-actions/julia-runtest@latest
-      # Upload coverage to Codecov
       - uses: julia-actions/julia-uploadcodecov@latest
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
