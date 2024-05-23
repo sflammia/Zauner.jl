@@ -68,6 +68,9 @@ Base.show(io::IO, F::AdmissibleTuple) = print(io,"AdmissibleTuple( d = $(F.d), "
     AdmissibleTuple( d::Integer [, Q::QuadBin])
     AdmissibleTuple( d::Integer, r::Integer [, Q::QuadBin])
     AdmissibleTuple( D::Integer, j::Integer, m::Integer [, Q::QuadBin])
+    
+    AdmissibleTuple( dQ::Tuple{Integer, QuadBin{ZZRingElem}})
+    AdmissibleTuple( drQ::Tuple{Integer, Integer, QuadBin{ZZRingElem}})
 
 \\
 Data type for the arithmetic data defining a set of ghost overlaps. \\
@@ -78,6 +81,9 @@ The syntax that takes three integers `(D,j,m)` requires that `D` is a *fundament
 \\
 
 In all three cases, if the optional argument `Q` is left unspecified, then it defaults to a principal form given by `Q = QuadBin( 1, 2-n, 1)`, where `n` is the integer `(d^2-1)/(r(d-r))`, since this has `disc(Q) = n(n-4)`. \\
+\\
+
+The final way to specify an input is as a tuple `(d,Q)` or `(d,r,Q)`.\\
 \\
 
 The defined (and precomputed) fields in an `AdmissibleTuple` are given by:
@@ -159,6 +165,9 @@ function AdmissibleTuple(d::Integer,r::Integer)
 end
 
 AdmissibleTuple(d::Integer,Q::QuadBin) = AdmissibleTuple(d,1,Q)
+
+AdmissibleTuple(dQ::Tuple{Integer, QuadBin{ZZRingElem}}) = AdmissibleTuple(dQ...)
+AdmissibleTuple(drQ::Tuple{Integer, Integer, QuadBin{ZZRingElem}}) = AdmissibleTuple(dQ...)
 
 function AdmissibleTuple(d::Integer,r::Integer,Q::QuadBin)
     @req 0 < 2r < (d-1) "r must satisfy 0 < 2r < d-1." 
