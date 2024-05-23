@@ -279,3 +279,7 @@ Manifest.toml
 # checkpoints
 .ipynb_checkpoints/
 .DS_Store
+
+# Julia
+/docs/Manifest.toml
+/test/Manifest.toml
