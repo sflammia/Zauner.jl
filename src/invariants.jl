@@ -45,21 +45,6 @@ end
 
 
 @doc raw"""
-    SIC_invariants(a,b,s,F)
-
-\\
-Compute numerical approximations to the SIC invariants from the ghost invariants.
-"""
-function SIC_invariants(a::Vector{Matrix{BigFloat}},
-                        b::Vector{Vector{BigFloat}},
-                        s::Vector{Vector{BigFloat}},
-                        F::AdmissibleTuple)
-    nothing
-end
-
-
-
-@doc raw"""
     necromancy( F::AdmissibleTuple [; max_prec = 2^23, verbose = false])
 
 \\
