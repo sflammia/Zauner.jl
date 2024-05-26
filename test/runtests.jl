@@ -44,10 +44,10 @@ TODO list:
         @test stabilizer(q[k]) == L[k]
     end
     
-    @test WH(0,1,3,BigFloat)[2,2] ≈ (-1+sqrt(3)*im)/2
-    @test WH(0,1,3)[3,3] ≈ (-1-sqrt(3)*im)/2
-    @test WH(1,0,3) == [ 0  0  1; 1  0  0; 0  1  0]
-    @test WH([1; 0],3) == [ 0  0  1; 1  0  0; 0  1  0]
+    @test wh(0,1,3,BigFloat)[2,2] ≈ (-1+sqrt(3)*im)/2
+    @test wh(0,1,3)[3,3] ≈ (-1-sqrt(3)*im)/2
+    @test wh(1,0,3) == [ 0  0  1; 1  0  0; 0  1  0]
+    @test wh([1; 0],3) == [ 0  0  1; 1  0  0; 0  1  0]
 end # end algebraic testset
 
 
@@ -313,7 +313,7 @@ end # utils testset
             F = AdmissibleTuple(d[k],q[k])
             ψ = ghost(F)
             ϕ = circshift(reverse(ψ),1)
-            ov = [ϕ'*WH([p,q],ψ)*ϕ'*WH(-[p,q],ψ) for p=0:F.d-1, q=0:F.d-1]./(ϕ'ψ)^2
+            ov = [ϕ'*wh([p,q],ψ)*ϕ'*wh(-[p,q],ψ) for p=0:F.d-1, q=0:F.d-1]./(ϕ'ψ)^2
             
             # check reality
             @test all(ov .≈ real.(ov))
