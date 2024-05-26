@@ -402,7 +402,7 @@ function _ghost_validation_norm(z::Vector{BigFloat})
     d = 1+length(z)÷2
     ψ = re_im_proj(z)
     ϕ = circshift(reverse(ψ),1)
-    ov = [ϕ'*WH(p,q,ψ)*ϕ'*WH(-p,-q,ψ) for p=0:d-1, q=0:d-1]./(ϕ'ψ)^2
+    ov = [ϕ'*wh(p,q,ψ)*ϕ'*wh(-p,-q,ψ) for p=0:d-1, q=0:d-1]./(ϕ'ψ)^2
     
     # check approximate reality and normalization
     @assert all(ov .≈ real.(ov))
@@ -439,7 +439,7 @@ function _sic_validation_norm(z::Vector{BigFloat})
     d = 1+length(z)÷2
     ψ = re_im_proj(z)
     ψ ./ sqrt(ψ'ψ)
-    ov = [abs2(ψ'*WH(p,q,ψ)) for p=0:d-1, q=0:d-1]
+    ov = [abs2(ψ'*wh(p,q,ψ)) for p=0:d-1, q=0:d-1]
     
     # quantify the deviation from equiangularity
     norm( ov[2:end] .- one(BigFloat)/(d+1) )
@@ -447,7 +447,7 @@ end
 
 function sic_overlap_test(ψ::AbstractVector)
     d = length(ψ)
-    ov = [abs2(ψ'*WH(p,q,ψ)) for p=0:d-1, q=0:d-1]
+    ov = [abs2(ψ'*wh(p,q,ψ)) for p=0:d-1, q=0:d-1]
     
     # quantify the deviation from equiangularity
     maximum( abs.(ov[2:end] .- one(BigFloat)/(d+1)) )
