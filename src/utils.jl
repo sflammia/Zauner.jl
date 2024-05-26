@@ -19,6 +19,7 @@ julia> radix(5,[2; 2; 2; 2; 2])
  1
  0
  1
+
 julia> radix(86400,[7; 24; 60; 60])
 4-element Vector{Int64}:
  1
@@ -64,7 +65,7 @@ Base.show(io::IO, ::MIME"text/plain", F::AdmissibleTuple) = print(io,"Admissible
 Base.show(io::IO, F::AdmissibleTuple) = print(io,"AdmissibleTuple( d = $(F.d), ",(F.r==1 ? "" : "r = $(F.r), "),", K = ℚ(√$(F.D)), q = $(F.q), Q = ⟨$(F.Q.a),$(F.Q.b),$(F.Q.c)⟩, h = $(F.h) )")
 
 
-@doc raw"""
+@doc """
     AdmissibleTuple( d::Integer [, Q::QuadBin])
     AdmissibleTuple( d::Integer, r::Integer [, Q::QuadBin])
     AdmissibleTuple( D::Integer, j::Integer, m::Integer [, Q::QuadBin])
@@ -72,19 +73,14 @@ Base.show(io::IO, F::AdmissibleTuple) = print(io,"AdmissibleTuple( d = $(F.d), "
     AdmissibleTuple( dQ::Tuple{Integer, QuadBin{ZZRingElem}})
     AdmissibleTuple( drQ::Tuple{Integer, Integer, QuadBin{ZZRingElem}})
 
-\\
-Data type for the arithmetic data defining a set of ghost overlaps. \\
-\\
+Data type for the arithmetic data defining a set of ghost overlaps.
 
 If only one integer is given, it is interpreted as a dimension and assumed that the rank is `r = 1`. 
-The syntax that takes three integers `(D,j,m)` requires that `D` is a *fundamental* discriminant for a real quadratic field. \\
-\\
+The syntax that takes three integers `(D,j,m)` requires that `D` is a *fundamental* discriminant for a real quadratic field.
 
-In all three cases, if the optional argument `Q` is left unspecified, then it defaults to a principal form given by `Q = QuadBin( 1, 2-n, 1)`, where `n` is the integer `(d^2-1)/(r(d-r))`, since this has `disc(Q) = n(n-4)`. \\
-\\
+In all three cases, if the optional argument `Q` is left unspecified, then it defaults to a principal form given by `Q = QuadBin( 1, 2-n, 1)`, where `n` is the integer `(d^2-1)/(r(d-r))`, since this has ``\\mathrm{disc}(Q) = n(n-4)``. 
 
-The final way to specify an input is as a tuple `(d,Q)` or `(d,r,Q)`.\\
-\\
+The final way to specify an input is as a tuple `(d,Q)` or `(d,r,Q)`.
 
 The defined (and precomputed) fields in an `AdmissibleTuple` are given by:
 
@@ -129,7 +125,7 @@ julia> AdmissibleTuple(5)
 AdmissibleTuple( d = 5, r = 1, K = ℚ(√12), Q = ⟨1,-4,1⟩ )
 
 julia> AdmissibleTuple(11,3)
-AdmissibleTuple( d = 11, r = 3, K = ℚ(√5), Q = ⟨1,-10,1⟩ )
+AdmissibleTuple( d = 11, r = 3, K = ℚ(√5), q = 1, Q = ⟨1,-3,1⟩, h = 1 )
 
 julia> AdmissibleTuple(5,1,1)
 AdmissibleTuple( d = 4, r = 1, K = ℚ(√5), Q = ⟨1,-3,1⟩ )

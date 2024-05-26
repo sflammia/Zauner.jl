@@ -86,7 +86,7 @@ Compute the elements of ``GL(2,ℤ/d')`` that are in the centralizer of the stab
 First compute a ghost fiducial at 128-bit precision.
 ```jldoctest
 julia> F = AdmissibleTuple(5)
-AdmissibleTuple( d = 5, r = 1, K = ℚ(√12), Q = ⟨1,-4,1⟩ )
+AdmissibleTuple( d = 5, K = ℚ(√12), q = 1, Q = ⟨1,-4,1⟩, h = 1 )
 
 julia> centralizer_elements(F)
 24-element Vector{Matrix{Integer}}:
@@ -154,8 +154,13 @@ The elements are ordered so that the identity element is first.
 First compute a ghost fiducial at 128-bit precision.
 ```jldoctest
 julia> F = AdmissibleTuple(7)
+AdmissibleTuple( d = 7, K = ℚ(√8), q = 2, Q = ⟨1,-6,1⟩, h = 1 )
 
 julia> stabilizer_elements(F)
+3-element Vector{Matrix{ZZRingElem}}:
+ [1 0; 0 1]
+ [6 6; 1 0]
+ [0 1; 6 6]
 ```
 """
 function stabilizer_elements(F::AdmissibleTuple)
@@ -191,13 +196,13 @@ The factors are canonical up to permutation (though the generators are not).
 # Examples
 ```jldoctest
 julia> F = AdmissibleTuple( 7, QuadBin(2,-4,1))
-AdmissibleTuple( d = 7, r = 1, K = ℚ(√8), q = 1, Q = ⟨2,-4,1⟩, h = 1 )
+AdmissibleTuple( d = 7, K = ℚ(√8), q = 1, Q = ⟨2,-4,1⟩, h = 1 )
 
 julia> g, n = galois_normal_form(F)
 (Matrix{ZZRingElem}[[6 0; 0 6], [2 0; 0 2]], [2, 3])
 
 julia> F = AdmissibleTuple(9)
-AdmissibleTuple( d = 9, r = 1, K = ℚ(√60), q = 1, Q = ⟨1,-8,1⟩, h = 2 )
+AdmissibleTuple( d = 9, K = ℚ(√60), q = 1, Q = ⟨1,-8,1⟩, h = 2 )
 
 julia> g, n = galois_normal_form(F)
 (Matrix{ZZRingElem}[[8 5; 4 3], [8 0; 0 8], [7 0; 0 7]], [3, 2, 3])
