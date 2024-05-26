@@ -112,8 +112,8 @@ function necromancy(F::AdmissibleTuple; max_prec::Int = 2^23, overlap_precision_
     
         # compute the ghost overlaps
         verbose && println("Computing the high-precision ghost overlaps.")
-        K = ( verbose ? (@time [ real(ϕ'WH(p,ψ)) for p in porb]) : 
-                [ real(ϕ'WH(p,ψ)) for p in porb] )
+        K = ( verbose ? (@time [ real(ϕ'wh(p,ψ)) for p in porb]) : 
+                [ real(ϕ'wh(p,ψ)) for p in porb] )
     
         # compute the ghost invariants
         verbose && println("Computing the ghost invariants.")

@@ -39,7 +39,7 @@ function matrix_completion( nu::AbstractArray, F::AdmissibleTuple;
     for m in [ radix(k+shift,ords) for k=0:prod(ords)-1 ]
         for s in stab
             nextp = Integer.(mod.( s*prod(gens.^m)*p0, dd))
-            push!( cons, tr(WH(-nextp,F.d)*X) == gnu[(1 .+ m)...])
+            push!( cons, tr(wh(-nextp,F.d)*X) == gnu[(1 .+ m)...])
         end
     end
     opt = Convex.MOI.OptimizerWithAttributes( 
@@ -58,7 +58,7 @@ function matrix_completion( nu::AbstractArray, F::AdmissibleTuple;
 
     # if `test`, run a brute-force test of SIC overlap property
     if test
-        sictest = maximum(abs.([ abs(tr(ψ'*WH(radix(p,[F.d;F.d]),ψ))) for p = 1:F.d^2-1 ] .- 1/sqrt(F.d+1)))
+        sictest = maximum(abs.([ abs(tr(ψ'*wh(radix(p,[F.d;F.d]),ψ))) for p = 1:F.d^2-1 ] .- 1/sqrt(F.d+1)))
         verbose && println("Deviation of overlaps = $sictest")
     end
     return ψ

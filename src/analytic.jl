@@ -113,9 +113,9 @@ function _general_ghost(F::AdmissibleTuple)
     M = nu(F)/(sqrt(BigFloat(F.n))*BigFloat(F.d))
     G = zeros(Complex{BigFloat},F.d,F.d)
     for p in [radix(pp,[F.d,F.d]) for pp=1:(F.d^2-1)]
-        G += M[p[1]+1,p[2]+1].*WH(p,F.d,Complex{BigFloat})
+        G += M[p[1]+1,p[2]+1].*wh(p,F.d,Complex{BigFloat})
     end
-    G += BigFloat(F.r)/BigFloat(F.d)*WH([0,0],F.d,Complex{BigFloat})
+    G += BigFloat(F.r)/BigFloat(F.d)*wh([0,0],F.d,Complex{BigFloat})
 end
 
 

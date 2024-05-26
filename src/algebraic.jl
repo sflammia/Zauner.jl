@@ -2,27 +2,27 @@ export WH, coredisc, conductor, pell, pellreg, quadclassunit
 
 
 @doc raw"""
-    WH( p::Vector{Integer}, d::Integer [, T::Type = BigFloat])
-    WH( m::Integer, n::Integer, d::Integer [, T::Type = BigFloat])
+    wh( p::Vector{Integer}, d::Integer [, T::Type = BigFloat])
+    wh( m::Integer, n::Integer, d::Integer [, T::Type = BigFloat])
 
 Weyl-Heisenberg displacement operators.
 
 ----------
-    WH( p::Vector{<:Integer}, v::Vector)
-    WH( m::Integer, n::Integer, v::Vector)
+    wh( p::Vector{<:Integer}, v::Vector)
+    wh( m::Integer, n::Integer, v::Vector)
 
-Action of `WH(p,length(v))` or `WH(m,n,length(v))` onto the vector `v` without explicitly forming the matrix. 
+Action of `wh(p,length(v))` or `wh(m,n,length(v))` onto the vector `v` without explicitly forming the matrix. 
 The output type is `typeof(v)`. 
 """
-WH( m::Integer, n::Integer, d::Integer, T::Type=BigFloat) = 
+wh( m::Integer, n::Integer, d::Integer, T::Type=BigFloat) = 
     [ (-e(T(1)/(2*d)))^(m*n) * (rem(j-k-m,d) == 0) * e((k-1)*T(n)/d) for j=1:d, k=1:d]
 
-WH( p::Vector{<:Integer}, d::Integer, T::Type=BigFloat) = WH(p[1],p[2],d,T)
+wh( p::Vector{<:Integer}, d::Integer, T::Type=BigFloat) = wh(p[1],p[2],d,T)
 
-WH( m::Integer, n::Integer, v::Vector) = 
+wh( m::Integer, n::Integer, v::Vector) = 
     [ (-e( eltype(v)(1)/(2*length(v))) )^((2k-m)*n) * v[mod(k-m,length(v))+1] for k=0:length(v)-1]
 
-WH( p::Vector{<:Integer}, v::Vector) = WH(p[1],p[2],v)
+wh( p::Vector{<:Integer}, v::Vector) = wh(p[1],p[2],v)
 
 
 
