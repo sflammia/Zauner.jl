@@ -125,10 +125,8 @@ end
 @doc raw"""
     stabilizer_elements(F::AdmissibleTuple)
 
-\\
-Compute the elements of ``GL(2,ℤ/d')`` that are in the complete stabilizer for `F`, including the extra antiunitary symmetry (if present). 
+Compute the elements of GL(2,ℤ/d') that are in the complete stabilizer for `F`, including the extra antiunitary symmetry (if present). 
 The elements are ordered so that the identity element is first. 
-
 
 # Examples
 First compute a ghost fiducial at 128-bit precision.

@@ -1,18 +1,35 @@
-export WH, coredisc, conductor, pell, pellreg, quadclassunit
+export wh, coredisc, conductor, pell, pellreg, quadclassunit
 
 
-@doc raw"""
-    wh( p::Vector{Integer}, d::Integer [, T::Type = BigFloat])
+@doc """
+    wh( p::Vector{<:Integer}, d::Integer [, T::Type = BigFloat])
     wh( m::Integer, n::Integer, d::Integer [, T::Type = BigFloat])
 
-Weyl-Heisenberg displacement operators.
-
-----------
     wh( p::Vector{<:Integer}, v::Vector)
     wh( m::Integer, n::Integer, v::Vector)
 
-Action of `wh(p,length(v))` or `wh(m,n,length(v))` onto the vector `v` without explicitly forming the matrix. 
-The output type is `typeof(v)`. 
+Weyl-Heisenberg displacement operators. 
+We have `wh(p,q,d) == wh([p,q],d)` acts on the standard basis as ``|k\\rangle \\to v_d^{p q} ω_d^{q}|k+p\\rangle``, where arithmetic inside the ket is modulo ``d`` and where ``ω_d = v_d^2`` and ``v_d = -\\mathrm{e}^{i π/d}``.  
+These forms explicitly construct the matrix that acts this way where `0` is the first element of the basis. 
+
+The forms `wh(p,v)` or `wh(m,n,v)` give the action onto the vector `v` without explicitly forming the matrix. 
+This is much faster when working with high dimensions or high precision. 
+
+# Examples
+```jldoctest
+julia> wh(2,3,4)
+4×4 Matrix{Complex{BigFloat}}:
+ 0.0-0.0im  -0.0+0.0im  0.0+1.0im  0.0-0.0im
+ 0.0-0.0im  -0.0+0.0im  0.0+0.0im  1.0-0.0im
+ 0.0-1.0im  -0.0+0.0im  0.0+0.0im  0.0-0.0im
+ 0.0-0.0im  -1.0+0.0im  0.0+0.0im  0.0-0.0im
+```
+```jldoctest
+julia> v = [1; 0; 0; 0];
+
+julia> wh(1,2,v) ≈ [0.0; 1.0im; 0.0; 0.0]
+true
+```
 """
 wh( m::Integer, n::Integer, d::Integer, T::Type=BigFloat) = 
     [ (-e(T(1)/(2*d)))^(m*n) * (rem(j-k-m,d) == 0) * e((k-1)*T(n)/d) for j=1:d, k=1:d]
@@ -79,7 +96,7 @@ end
 pell(Q::QuadBin) = pell(discriminant(Q))
 
 
-@doc raw"""
+@doc """
     pellreg(D)
     pellreg(Q::QuadBin)
     pellreg(Zω::AbsSimpleNumFieldOrder)
@@ -113,7 +130,7 @@ pellreg(Q::QuadBin) = pellreg(discriminant(Q))
 
 
 # Note: no unit tests yet for this function
-@doc raw"""
+@doc """
     ghostclassfield( K::AbsSimpleNumField, q)
 
 Compute the ring class field for the order q*Z(K) where Z(K) is the maximal order in K. 

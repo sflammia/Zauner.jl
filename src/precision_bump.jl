@@ -1,7 +1,7 @@
 export re_im_proj, precision_bump, precision_bump!, pow_to_elem_sym_poly
 
 
-@doc raw"""
+@doc """
     re_im_proj(ψ::Vector{Complex{BigFloat}})
     re_im_proj(z::Vector{BigFloat})
 
@@ -13,22 +13,20 @@ the first coordinate, assumed nonzero, is normalized to 1 and then dropped.
 If called with type `Vector{BigFloat}` then it does the inverse transformation, taking an even-length real vector to a complex one with unit first coordinate. 
 
 # Examples
-First compute a ghost fiducial at 128-bit precision.
+A simple example:
 ```jldoctest
-julia> ψ = ghost(AdmissibleTuple(4))
-4-element Vector{Complex{BigFloat}}:
-                                           1.0 + 0.0im
-    -1.450040917064870363492276300052115018856 + 1.086494885600835303229997681861825010053im
- 3.461386835844328224330659532976818956393e-33 - 2.414213562373095048801688724209694245958im
-    -0.964172645308224685309412424157583553268 - 0.08649488560083530322999768186182690796257im
-julia> z = re_im_proj(ψ)
+v = Complex{BigFloat}.([ 1; im; -1; -im])
+re_im_proj(v)
+
+# output
+
 6-element Vector{BigFloat}:
- -1.450040917064870363492276300052115018856
-  3.461386835844328224330659532976818956393e-33
- -0.964172645308224685309412424157583553268
-  1.086494885600835303229997681861825010053
- -2.414213562373095048801688724209694245958
- -0.08649488560083530322999768186182690796257
+  0.0
+ -1.0
+  0.0
+  1.0
+  0.0
+ -1.0
 ```
 """
 re_im_proj(ψ::Vector{Complex{BigFloat}}) = [real.(ψ./ψ[1])[2:end]; imag.(ψ./ψ[1])[2:end]]
