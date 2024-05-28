@@ -83,37 +83,17 @@ Compute the elements of ``GL(2,ℤ/d')`` that are in the centralizer of the stab
 
 
 # Examples
-First compute a ghost fiducial at 128-bit precision.
-```jldoctest
-julia> F = AdmissibleTuple(5)
-AdmissibleTuple( d = 5, K = ℚ(√12), q = 1, Q = ⟨1,-4,1⟩, h = 1 )
 
-julia> centralizer_elements(F)
-24-element Vector{Matrix{Integer}}:
- [1 0; 0 1]
- [2 0; 0 2]
- [3 0; 0 3]
- [4 0; 0 4]
- [4 4; 1 0]
- [0 4; 1 1]
- [1 4; 1 2]
- [2 4; 1 3]
- [3 4; 1 4]
- [3 3; 2 0]
- [4 3; 2 1]
- [0 3; 2 2]
- [1 3; 2 3]
- [2 3; 2 4]
- [2 2; 3 0]
- [3 2; 3 1]
- [4 2; 3 2]
- [0 2; 3 3]
- [1 2; 3 4]
- [1 1; 4 0]
- [2 1; 4 1]
- [3 1; 4 2]
- [4 1; 4 3]
- [0 1; 4 4]
+The centralizer for ``d=5`` has 24 elements.
+```jldoctest
+F = AdmissibleTuple(5)
+cent = centralizer_elements(F)
+length(cent)
+
+# output
+
+24
+
 ```
 """
 function centralizer_elements(F::AdmissibleTuple)

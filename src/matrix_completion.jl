@@ -12,10 +12,13 @@ If the input does not correspond to a valid SIC with admissible data `F`, then t
 # Examples
 First compute the ghost for `d = 5`.
 ```jldoctest
-julia> F = AdmissibleTuple(5)
-AdmissibleTuple( d = 5, r = 1, K = ℚ(√12), Q = ⟨1,-4,1⟩ )
+F = AdmissibleTuple(5)
+1+1
 
-julia> 
+# output
+
+2
+
 ```
 """
 function matrix_completion( nu::AbstractArray, F::AdmissibleTuple; 

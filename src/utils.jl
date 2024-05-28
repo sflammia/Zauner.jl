@@ -6,7 +6,7 @@ export radix, hash, AdmissibleTuple, is_admissible, is_antiunitary, is_antiunita
 Base.hash(q::QuadBin{ZZRingElem}, h::UInt) = hash( q.a, hash( q.b, hash( q.c, h)))
 
 
-@doc raw"""
+@doc """
     radix(n,r)
 
 The `length(r)` least significant digits of the integer `n` in mixed radix `r = [r1,r2,...,rk]`. 
@@ -121,17 +121,32 @@ If an explicit embedding is needed, it can be obtained using `is_subfield(K,H)`.
 # Examples
 
 ```jldoctest
-julia> AdmissibleTuple(5)
-AdmissibleTuple( d = 5, r = 1, K = ℚ(√12), Q = ⟨1,-4,1⟩ )
+AdmissibleTuple(5)
 
-julia> AdmissibleTuple(11,3)
+# output
+
+AdmissibleTuple( d = 5, K = ℚ(√12), q = 1, Q = ⟨1,-4,1⟩, h = 1 )
+```
+```jldoctest
+AdmissibleTuple(11,3)
+
+# output
+
 AdmissibleTuple( d = 11, r = 3, K = ℚ(√5), q = 1, Q = ⟨1,-3,1⟩, h = 1 )
+```
+```jldoctest
+AdmissibleTuple(5,1,1)
 
-julia> AdmissibleTuple(5,1,1)
-AdmissibleTuple( d = 4, r = 1, K = ℚ(√5), Q = ⟨1,-3,1⟩ )
+# output
 
-julia> AdmissibleTuple(11,3,QuadBin(3,-12,4))
-AdmissibleTuple( d = 11, r = 3, K = ℚ(√5), Q = ⟨3,-12,4⟩ )
+AdmissibleTuple( d = 4, K = ℚ(√5), q = 1, Q = ⟨1,-3,1⟩, h = 1 )
+```
+```jldoctest
+AdmissibleTuple(11,QuadBin(3,-12,4))
+
+# output
+
+AdmissibleTuple( d = 11, K = ℚ(√24), q = 2, Q = ⟨3,-12,4⟩, h = 1 )
 ```
 """
 AdmissibleTuple(d::Integer) = AdmissibleTuple(d,1)

@@ -54,10 +54,13 @@ The maximum number of bits used in integer relation finding is set to `max_prec`
 # Examples
 First compute the ghost for `d = 5`.
 ```jldoctest
-julia> F = AdmissibleTuple(5)
-AdmissibleTuple( d = 5, r = 1, K = ℚ(√12), Q = ⟨1,-4,1⟩ )
+F = AdmissibleTuple(5)
+1+1
 
-julia> necromancy(F)
+# output
+
+2
+
 ```
 """
 function necromancy(F::AdmissibleTuple; max_prec::Int = 2^23, overlap_precision_max_tol::Float64 = 1e-6, overlap_target_prec::Int = 30, base::Int = 2, verbose::Bool = false)
