@@ -16,6 +16,7 @@ export conductor, cycle, reduction, stabilizer
 
 include("utils.jl")
 include("algebraic.jl")
+include("hj.jl")
 include("analytic.jl")
 include("double_sine.jl")
 include("quadform.jl")
