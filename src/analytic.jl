@@ -3,29 +3,32 @@ export q_pochhammer, q_pochhammer_exp, e, nu, ghost
 @doc """
     q_pochhammer(a, q, n)
 
-Finite q-Pochhammer symbol.
+Finite q-Pochhammer symbol, ``\\prod_{k=0}^{n-1} \\bigl(1-a q^k\\bigr)``.
 """
 q_pochhammer(a, q, n) = prod([one(a)-a*q^k for k=0:n-1])
-# function q_pochhammer(a, q, n) 
-#     x = one(a)
-#     for k=0:n-1
-#         x *= one(a)-a*q^k
-#     end
-#     x
-# end
-    
 
 
-@doc """
+@doc raw"""
     q_pochhammer_exp(z, τ, n)
 
-Finite exponentiated q-Pochhammer symbol, extended to ``n < 0``.
+Finite exponential-variant q-Pochhammer symbol, extended to include ``n < 0``.
+Defined as
+```math
+\varpi_n(z,\tau) =
+\begin{cases}
+        \prod_{j=0}^{n-1}\bigl(1-\mathrm{e}^{2 \pi i (z+j \tau)}\bigr)
+        \qquad & n>0
+        \\
+        1 \qquad & n=0
+        \\
+        \prod_{j=n}^{-1}\bigl(1-\mathrm{e}^{2 \pi i (z+j \tau)}\bigr)^{-1}
+        \qquad & n<0
+\end{cases}\,.
+```
 """
 q_pochhammer_exp(z, tau, n) = ( n ≥ 0 ? q_pochhammer(e(z),e(tau),n) : (1-e(z))/q_pochhammer(e(z),e(-tau),1-n) )
-# function q_pochhammer_exp(z, tau, n) 
-#     println(round(Int,max(n,1-n)))
-#     ( n ≥ 0 ? q_pochhammer(e(z),e(tau),n) : (1-e(z))/q_pochhammer(e(z),e(-tau),1-n) )
-# end
+
+
 
 @doc raw"""
     e(z)
@@ -49,7 +52,7 @@ function shin(A,d,p,β)
     B = BigFloat.(A)
 
     z = (-(β*B[2,1]+B[2,2])*BigFloat(p[1]) + (β*B[1,1]+B[1,2])*BigFloat(p[2]))/BigFloat(d)
-    
+
     W = psl2word(A)
     n = length(W)-1
 
@@ -69,12 +72,12 @@ end
     nu(F::AdmissibleTuple) → Matrix{BigFloat}
     nu(F::AdmissibleTuple,p::Vector{Integer}) → BigFloat
 
-Calculate all the ghost overlaps, or one specific ghost overlap specified by `p`.  
+Calculate all the ghost overlaps, or one specific ghost overlap specified by `p`.
 """
 function nu(F::AdmissibleTuple)
     M = zeros(BigFloat,F.d,F.d)
     M[1,1] = BigFloat(1)
-    
+
     ζ = -e(BigFloat(1)/(2*F.d))
     t = e(-BigFloat(rademacher(F.A))/24)
     for p in [radix(pp,[F.d,F.d]) for pp=1:(F.d^2-1)]
@@ -90,12 +93,12 @@ function nu(F::AdmissibleTuple,p)
     if rem.(p,F.d) == [0, 0]
         return(BigFloat(1))
     end
-    
+
     ζ = -e(BigFloat(1)/(2*F.d))
     QA = BigFloat(-F.Q(p...)*(F.r*F.f//conductor(F.Q)))
     s = BigFloat( F.d%2 == 1 ? 1 : (1+p[1])*(1+p[2]) )
     f = ζ^QA * (-1)^s * e(-BigFloat(rademacher(F.A))/24)
-    
+
     real(f * shin(F.A, F.d, p, F.x))
 end
 
@@ -104,7 +107,7 @@ end
 @doc raw"""
     ghost(F:AdmissibleTuple) → Matrix{Complex{BigFloat}}
 
-Compute a ghost as a d × d matrix from the admissible tuple `F`. 
+Compute a ghost as a d × d matrix from the admissible tuple `F`.
 """
 ghost(F::AdmissibleTuple) = ( F.r == 1 ? _rank_1_ghost(F) : _general_ghost(F) )
 
@@ -128,9 +131,9 @@ _rank_1_ghost(F::AdmissibleTuple) = ( F.Q.a == 1 && F.Q.b == 1-F.d && F.Q.c == 1
 # The original choice of Zauner is [0 -1; 1 -1], and we could use this instead
 function _triple_double_sine(p,q,F::AdmissibleTuple)
     r = mod(-p-q,F.d)
-    (-1)^( F.d * (p+q) + p*q + min( F.d, p+q) ) * 
-        double_sine( 1 + (q*F.x-p)/F.d, F.x, 1) * 
-        double_sine( 1 + (p*F.x-r)/F.d, F.x, 1) * 
+    (-1)^( F.d * (p+q) + p*q + min( F.d, p+q) ) *
+        double_sine( 1 + (q*F.x-p)/F.d, F.x, 1) *
+        double_sine( 1 + (p*F.x-r)/F.d, F.x, 1) *
         double_sine( 1 + (r*F.x-q)/F.d, F.x, 1)
 end
 
@@ -149,7 +152,7 @@ function _principle_ghost(F::AdmissibleTuple)
     end
     dsp[1+1,end-1] = dsp[1+1,1+1]
     dsp[1+1,end] = dsp[0+1,1+1]
-    
+
     ζ = -cispi(BigFloat(1)/F.d)
     χ = [ ζ^(p*q) for p=0:1, q = 0:F.d-1] .* dsp
     χ = ifft(χ,2)
@@ -166,7 +169,7 @@ function _generic_rank_1_ghost(F::AdmissibleTuple)
 
     ω = _get_periods(F.A,F.x)
     r = ω ./ circshift(ω,-1)
-    
+
     χ = zeros(Complex{BigFloat},F.d,2)
     χ[1,1] = 1
     for j = 1:2*F.d-1
@@ -180,7 +183,7 @@ function _generic_rank_1_ghost(F::AdmissibleTuple)
         for i=1:(length(ω)-2)
             nu *= sigma_S(z/ω[i+2],r[i+1])
         end
-    
+
         χ[p[2]+1,p[1]+1] = ζ^(p[2]*p[1])*real(nu)
     end
     χ = ifft(χ,1)
@@ -200,7 +203,7 @@ function _ourchi(F::AdmissibleTuple)
 
     ω = _get_periods(F.A,F.x)
     r = ω ./ circshift(ω,-1)
-    
+
     # χ = zeros(Complex{BigFloat},F.d,2)
     χ = zeros(Complex{BigFloat},F.d,F.d)
     χ[1,1] = sqrt(BigFloat(F.d+1))
@@ -215,7 +218,7 @@ function _ourchi(F::AdmissibleTuple)
         for i=1:(length(ω)-2)
             nu *= sigma_S(z/ω[i+2],r[i+1])
         end
-    
+
         χ[p[1]+1,p[2]+1] = ζ^(p[2]*p[1])*real(nu)
     end
     χ = ifft(χ,2)
@@ -234,7 +237,7 @@ function _chi(F::AdmissibleTuple)
 
     ω = _get_periods(F.A,F.x)
     r = ω ./ circshift(ω,-1)
-    
+
     # χ = zeros(Complex{BigFloat},F.d,2)
     χ = zeros(Complex{BigFloat},F.d,F.d)
     χ[1,1] = 1
@@ -249,7 +252,7 @@ function _chi(F::AdmissibleTuple)
         for i=1:(length(ω)-2)
             nu *= sigma_S(z/ω[i+2],r[i+1])
         end
-    
+
         χ[p[2]+1,p[1]+1] = ζ^(p[2]*p[1])*real(nu)
     end
     χ = ifft(χ,1)
@@ -262,64 +265,10 @@ end
 
 
 
-# Base.@kwarg 
-
-
-# function ghost(d,Q::QuadBin,q=[0,0])
-#     D = discriminant(Q)
-    
-#     # test compatability of arguments
-#     t =  coredisc( (d+1)*(d-3) ) .// coredisc(D)
-#     @assert t[1] == 1 "Fundamental discriminant of the quadratic form must equal the fundamental discriminant of Q(√a) where a=(d+1)*(d-3)."
-#     @assert isinteger(t[2]) "Conductor of the quadratic form must divide the conductor of Q(√a) where a=(d+1)*(d-3)."
-    
-#     L = stabilizer(Q)
-#     A = L^sl2zorder(L,d)
-#     β = (-BigFloat(Q.b)+sqrt(BigFloat(D)))/(2Q.a)
-#     ζ = -cispi(BigFloat(1)/d)
-#     QQ = QuadBin(A[2,1],A[2,2]-A[1,1],-A[1,2])
-#     c = e(-BigFloat(rademacher(A))/24) / sqrt(BigFloat(d+1))
-#     W = psl2word(A)
-#     n = length(W)-1
-    
-#     B = zeros(eltype(A),n+2,2)
-#     B[1:2,1:2] = A
-#     for j=1:n
-#         B[j+2,:] = [-1 W[j]]*B[j:j+1,:]
-#     end
-#     ω = BigFloat.(B)*[β; BigFloat(1)]
-#     r = ω ./ circshift(ω,-1)
-
-#     χ = zeros(Complex{BigFloat},d,2)
-#     χ[1,1] = 1
-#     for j = 1:2*d-1
-#         p = radix(j,[d,d])
-#         z = (ω[1]*p[2]-ω[2]*p[1])/d
-#         m = Int((-A[2,1]*p[1]+(A[1,1]-1)*p[2])/d)
-
-#         QA = BigFloat(-QQ(p...)/(d*(d-2)))
-#         s = ( d%2 == 1 ? 1 : (1+p[1])*(1+p[2])+q[1]*p[2]-q[2]*p[1] )
-#         nu = ζ^QA * (-1)^s * c / q_pochhammer_exp( (p[2]*β-p[1])/d, β, m )
-#         for i=1:n
-#             nu *= sigma_S(z/ω[i+2],r[i+1])
-#         end
-    
-#         χ[p[2]+1,p[1]+1] = ζ^(p[2]*p[1])*real(nu)
-#     end
-#     χ = ifft(χ,1)
-#     sqrt(abs(χ[1,1]))*circshift(cumprod(χ[:,2]./χ[:,1]), 1)
-#     # to obtain Ghost projector:
-#     # ψ = ghost(d,q) 
-#     # ϕ = circshift(reverse(ψ),1)
-#     # G = ψ*ϕ'/ϕ'ψ
-# end
-
-
-
 function _get_periods(A,β)
     W = psl2word(A)
     n = length(W)-1
-    
+
     B = zeros(eltype(A),n+2,2)
     B[1:2,1:2] = A
     for j=1:n

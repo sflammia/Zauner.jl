@@ -3,14 +3,13 @@ export necromancy
 @doc raw"""
     ghost_invariants(K::AbstractArray{BigFloat})
 
-\\
 Compute numerical approximations to the ghost invariants starting from the array `K` of ghost overlaps.
 """
 function ghost_invariants(K::AbstractArray{BigFloat})
     ords = size(K)
     r, n = length(ords), prod(ords)
     prec = precision(K[1])
-    
+
     V = Vandermonde{BigFloat}[]
     a = Matrix{BigFloat}[]
     b = Vector{BigFloat}[]
@@ -38,7 +37,7 @@ function ghost_invariants(K::AbstractArray{BigFloat})
             a[j][:,l] = V[j] \ x
         end
     end
-    
+
     return a, b, s
 end
 
@@ -48,7 +47,7 @@ end
     necromancy( F::AdmissibleTuple [; max_prec = 2^23, verbose = false])
 
 \\
-Compute numerical approximations to the ghost invariants of `F`. 
+Compute numerical approximations to the ghost invariants of `F`.
 The maximum number of bits used in integer relation finding is set to `max_prec` (default of 1 MB) and `verbose` can be toggled `true` or `false`.
 
 # Examples
@@ -90,23 +89,23 @@ function necromancy(F::AdmissibleTuple; max_prec::Int = 2^23, overlap_precision_
         # this is a hack since too much precision makes it hard to converge,
         # and d = 5 is so small that we already overshoot at 256.
         if F.d == 5; prec = 200; end
-        
+
         # bump up the precision
         verbose && println("Current precision = ",precision(real(ψ[1]))," bits.")
         ψ = precision_bump( ψ, prec; base = 2, verbose = verbose)
         ϕ = circshift(reverse(ψ),1)
         ϕ .*= (F.d+1)/ϕ'ψ # include normalization factors
         verbose && println("new precision = ",precision(real(ψ[1]))," bits")
-    
+
         # compute the ghost overlaps
         verbose && println("Computing the high-precision ghost overlaps.")
-        K = ( verbose ? (@time [ real(ϕ'wh(p,ψ)) for p in porb]) : 
+        K = ( verbose ? (@time [ real(ϕ'wh(p,ψ)) for p in porb]) :
                 [ real(ϕ'wh(p,ψ)) for p in porb] )
-    
+
         # compute the ghost invariants
         verbose && println("Computing the ghost invariants.")
         a,b,s = ( verbose ? (@time ghost_invariants(K)) : ghost_invariants(K) )
-        
+
         # sign-switch to the SIC invariants.
         verbose && println("Sign-switching to the SIC invariants.")
         # create a high precision embedding map and sign-switching automorphism
@@ -122,15 +121,15 @@ function necromancy(F::AdmissibleTuple; max_prec::Int = 2^23, overlap_precision_
             s[j] = reverse(pow_to_elem_sym_poly(s[j]))
         end
         # From this point on we are in SIC world.
-        
+
         # Lower the precision back to standard BigFloat plus a 64-bit buffer.
         setprecision( BigFloat, 320; base=2)
-        
+
         # if any of the invariants are Nan or Inf, try again.
         finite_invariants  = all(map( x -> all(isfinite.(x)), a))
         finite_invariants &= all(map( x -> all(isfinite.(x)), b))
         finite_invariants &= all(map( x -> all(isfinite.(x)), s))
-        
+
         if !finite_invariants
             verbose && println("Some invariants were infinite.\n    ...Doubling precision.")
         else
@@ -150,7 +149,7 @@ function necromancy(F::AdmissibleTuple; max_prec::Int = 2^23, overlap_precision_
                 end
                 L[j] = L[j] / sqrt(BigFloat(F.d)+1)
             end
-            
+
             # now intersect to get x, which is nu up to an unknown Galois action.
             unique_intersections = true
             x = Array{Complex{BigFloat}}(undef,Tuple(ords)...)
@@ -203,7 +202,7 @@ function necromancy(F::AdmissibleTuple; max_prec::Int = 2^23, overlap_precision_
     end
 
     verbose && println("Increasing precision...")
-    # need to implement precision bumping for SICs. 
+    # need to implement precision bumping for SICs.
     z = re_im_proj(Complex{BigFloat}.(ψ))
     precision_bump!(z, _olp_func, overlap_target_prec; base = base, verbose = verbose)
     ψ = re_im_proj(z)
@@ -223,9 +222,9 @@ end
 # intersection of two complex lists using a tolerance.
 # Default tolerance with 128 bit precision
 function approx_complex_intersection(A, B; prec = 256, base = 2)
-    
+
     scale = BigInt(base)^prec
-    
+
     # helper function to scale and round a Complex{BigFloat} to Complex{BigInt}
     function scale_round(z)
         re = round(BigInt, real(z) * scale)
@@ -236,10 +235,10 @@ function approx_complex_intersection(A, B; prec = 256, base = 2)
     # scale and round both lists
     rounded_A = Set{Complex{BigInt}}(scale_round.(A))
     rounded_B = Set{Complex{BigInt}}(scale_round.(B))
-    
+
     # intersection of rounded lists
     intersection_rounded = intersect(rounded_A, rounded_B)
-    
+
     # convert back to original scale
     intersection = Set{Complex{BigFloat}}()
     for z in intersection_rounded
