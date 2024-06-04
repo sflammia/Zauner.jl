@@ -1,4 +1,4 @@
-export q_pochhammer, q_pochhammer_exp, e, nu, ghost
+export q_pochhammer, q_pochhammer_exp, e, ghost
 
 @doc """
     q_pochhammer(a, q, n)
@@ -39,98 +39,18 @@ e(z) = cispi(2*z)
 
 
 
-@doc """
-   sds(z,β)
-
-Shintani-Fadeev Jacobi cocycle.
-"""
-function sds(z,β)
-    n = floor( -z) + floor(β/2)
-    a = q_pochhammer_exp( z/β, -1/β, -n)
-    b = e( (6*(z+n)^2+6*(1-β)*(z+n)+β^2-3*β+1)/(24*β) )
-    c = double_sine( z+n+1, β, 1)
-    a*b*c
-end
-
-
-
-@doc """
-    shin(A,d,p,β)
-
-Shintani-Fadeev modular cocycle.
-"""
-function shin(A,d,p,β)
-    B = BigFloat.(A)
-
-    z = (-(β*B[2,1]+B[2,2])*BigFloat(p[1]) + (β*B[1,1]+B[1,2])*BigFloat(p[2]))/BigFloat(d)
-
-    W = psl2word(A)
-    n = length(W)-1
-
-    vals = Vector{Tuple{typeof(z),typeof(z)}}(undef,n)
-    for j=1:n
-        B = [0 1; -1 W[j]]*B
-        J = (B[2,1]*β+B[2,2])
-        vals[j] = ( z/J, (B[1,1]*β+B[1,2])/J )
-    end
-    m = Int((-A[2,1]*p[1]+(A[1,1]-1)*p[2])/d)
-    S = mapreduce( x -> sds(x...), *, vals)
-    S / q_pochhammer_exp( (BigFloat(p[2])*β-BigFloat(p[1]))/d, β, m )
-end
-
-
-
-@doc raw"""
-    nu(F::AdmissibleTuple)
-    nu(F::AdmissibleTuple,p::Vector{Integer})
-
-Calculate all the ghost overlaps, or one specific ghost overlap specified by `p`.
-"""
-function nu(F::AdmissibleTuple)
-    M = zeros(BigFloat,F.d,F.d)
-    M[1,1] = BigFloat(1)
-
-    ζ = -e(BigFloat(1)/(2*F.d))
-    t = e(-BigFloat(rademacher(F.A))/24)
-    for p in [radix(pp,[F.d,F.d]) for pp=1:(F.d^2-1)]
-        QA = BigFloat(-F.Q(p...)*(F.r*F.f//conductor(F.Q)))
-        s = BigFloat( F.d%2 == 1 ? 1 : (1+p[1])*(1+p[2]) )
-        f = ζ^QA * (-1)^s * t
-        M[p[1]+1,p[2]+1] = real(f * shin(F.A, F.d, p, F.x))
-    end
-    M
-end
-
-function nu(F::AdmissibleTuple,p)
-    if rem.(p,F.d) == [0, 0]
-        return(BigFloat(1))
-    end
-
-    ζ = -e(BigFloat(1)/(2*F.d))
-    QA = BigFloat(-F.Q(p...)*(F.r*F.f//conductor(F.Q)))
-    s = BigFloat( F.d%2 == 1 ? 1 : (1+p[1])*(1+p[2]) )
-    f = ζ^QA * (-1)^s * e(-BigFloat(rademacher(F.A))/24)
-
-    real(f * shin(F.A, F.d, p, F.x))
-end
-
-
-
 @doc raw"""
     ghost(F:AdmissibleTuple)
 
 Compute a ghost as a d × d matrix from the admissible tuple `F`.
+
+Only rank-1 ghosts are supported at this time.
 """
 ghost(F::AdmissibleTuple) = ( F.r == 1 ? _rank_1_ghost(F) : _general_ghost(F) )
 
-# Compute all d^2 values of nu for computing the ghost
+# No support for rank-r ghosts yet.
 function _general_ghost(F::AdmissibleTuple)
-    M = nu(F)/(sqrt(BigFloat(F.n))*BigFloat(F.d))
-    G = zeros(Complex{BigFloat},F.d,F.d)
-    for p in [radix(pp,[F.d,F.d]) for pp=1:(F.d^2-1)]
-        G += M[p[1]+1,p[2]+1].*wh(p,F.d,Complex{BigFloat})
-    end
-    G += BigFloat(F.r)/BigFloat(F.d)*wh([0,0],F.d,Complex{BigFloat})
+    error("Only rank-1 ghosts are supported at this time.")
 end
 
 
@@ -195,7 +115,7 @@ function _generic_rank_1_ghost(F::AdmissibleTuple)
         s = ( F.d%2 == 1 ? 1 : (1+p[1])*(1+p[2]) )
         nu = ζ^QA * (-1)^s * c / q_pochhammer_exp( (p[2]*F.x-p[1])/F.d, F.x, m )
         for i=1:(length(ω)-2)
-            nu *= sigma_S(z/ω[i+2],r[i+1])
+            nu *= _sigma_s(z/ω[i+2],r[i+1])
         end
 
         χ[p[2]+1,p[1]+1] = ζ^(p[2]*p[1])*real(nu)
@@ -207,76 +127,6 @@ function _generic_rank_1_ghost(F::AdmissibleTuple)
     # ϕ = circshift(reverse(ψ),1)
     # G = ψ*ϕ'/ϕ'ψ
 end
-
-
-
-function _ourchi(F::AdmissibleTuple)
-    ζ = -cispi(BigFloat(1)/F.d)
-    QQ = QuadBin(F.A[2,1],F.A[2,2]-F.A[1,1],-F.A[1,2])
-    c = e(-BigFloat(rademacher(F.A))/24)
-
-    ω = _get_periods(F.A,F.x)
-    r = ω ./ circshift(ω,-1)
-
-    # χ = zeros(Complex{BigFloat},F.d,2)
-    χ = zeros(Complex{BigFloat},F.d,F.d)
-    χ[1,1] = sqrt(BigFloat(F.d+1))
-    for j = 1:F.d^2-1 #2*F.d-1
-        p = radix(j,[F.d,F.d])
-        z = (ω[1]*p[2]-ω[2]*p[1])/F.d
-        m = Int((-F.A[2,1]*p[1]+(F.A[1,1]-1)*p[2])/F.d)
-
-        QA = BigFloat(-QQ(p...)/(F.d*(F.d-2)))
-        s = ( F.d%2 == 1 ? 1 : (1+p[1])*(1+p[2]) )
-        nu = ζ^QA * (-1)^s * c / q_pochhammer_exp( (p[2]*F.x-p[1])/F.d, F.x, m )
-        for i=1:(length(ω)-2)
-            nu *= sigma_S(z/ω[i+2],r[i+1])
-        end
-
-        χ[p[1]+1,p[2]+1] = ζ^(p[2]*p[1])*real(nu)
-    end
-    χ = ifft(χ,2)
-    # sqrt(abs(χ[1,1]))*circshift(cumprod(χ[:,2]./χ[:,1]), 1)
-    # to obtain Ghost projector, replace last line with:
-    # ψ = sqrt(abs(χ[1,1]))*circshift(cumprod(χ[:,2]./χ[:,1]), 1)
-    # ϕ = circshift(reverse(ψ),1)
-    # G = ψ*ϕ'/ϕ'ψ
-end
-
-
-function _chi(F::AdmissibleTuple)
-    ζ = -cispi(BigFloat(1)/F.d)
-    QQ = QuadBin(F.A[2,1],F.A[2,2]-F.A[1,1],-F.A[1,2])
-    c = e(-BigFloat(rademacher(F.A))/24) / sqrt(BigFloat(F.d+1))
-
-    ω = _get_periods(F.A,F.x)
-    r = ω ./ circshift(ω,-1)
-
-    # χ = zeros(Complex{BigFloat},F.d,2)
-    χ = zeros(Complex{BigFloat},F.d,F.d)
-    χ[1,1] = 1
-    for j = 1:F.d^2-1 #2*F.d-1
-        p = radix(j,[F.d,F.d])
-        z = (ω[1]*p[2]-ω[2]*p[1])/F.d
-        m = Int((-F.A[2,1]*p[1]+(F.A[1,1]-1)*p[2])/F.d)
-
-        QA = BigFloat(-QQ(p...)/(F.d*(F.d-2)))
-        s = ( F.d%2 == 1 ? 1 : (1+p[1])*(1+p[2]) )
-        nu = ζ^QA * (-1)^s * c / q_pochhammer_exp( (p[2]*F.x-p[1])/F.d, F.x, m )
-        for i=1:(length(ω)-2)
-            nu *= sigma_S(z/ω[i+2],r[i+1])
-        end
-
-        χ[p[2]+1,p[1]+1] = ζ^(p[2]*p[1])*real(nu)
-    end
-    χ = ifft(χ,1)
-    # sqrt(abs(χ[1,1]))*circshift(cumprod(χ[:,2]./χ[:,1]), 1)
-    # to obtain Ghost projector, replace last line with:
-    # ψ = sqrt(abs(χ[1,1]))*circshift(cumprod(χ[:,2]./χ[:,1]), 1)
-    # ϕ = circshift(reverse(ψ),1)
-    # G = ψ*ϕ'/ϕ'ψ
-end
-
 
 
 function _get_periods(A,β)
@@ -292,7 +142,7 @@ function _get_periods(A,β)
 end
 
 
-function sigma_S(z,β)
+function _sigma_s(z,β)
     n = floor(Int, -z) + floor(Int, β/2)
     a = q_pochhammer_exp( z/β, -1/β, -n)
     b = e( (6*(z+n)^2+6*(1-β)*(z+n)+β^2-3*β+1)/(24*β) )
