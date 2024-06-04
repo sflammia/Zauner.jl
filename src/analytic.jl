@@ -39,6 +39,11 @@ e(z) = cispi(2*z)
 
 
 
+@doc """
+   sds(z,β)
+
+Shintani-Fadeev Jacobi cocycle.
+"""
 function sds(z,β)
     n = floor( -z) + floor(β/2)
     a = q_pochhammer_exp( z/β, -1/β, -n)
@@ -48,6 +53,12 @@ function sds(z,β)
 end
 
 
+
+@doc """
+    shin(A,d,p,β)
+
+Shintani-Fadeev modular cocycle.
+"""
 function shin(A,d,p,β)
     B = BigFloat.(A)
 
@@ -68,9 +79,10 @@ function shin(A,d,p,β)
 end
 
 
+
 @doc raw"""
-    nu(F::AdmissibleTuple) → Matrix{BigFloat}
-    nu(F::AdmissibleTuple,p::Vector{Integer}) → BigFloat
+    nu(F::AdmissibleTuple)
+    nu(F::AdmissibleTuple,p::Vector{Integer})
 
 Calculate all the ghost overlaps, or one specific ghost overlap specified by `p`.
 """
@@ -105,7 +117,7 @@ end
 
 
 @doc raw"""
-    ghost(F:AdmissibleTuple) → Matrix{Complex{BigFloat}}
+    ghost(F:AdmissibleTuple)
 
 Compute a ghost as a d × d matrix from the admissible tuple `F`.
 """
@@ -123,6 +135,8 @@ end
 
 
 # compute the rank-1 ghosts in two cases
+# Ideally this should test if F.Q is equiv to principle
+# rather than using the reduced principle form
 _rank_1_ghost(F::AdmissibleTuple) = ( F.Q.a == 1 && F.Q.b == 1-F.d && F.Q.c == 1 ? _principle_ghost(F) : _generic_rank_1_ghost(F) )
 
 
