@@ -35,18 +35,22 @@ function double_sine( w, b1, b2; points=21)
 
     # return double sine with positive periods and BigFloat
     z, w1, w2 = BigFloat.(flipsign.([w,b1,b2],b1))
-    return dsShift( z, w1, w2, points)
+    return _ds_shift( z, w1, w2, points)
 end
 
-function dsShift(z,w1,w2,points)
+
+
+# domain shift recursively into the fundamental domain
+function _ds_shift(z,w1,w2,points)
     if z <= 0
-        return dsShift(z+w2, w1, w2, points)/(2*sin((pi*z)/w1))
+        return _ds_shift(z+w2, w1, w2, points)/(2*sin((pi*z)/w1))
     elseif z >= w1+w2
-        return dsShift(z-w2, w1, w2, points)*(2*sin((pi*(z-w2))/w1))
+        return _ds_shift(z-w2, w1, w2, points)*(2*sin((pi*(z-w2))/w1))
     else
-        return dsIntQGK(z, w1, w2, points)
+        return _ds_int_qgk(z, w1, w2, points)
     end
 end
+
 
 
 # some helper functions for the double sine integral
@@ -55,7 +59,9 @@ _g1(w,b1,b2,t) = exp.(-w)./(expm1.(-b1.*(t./w .+ 1)).*expm1.(-b2.*(t./w.+1)).*(t
 _g(w,b1,b2,t)  = _g1(w,b1,b2,t) .- _g1(b1+b2-w,b1,b2,t)
 
 
-function dsIntQGK(w, b1, b2, pts)
+
+# numerical integration using gauss-kronrod quadrature
+function _ds_int_qgk(w, b1, b2, pts)
     if b1 + b2 ≈ 2w; return one(BigFloat); end
 
     # integrate from [0,1]
@@ -69,118 +75,3 @@ function dsIntQGK(w, b1, b2, pts)
 
     exp(a+b+c)
 end
-
-
-
-
-
-# Experimenting with directly enforcing the Zauner symmetry...
-
-
-# _g0(w,x,t) = sinh.(((1+x)/2-w)*t)./(2t.*sinh.(t/2).*sinh.(x*t/2)).-(1+x-2w)./(x*t.^2)
-# _g1(w,x,t) = exp.(-w)./(expm1.(-(t./w .+ 1)).*expm1.(-x.*(t./w.+1)).*(t.+w))
-# _g(w,x,t)  = _g1(w,x,t) .- _g1(1+x-w,x,t)
-
-
-# @doc raw"""
-#     zine(p,d;points=21)
-
-# Zauner-symmetrized double sine function for the principal form. Numerical integration is done via adaptive Gauss quadrature with optional keyword argument `points` set to 21 by default.
-# """
-# function zine( p, d; points=21)
-#     @assert p[1] ≥ 0 && p[2] ≥ 0 && p[1] < d && p[2] < d && d > 3 "p should be in 0:d-1"
-
-#     if p[1] == 0 && p[2] == 0; return one(BigFloat); end
-
-#     p1, p2 = p
-#     p0 = mod(-p1-p2,d)
-#     x =  (d-1 + sqrt(BigInt((d-3)*(d+1))))/2
-
-#     w0 = 1 + (p2*x-p1)/d
-#     w1 = 1 + (p0*x-p2)/d
-#     w2 = 1 + (p1*x-p0)/d
-#     W = (w0+w1+w2)/3
-
-#     a = quadgk(t -> _g0(w0,x,t)+_g0(w1,x,t)+_g0(w2,x,t), BigFloat(0), BigFloat(1), order = points)[1]
-
-#     # boundary term
-#     b = -3(1+x-2W)/x
-
-#     # integrate the rest
-#     c = quadgk(t -> exp(-t).*(_g(w0,x,t)+_g(w1,x,t)+_g(w2,x,t)), BigFloat(0), BigFloat(Inf), order = points)[1]
-
-#     exp(a+b+c)
-# end
-
-
-
-
-
-
-# Experimenting with other numerical integration routines...
-
-
-
-# _g12(w,b1,b2,t) = exp(((b1+b2-w)*(t*(1-w)+w))/((1-t)*w))/(expm1(b1+(b1*t)/(w-t*w))*expm1(b2+(b2*t)/(w-t*w))*(1-t)*(t*(1-w)+w))
-# _g2(w,b1,b2,t) = _g12(w,b1,b2,t) .- _g12(b1+b2-w,b1,b2,t)
-
-
-
-# do the integral with QuadGK.jl, and count the number of function evals.
-# function dsIntQGK(w, b1, b2, pts)
-#     # integrate from [0,1]
-#     a = quadgk_count(t -> _g0(w,b1,b2,t), BigFloat(0), BigFloat(1), order = pts)
-
-#     # boundary term
-#     b = -(b1+b2-2w)/(b1*b2)
-
-#     # integrate the rest
-#     t = @elapsed c = quadgk_count(t -> exp(-t).*_g(w,b1,b2,t), BigFloat(0), BigFloat(Inf), order = pts)
-#     # println("  ",c[3]," evaluations for STANDARD, ",c[1])
-
-#     t2 = @elapsed c2 = quadgk_count(t -> _g2(w,b1,b2,t), BigFloat(0), BigFloat(1), order = pts)
-#     # println("  ",c2[3]," evaluations for t-TRANS., ",c[1])
-
-#     # println("t transform with QuadGK")
-#     # @time c4 = quadgk_count(t -> 0.5.*sin(t).*_g(w,b1,b2,-log.((1 .+cos.(t))./2)), BigFloat(0), BigFloat(1), order = pts)
-#     # println("  ",c4[3]," evaluations")
-
-
-#     exp(a[1]+b+c[1])
-
-
-# end
-
-
-
-# do the integral with GaussQuadrature.jl
-# slower, but if we do it multiple times then we can reuse the nodes and weights
-# function dsIntGQ(w, b1, b2, pts)
-#     # compute the nodes and weights for the [0,1] piece
-#     t0, w0 = legendre(BigFloat, pts)
-
-#     # integrate using gauss-legendre quadrature
-#     a = BigFloat(1)/2 * w0' * _g0.(w,b1,b2,(t0.+1)./2)
-
-#     # boundary term
-#     b = -(b1+b2-2w)/(b1*b2)
-
-#     # compute the nodes and weights for the [1,∞) piece
-#     t1, w1 = laguerre(pts, BigFloat(0))
-
-#     # integrate using gauss-laguerre quadrature
-#     c = w1' * _g(w,b1,b2,t1)
-
-#     exp(a+b+c)
-# end
-
-
-# function dsIntGQ2(w, b1, b2, t0, w0, t1, w1)
-#     # integrate using gauss-legendre quadrature
-#     a = BigFloat(1)/2 * w0' * _g0.(w,b1,b2,(t0.+1)./2)
-#     # boundary term
-#     b = -(b1+b2-2w)/(b1*b2)
-#     # integrate using gauss-laguerre quadrature
-#     c = w1' * _g(w,b1,b2,t1)
-#     exp(a+b+c)
-# end
