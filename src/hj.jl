@@ -8,6 +8,7 @@ Takes a quadratic form Q and applies the Hirzebruch-Jung map to convert a Euclid
 _hj_step(Q::QuadBin,n=0) = QuadBin([-1 1; -n-1 n]'*qmat(Q)*[-1 1; -n-1 n])
 # inverse of [n -1; n+1 -1].
 
+
 @doc """
     reduced_hj_orbit(q::QuadBin{ZZRingElem})
 
@@ -35,6 +36,7 @@ function reduced_hj_orbit(q::QuadBin{ZZRingElem})
     end
     R
 end
+
 
 @doc """
     minimal_hj_stabilizer(V::Vector{QuadBin{ZZRingElem}},d)

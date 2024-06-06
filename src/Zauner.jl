@@ -1,6 +1,6 @@
 module Zauner
 
-using Reexport, Documenter
+using Reexport
 @reexport using Hecke
 using LazilyInitializedFields
 using LinearAlgebra
@@ -11,6 +11,7 @@ using GenericFFT: ifft, fft
 using QuadGK: quadgk
 using Convex
 using SCS
+
 import Hecke.conductor, Hecke.cycle, Hecke.reduction, Hecke.stabilizer
 export conductor, cycle, reduction, stabilizer
 
