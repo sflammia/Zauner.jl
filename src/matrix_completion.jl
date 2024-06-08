@@ -3,7 +3,7 @@ export matrix_completion
 @doc raw"""
     matrix_completion( nu::AbstractArray, F::AdmissibleTuple)
 
-Given the SIC phase overlaps `nu`, compute the associated SIC fiducial vector ψ.
+Given the SIC phase overlaps `nu`, compute the associated SIC fiducial vector `ψ`.
 If the input does not correspond to a valid SIC with admissible data `F`, then the output is unpredictable.
 
 (Need to try `circshift(nu,(a,b,c))` in general, where `(a,b,c)` is a tuple of shifts of the appropriate size for the Galois group of the SIC with data `F`.)

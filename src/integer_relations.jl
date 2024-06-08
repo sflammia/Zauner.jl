@@ -1,4 +1,8 @@
-# find an integer relation between the elements of x
+@doc """
+    guess_int_null_vec( x::Vector{BigFloat} [; warn::Bool = false])
+
+Use LLL to find an integer relation among the elements of `x`.
+"""
 function guess_int_null_vec( x::Vector{BigFloat}; warn::Bool = false)
     prec = precision(x[1])
     t = ZZ(2)^prec
@@ -11,17 +15,22 @@ function guess_int_null_vec( x::Vector{BigFloat}; warn::Bool = false)
     # B = BigInt.(lll_with_removal(T,maxnorm)[2][1,:])[1:n]
     # println(lll(T)[1,1:end-1])
     B = BigInt.(lll(T)[1,:])[1:n]
-    
+
     if warn && -log2( abs( dot(x,B) ) ) - prec + 2n < 0
         @warn "Precision of dot product is low; integer relation may be spurious."
     end
-    
+
     return B
 end
 
 
 
-# Round into the class field H and then Galois conjugate
+@doc """
+    round_conj( F::AdmissibleTuple, V::Vector{BigFloat})
+
+Round the elements of `V` into the class field `F.H` and then Galois conjugate with the sign-switching automorphism `F.g`.
+This uses an integer relation heuristic for the rounding step, and if this fails to detect the "true" exact value then the output is unpredictable.
+"""
 function round_conj( F::AdmissibleTuple, V::Vector{BigFloat})
     hb = lll(maximal_order(F.H)).basis_nf # find a good basis
     eH = real_embeddings(F.H)[1] # need to pick a real embedding
@@ -33,7 +42,7 @@ function round_conj( F::AdmissibleTuple, V::Vector{BigFloat})
 
     k = 1
     for v in V
-        t = Zauner.guess_int_null_vec( [ primalbasis; v] )
+        t = guess_int_null_vec( [ primalbasis; v] )
         x = -t[1:end-1]/t[end]
         W[k] = dot( dualbasis, x )
         k += 1
