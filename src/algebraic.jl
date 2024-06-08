@@ -6,6 +6,7 @@ export wh, coredisc, conductor, pell, pellreg, ghostclassfield, signswitch, quad
 
     wh( p::Vector{<:Integer}, v::Vector)
     wh( m::Integer, n::Integer, v::Vector)
+    wh( n::Integer, v::Vector)
 
 Weyl-Heisenberg displacement operators.
 We have `wh(p,q,d) == wh([p,q],d)` acts on the standard basis as ``|k\\rangle \\to v_d^{p q} ω_d^{q}|k+p\\rangle``, where arithmetic inside the ket is modulo ``d`` and where ``ω_d = v_d^2`` and ``v_d = -\\mathrm{e}^{i π/d}``.
@@ -13,6 +14,8 @@ These forms explicitly construct the matrix that acts this way where `0` is the 
 
 The forms `wh(p,v)` or `wh(m,n,v)` give the action onto the vector `v` without explicitly forming the matrix.
 This is much faster when working with high dimensions or high precision.
+The form `wh(n,v)` with `d = length(v)` simply converts the integer `n` into the base-`d` expansion ``n = n_1 d + n_0`` and calls `wh([n1,n0],v)`.
+Tuples can also be used in place of vectors in these function calls.
 
 # Examples
 ```jldoctest
@@ -35,11 +38,16 @@ wh( m::Integer, n::Integer, d::Integer, T::Type=BigFloat) =
 
 wh( p::Vector{<:Integer}, d::Integer, T::Type=BigFloat) = wh(p[1],p[2],d,T)
 
+wh( p::Tuple{Integer,Integer}, d::Integer, T::Type=BigFloat) = wh(p[1],p[2],d,T)
+
 wh( m::Integer, n::Integer, v::Vector) =
     [ (-e( eltype(v)(1)/(2*length(v))) )^((2k-m)*n) * v[mod(k-m,length(v))+1] for k=0:length(v)-1]
 
 wh( p::Vector{<:Integer}, v::Vector) = wh(p[1],p[2],v)
 
+wh( p::Tuple{Integer,Integer}, v::Vector) = wh(p[1],p[2],v)
+
+wh( n::Integer, v::Vector) = wh( divrem( n, length(v)), v)
 
 
 @doc """
