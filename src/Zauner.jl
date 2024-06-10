@@ -2,13 +2,12 @@ module Zauner
 
 using Reexport
 @reexport using Hecke
-using LazilyInitializedFields
-using LinearAlgebra
-using SpecialMatrices: Vandermonde
 using AMRVW: roots
 using ForwardDiff: jacobian
 using GenericFFT: ifft, fft
 using QuadGK: quadgk
+using SpecialMatrices: Vandermonde
+using LazilyInitializedFields
 using Convex
 using SCS
 

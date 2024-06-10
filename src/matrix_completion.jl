@@ -1,24 +1,12 @@
 export matrix_completion
 
 @doc raw"""
-    matrix_completion( nu::AbstractArray, F::AdmissibleTuple)
+    matrix_completion( nu::AbstractArray, F::AdmissibleTuple
+    [; verbose::Bool = false, shift::Integer = 0, test::Bool = false,
+    max_iters = 1e5, eps_abs = 1e-7, eps_infeas = 1e-7, eps_rel = 1e-7])
 
-Given the SIC phase overlaps `nu`, compute the associated SIC fiducial vector `ψ`.
+Given the SIC phase overlaps `nu` on a maximal galois orbit, compute the associated SIC fiducial vector `ψ`.
 If the input does not correspond to a valid SIC with admissible data `F`, then the output is unpredictable.
-
-(Need to try `circshift(nu,(a,b,c))` in general, where `(a,b,c)` is a tuple of shifts of the appropriate size for the Galois group of the SIC with data `F`.)
-
-# Examples
-First compute the ghost for `d = 5`.
-```jldoctest
-F = AdmissibleTuple(5)
-1+1
-
-# output
-
-2
-
-```
 """
 function matrix_completion( nu::AbstractArray, F::AdmissibleTuple;
         verbose::Bool = false, shift::Integer = 0, test::Bool = false,
@@ -38,6 +26,7 @@ function matrix_completion( nu::AbstractArray, F::AdmissibleTuple;
     # Instead of a maximal orbit, we could sample a random sparse set
     # of constraints, say 6d of them to be safe.
     # Since the maximal orbit is generally quite large, sampling might be faster.
+    # Could also potentially speed this up and remove dependencies by using fast non-convex methods (SVT, Burer-Montiero, FPCS, etc.) from the theory of low-rank matrix sensing.
     for m in [ radix(k+shift,ords) for k=0:prod(ords)-1 ]
         for s in stab
             nextp = Integer.(mod.( s*prod(gens.^m)*p0, dd))
@@ -55,12 +44,12 @@ function matrix_completion( nu::AbstractArray, F::AdmissibleTuple;
     prob = minimize(obj,cons)
     Convex.solve!(prob, opt)
     XX = Convex.evaluate(X)/sqrt(F.d+1)
-    verbose && println("Eigenvalues λ_1 and λ_2 are ",sort(real.(eigvals(XX)))[[end;end-1]])
+    verbose && println("Norm difference ||ψ^2 - ψ||_2 = ",norm(XX*XX-XX))
     ψ = XX[:,1]/norm(XX[:,1])
 
     # if `test`, run a brute-force test of SIC overlap property
     if test
-        sictest = maximum(abs.([ abs(tr(ψ'*wh(radix(p,[F.d;F.d]),ψ))) for p = 1:F.d^2-1 ] .- 1/sqrt(F.d+1)))
+        sictest = maximum(abs.([ abs(tr(ψ'*wh(p,ψ))) for p = 1:F.d^2-1 ] .- 1/sqrt(F.d+1)))
         verbose && println("Deviation of overlaps = $sictest")
     end
     return ψ
