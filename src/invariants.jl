@@ -3,7 +3,7 @@ export necromancy
 @doc raw"""
     ghost_invariants(K::AbstractArray{BigFloat})
 
-Compute numerical approximations to the ghost invariants starting from the array `K` of ghost overlaps.
+Internal function to compute numerical approximations to the ghost invariants starting from the array `K` of ghost overlaps.
 """
 function ghost_invariants(K::AbstractArray{BigFloat})
     ords = size(K)
@@ -46,11 +46,11 @@ end
 @doc raw"""
     necromancy( F::AdmissibleTuple [; max_prec = 2^23, verbose = false])
 
-\\
 Compute numerical approximations to the ghost invariants of `F`.
 The maximum number of bits used in integer relation finding is set to `max_prec` (default of 1 MB) and `verbose` can be toggled `true` or `false`.
 
 # Examples
+
 First compute the ghost for `d = 5`.
 ```jldoctest
 F = AdmissibleTuple(5)
@@ -62,7 +62,12 @@ F = AdmissibleTuple(5)
 
 ```
 """
-function necromancy(F::AdmissibleTuple; max_prec::Int = 2^23, overlap_precision_max_tol::Float64 = 1e-6, overlap_target_prec::Int = 30, base::Int = 2, verbose::Bool = false)
+function necromancy(F::AdmissibleTuple;
+    max_prec::Integer = 2^23,
+    overlap_precision_max_tol::Float64 = 1e-6,
+    overlap_target_prec::Integer = 30,
+    base::Integer = 2,
+    verbose::Bool = false)
     # Ensure that we have initialized the class field for F
     ghostclassfield(F)
     signswitch(F)
@@ -211,17 +216,25 @@ end
 
 
 
-# internal function for the sign-switching automorphism
-function dualize( primal, dual, x)
+@doc """
+    dualize( primal::Vector{T}, dual::Vector{T}, x::T) where T::AbstractFloat
+
+Internal function that takes an `AbstractFloat` number `x`, rounds it into the `primal` basis, then expands it again in the `dual` basis.
+If `x` is not faithfully represented in the `primal` basis then the result is unpredictable.
+If `primal` and `dual` are related by a galois automorphism `g`, then ideally this outputs an exact representation of `g(x)`.
+"""
+function dualize( primal::Vector{T}, dual::Vector{T}, x::T) where T<:AbstractFloat
     t = guess_int_null_vec( [ primal; x] )
-    # println("t = $t")
     return -dot( dual, t[1:end-1] ) / t[end]
 end
 
 
-# intersection of two complex lists using a tolerance.
-# Default tolerance with 128 bit precision
-function approx_complex_intersection(A, B; prec = 256, base = 2)
+@doc """
+    approx_complex_intersection(A::AbstractVector, B::AbstractVector; prec::Integer = 256, base::Integer = 2)
+
+Internal function to compute the intersection of two complex lists using a default tolerance of 256 bit precision.
+"""
+function approx_complex_intersection(A::AbstractVector, B::AbstractVector; prec::Integer = 256, base::Integer = 2)
 
     scale = BigInt(base)^prec
 
