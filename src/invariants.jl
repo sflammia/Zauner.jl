@@ -1,11 +1,11 @@
 export necromancy
 
 @doc raw"""
-    ghost_invariants(K::AbstractArray{BigFloat})
+    _ghost_invariants(K::AbstractArray{BigFloat})
 
 Internal function to compute numerical approximations to the ghost invariants starting from the array `K` of ghost overlaps.
 """
-function ghost_invariants(K::AbstractArray{BigFloat})
+function _ghost_invariants(K::AbstractArray{BigFloat})
     ords = size(K)
     r, n = length(ords), prod(ords)
     prec = precision(K[1])
@@ -51,15 +51,16 @@ The maximum number of bits used in integer relation finding is set to `max_prec`
 
 # Examples
 
-First compute the ghost for `d = 5`.
+Check that the principle SIC in ``d=7`` satisfies the equiangularity conditions.
+
 ```jldoctest
-F = AdmissibleTuple(5)
-1+1
+julia> d = 7; F = AdmissibleTuple(d)
+AdmissibleTuple( d = 7, K = ℚ(√8), q = 2, Q = ⟨1,-6,1⟩, h = 1 )
 
-# output
+julia> ψ = necromancy(F);
 
-2
-
+julia> all([ abs2(ψ'wh(p,ψ)) for p=1:d^2-1] .≈ 1/(d+1))
+true
 ```
 """
 function necromancy(F::AdmissibleTuple;
@@ -109,7 +110,7 @@ function necromancy(F::AdmissibleTuple;
 
         # compute the ghost invariants
         verbose && println("Computing the ghost invariants.")
-        a,b,s = ( verbose ? (@time ghost_invariants(K)) : ghost_invariants(K) )
+        a,b,s = ( verbose ? (@time _ghost_invariants(K)) : _ghost_invariants(K) )
 
         # sign-switch to the SIC invariants.
         verbose && println("Sign-switching to the SIC invariants.")
@@ -117,7 +118,7 @@ function necromancy(F::AdmissibleTuple;
         fH = x -> BigFloat.(real.(evaluation_function( eH, prec).(x)))
         primalbasis = fH.(hb)
         dualbasis   = fH.(gb)
-        dual = x -> dualize( primalbasis, dualbasis, x )
+        dual = x -> _dualize( primalbasis, dualbasis, x )
         # sign-switch
         for j=1:r
             a[j] = dual.(a[j])
@@ -163,7 +164,7 @@ function necromancy(F::AdmissibleTuple;
                 t = radix(k,ords) .+ 1
                 Kt = Tuple([ L[j][t[j],:] for j = 1:r])
                 # intersect at 256-bit precision by default
-                a = reduce( (x,y) -> approx_complex_intersection(x,y; prec = 256), Kt)
+                a = reduce( (x,y) -> _approx_complex_intersection(x,y; prec = 256), Kt)
                 if length(a) == 1
                     x[t...] = a[1]
                 else
@@ -217,24 +218,24 @@ end
 
 
 @doc """
-    dualize( primal::Vector{T}, dual::Vector{T}, x::T) where T::AbstractFloat
+    _dualize( primal::Vector{T}, dual::Vector{T}, x::T) where T::AbstractFloat
 
 Internal function that takes an `AbstractFloat` number `x`, rounds it into the `primal` basis, then expands it again in the `dual` basis.
 If `x` is not faithfully represented in the `primal` basis then the result is unpredictable.
-If `primal` and `dual` are related by a galois automorphism `g`, then ideally this outputs an exact representation of `g(x)`.
+If `primal` and `dual` are related by a galois automorphism `g`, then ideally this outputs an approximation of `g(x)`.
 """
-function dualize( primal::Vector{T}, dual::Vector{T}, x::T) where T<:AbstractFloat
+function _dualize( primal::Vector{T}, dual::Vector{T}, x::T) where T<:AbstractFloat
     t = guess_int_null_vec( [ primal; x] )
     return -dot( dual, t[1:end-1] ) / t[end]
 end
 
 
 @doc """
-    approx_complex_intersection(A::AbstractVector, B::AbstractVector; prec::Integer = 256, base::Integer = 2)
+    _approx_complex_intersection(A::AbstractVector, B::AbstractVector; prec::Integer = 256, base::Integer = 2)
 
 Internal function to compute the intersection of two complex lists using a default tolerance of 256 bit precision.
 """
-function approx_complex_intersection(A::AbstractVector, B::AbstractVector; prec::Integer = 256, base::Integer = 2)
+function _approx_complex_intersection(A::AbstractVector, B::AbstractVector; prec::Integer = 256, base::Integer = 2)
 
     scale = BigInt(base)^prec
 
