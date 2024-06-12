@@ -285,6 +285,17 @@ end # double sine testset
     @test is_admissible(5, 2, 1, QuadBin(1,-7,1))
     @test is_admissible(11, 1, QuadBin(3,-12,4))
 
+
+    # The first four are anti-unitary, the last four are not.
+    @test true == is_antiunitary(AdmissibleTuple(  4))
+    @test true == is_antiunitary(AdmissibleTuple(  7, QuadBin( 2, -4, 1) ))
+    @test true == is_antiunitary(AdmissibleTuple( 19, QuadBin( 1, -3, 1) ))
+    @test true == is_antiunitary(AdmissibleTuple( 19, QuadBin( 4, -6, 1) ))
+    @test false == is_antiunitary(AdmissibleTuple( 5))
+    @test false == is_antiunitary(AdmissibleTuple( 6))
+    @test false == is_antiunitary(AdmissibleTuple( 8))
+    @test false == is_antiunitary(AdmissibleTuple( 9))
+
 end # utils testset
 
 @testset "Zauner ghost tests" begin
