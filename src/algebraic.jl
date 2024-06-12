@@ -205,14 +205,14 @@ end
 signswitch( F::AdmissibleTuple) = ( (@isinit F.g) ? F.g : (@init! F.g = signswitch(F.H,F.D)); F.g)
 
 
-@doc """
+@doc raw"""
     quadclassunit(D)
 
 Returns class group and unit group data for the quadratic order with disciminant `D`.
-Let ``𝜔 = \\bigl(Δ\\bmod 4 + \\sqrt{Δ}\\bigr)/2``, so that a ``ℤ``-basis is ``ℤ+𝜔ℤ``.
+Let ``\omega = \bigl(\Delta\bmod 4 + \sqrt{\Delta}\bigr)/2``, so that a ``\mathbb{Z}``-basis is ``\mathbb{Z}+\omega\mathbb{Z}``.
 Then the output is a tuple `(h,c,b,u)`, where
  - `h` is the class number,
- - `c` is an integer vector for the cycle stucture of the class group, ``ℤ/{e_1} + \\ldots + ℤ/{e_r}``.
+ - `c` is an integer vector for the cycle stucture of the class group, ``\mathbb{Z}/{e_1} + \ldots + \mathbb{Z}/{e_r}``.
  - `b` is a vector of binary quadratic forms that generate the corresponding factor in the class group,
  - `u` is the totally positive fundamental unit with norm 1, written as `[x,y]` in the above basis.
 """

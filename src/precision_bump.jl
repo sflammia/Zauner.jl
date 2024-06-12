@@ -28,11 +28,8 @@ re_im_proj(v)
 ```
 """
 function re_im_proj(ψ::Vector{Complex{BigFloat}})
-    if ψ[1] ≈ zero(eltype(ψ))
-        error("First entry must be nonzero.")
-    else
-        return vcat(reim(ψ[2:end]./ψ[1])...)
-    end
+    ψ[1] ≈ zero(eltype(ψ)) && error("First entry must be nonzero.")
+    vcat(reim(ψ[2:end]./ψ[1])...)
 end
 
 
