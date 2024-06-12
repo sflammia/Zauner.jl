@@ -5,8 +5,9 @@ export sic_overlap_test, ghost_overlap_test, sic_frame_test, ghost_frame_test
 
 Check the SIC equiangularity conditions by returning
 ```math
-\max_{\boldsymbol{p} \not=\boldsymbol{0}} \bigl|\nu_{\boldsymbol{p}} \nu_{-\boldsymbol{p}} - \tfrac{1}{d+1}\bigr|\,.
+\max_{\boldsymbol{p} \not=\boldsymbol{0}} \bigl|\nu_{\boldsymbol{p}} \nu_{-\boldsymbol{p}} - \tfrac{1}{d+1}\bigr|\,,
 ```
+where ``\nu_{\boldsymbol{p}} = \langle\psi|D_{\boldsymbol{p}}|\psi\rangle`` are the SIC overlaps.
 """
 function sic_overlap_test(ψ::AbstractVector)
     d = length(ψ)
@@ -44,7 +45,7 @@ end
     sic_frame_test(ψ::AbstractVector)
 
 Return the absolute deviation of the pointwise conditions on the frame potential from eq. 8 of arXiv:0707.2071.
-Let ``t(k,l) = \sum_j \psi_{j}\psi_{j+k}^* \psi_{j+l}^* \psi_{j+k+l}``, and recall that ``\psi`` is a SIC if and only if ``t(k,l) = \frac{\delta_{k,0}+\delta_{l,0}}{d+1}``.
+Let ``T(k,l) = \sum_j \psi_{j}\psi_{j+k}^* \psi_{j+l}^* \psi_{j+k+l}``, and recall that ``\psi`` is a SIC if and only if ``T(k,l) - \frac{\delta_{k,0}+\delta_{l,0}}{d+1} = 0``.
 The function returns the maximum absolute deviation from these conditions.
 """
 function sic_frame_test(ψ::AbstractVector)

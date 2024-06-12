@@ -273,7 +273,7 @@ end
     galois_elements(F::AdmissibleTuple)
     galois_elements(d::Integer, gens::Vector{Matrix{ZZRingElem}}, ords::Vector{Integer})
 
-Compute one element from each coset of ``\mathcal{M}/\mathcal{S}` where ``\mathcal{M}`` is a maximal abelian subgroup of ``\mathrm{GL}(2,\mathbb{Z}/d')`` and ``\mathcal{S}`` is the stabilizer of `F`.
+Compute one element from each coset of ``\mathcal{M}/\mathcal{S}`` where ``\mathcal{M}`` is a maximal abelian subgroup of ``\mathrm{GL}(2,\mathbb{Z}/d')`` and ``\mathcal{S}`` is the stabilizer of `F`.
 The second form takes the dimension `d` and the generators and orders of generators for the galois group, as is computed by `galois_normal_form`.
 The output is an array of `Matrix{ZZRingElem}` elements whose size is the the same as `ords`.
 """
