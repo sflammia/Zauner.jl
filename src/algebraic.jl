@@ -269,6 +269,7 @@ julia> foreach(d -> println( (d, numsics(d)) ), 4:15)
 (13, 2)
 (14, 2)
 (15, 4)
+```
 """
 function numsics(d)
     # fundamental discriminant and conductor

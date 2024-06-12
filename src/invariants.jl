@@ -59,6 +59,7 @@ AdmissibleTuple( d = 7, K = ℚ(√8), q = 2, Q = ⟨1,-6,1⟩, h = 1 )
 
 julia> ψ = necromancy(F);
 
+
 julia> all([ abs2(ψ'wh(p,ψ)) for p=1:d^2-1] .≈ 1/(d+1))
 true
 ```
@@ -210,7 +211,7 @@ function necromancy(F::AdmissibleTuple;
     verbose && println("Increasing precision...")
     # need to implement precision bumping for SICs.
     z = re_im_proj(Complex{BigFloat}.(ψ))
-    precision_bump!(z, _olp_func, overlap_target_prec; base = base, verbose = verbose)
+    precision_bump!(z, _sic_olp_func, overlap_target_prec; base = base, verbose = verbose)
     ψ = re_im_proj(z)
     return ψ/sqrt(ψ'ψ)
 end

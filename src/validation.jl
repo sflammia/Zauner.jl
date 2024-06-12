@@ -3,7 +3,10 @@ export sic_overlap_test, ghost_overlap_test, sic_frame_test, ghost_frame_test
 @doc raw"""
     sic_overlap_test(ψ::AbstractVector)
 
-Check the SIC equiangularity conditions by returning ``\max_{\boldsymbol{p} \not=\boldsymbol{0}} \bigl|\nu_{\boldsymbol{p}} \nu_{-\boldsymbol{p}} - \frac{1}{d+1}\bigr}``.
+Check the SIC equiangularity conditions by returning
+```math
+\max_{\boldsymbol{p} \not=\boldsymbol{0}} \bigl|\nu_{\boldsymbol{p}} \nu_{-\boldsymbol{p}} - \tfrac{1}{d+1}\bigr|\,.
+```
 """
 function sic_overlap_test(ψ::AbstractVector)
     d = length(ψ)
@@ -16,7 +19,10 @@ end
     ghost_overlap_test(ψ::AbstractVector)
 
 Check the ghost overlap conditions.
-If all ghost overlaps are approximately real, it returns ``\max_{\boldsymbol{p} \not=\boldsymbol{0}} \bigl|\nu_{\boldsymbol{p}} \nu_{-\boldsymbol{p}} - \frac{1}{d+1}\bigr}``.
+If all ghost overlaps are approximately real, it returns
+```math
+\max_{\boldsymbol{p} \not=\boldsymbol{0}} \bigl|\nu_{\boldsymbol{p}} \nu_{-\boldsymbol{p}} - \tfrac{1}{d+1}\bigr|\,.
+```
 If they aren't approximately real it throws an error.
 """
 function ghost_overlap_test(ψ::AbstractVector)

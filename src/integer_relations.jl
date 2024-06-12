@@ -7,13 +7,13 @@ Use LLL to find an integer relation among the elements of `x`.
 
 # Examples
 
-'''
+```jldoctest
 julia> guess_int_null_vec(BigFloat.([1; sin(big(pi)/8)^2; sin(big(pi)/4)]))
 3-element Vector{BigInt}:
  -1
   2
   1
-'''
+```
 """
 function guess_int_null_vec( x::Vector{BigFloat})
     prec = precision(x[1])
