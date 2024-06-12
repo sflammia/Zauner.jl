@@ -8,7 +8,8 @@ export re_im_proj, precision_bump, precision_bump!, pow_to_elem_sym_poly
 Stack the real and imaginary parts of the vector `ψ` and normalize so that
 the first coordinate, assumed nonzero, is normalized to 1 and then dropped.
 
-If called with type `Vector{BigFloat}` then it does the inverse transformation, taking an even-length real vector to a complex one with unit first coordinate.
+If called with type `Vector{BigFloat}` then it does the inverse transformation,
+taking an even-length real vector to a complex one with unit first coordinate.
 
 # Examples
 A simple example:
@@ -48,7 +49,6 @@ end
 #    (p,q) → ( q, p)
 #    (p,q) → ( p,-q)*
 # where the last one means apply the symmetry then complex conjugate the result.
-
 function _ghost_olp_func(z,r,p,q)
     T = eltype(z)
     d  = 1+length(z)÷2
@@ -111,9 +111,8 @@ function _ghost_olp_func(z)
 end
 
 
-# now we do the same thing for standard overlaps
-
-function _olp_func(z,r,p,q)
+# now we do the same thing for SIC overlaps
+function _sic_olp_func(z,r,p,q)
     T = eltype(z)
     d  = 1+length(z)÷2
     x0 = [  one(T); z[1:d-1] ] # real part of ψ
@@ -144,13 +143,13 @@ end
 
 
 # both real and imaginary parts on a combined index
-_olp_func(z,n::Integer) = _olp_func(z, radix(n, [2,1+(length(z)÷2),1+(length(z)÷2)])... )
+_sic_olp_func(z,n::Integer) = _sic_olp_func(z, radix(n, [2,1+(length(z)÷2),1+(length(z)÷2)])... )
 
 # list over a vector
-_olp_func(z,v::AbstractVector) = [ _olp_func(z,n) for n in v ]
+_sic_olp_func(z,v::AbstractVector) = [ _sic_olp_func(z,n) for n in v ]
 
 
-function _olp_func(z)
+function _sic_olp_func(z)
     d = 1+length(z)÷2
     #=
         *Empirically*, the following list is sufficient to get a
@@ -169,7 +168,7 @@ function _olp_func(z)
           [ d^2 +  d + q for q=1:(d-1)÷2];    # imag part, second row
           [ d^2 + 2d + q for q=2:(1-(-1)^d)]  # imag part, one element in the third row for odd d
         ]
-    _olp_func(z,v)
+    _sic_olp_func(z,v)
 end
 
 
@@ -177,8 +176,10 @@ end
 
 @doc """
     precision_bump(ψ::Vector{Complex{BigFloat}}, prec::Integer [; base::Integer = 10, verbose::Bool = true])
+    precision_bump(ψ::Vector{Complex{BigFloat}}, f::Function, prec::Integer [; base::Integer = 10, verbose::Bool = true])
 
 Attempt to use Newton's method to improve the precision of `ψ` to at least `prec` digits in base `base`.
+In the second version, the function `f` is used for root finding.
 """
 function precision_bump(ψ::Vector{Complex{BigFloat}}, prec::Integer; base::Integer = 10, verbose::Bool = true)
     z = re_im_proj(ψ)
@@ -190,9 +191,11 @@ end
 
 @doc raw"""
     precision_bump!(z::Vector{BigFloat}, prec::Integer [; base::Integer = 10, verbose::Bool = true])
+    precision_bump!(z::Vector{BigFloat}, f::Function, prec::Integer [; base::Integer = 10, verbose::Bool = true])
 
 Attempt to use Newton's method to improve the precision of `z` to at least `prec` digits in base `base`,
 where `z` is the real projective representation of `ψ`.
+In the second version, the function `f` is used for root finding.
 """
 function precision_bump!(z::Vector{BigFloat}, prec::Integer; base::Integer = 2, verbose::Bool = true)
     @assert base > 1 "base must be an integer ≥ 2"
@@ -223,7 +226,7 @@ end
 
 
 # Here is a version that allows for a function input.
-# This can be used with _olp_func to improve the precision of a SIC
+# This can be used with _sic_olp_func to improve the precision of a SIC
 function precision_bump!(z::Vector{BigFloat}, f::Function, prec::Integer; base::Integer = 2, verbose::Bool = true)
     @assert base > 1 "base must be an integer ≥ 2"
     if base == 2
