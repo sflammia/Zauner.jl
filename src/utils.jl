@@ -9,7 +9,7 @@ Base.hash(q::QuadBin{ZZRingElem}, h::UInt) = hash( q.a, hash( q.b, hash( q.c, h)
 @doc """
     radix(n,r)
 
-The `length(r)` least significant digits of the integer `n` in mixed radix `r = [r1,r2,...,rk]`. 
+The `length(r)` least significant digits of the integer `n` in mixed radix `r = [r1,r2,...,rk]`.
 # Examples
 ```jldoctest
 julia> radix(5,[2; 2; 2; 2; 2])
@@ -69,16 +69,16 @@ Base.show(io::IO, F::AdmissibleTuple) = print(io,"AdmissibleTuple( d = $(F.d), "
     AdmissibleTuple( d::Integer [, Q::QuadBin])
     AdmissibleTuple( d::Integer, r::Integer [, Q::QuadBin])
     AdmissibleTuple( D::Integer, j::Integer, m::Integer [, Q::QuadBin])
-    
+
     AdmissibleTuple( dQ::Tuple{Integer, QuadBin{ZZRingElem}})
     AdmissibleTuple( drQ::Tuple{Integer, Integer, QuadBin{ZZRingElem}})
 
 Data type for the arithmetic data defining a set of ghost overlaps.
 
-If only one integer is given, it is interpreted as a dimension and assumed that the rank is `r = 1`. 
+If only one integer is given, it is interpreted as a dimension and assumed that the rank is `r = 1`.
 The syntax that takes three integers `(D,j,m)` requires that `D` is a *fundamental* discriminant for a real quadratic field.
 
-In all three cases, if the optional argument `Q` is left unspecified, then it defaults to a principal form given by `Q = QuadBin( 1, 2-n, 1)`, where `n` is the integer `(d^2-1)/(r(d-r))`, since this has ``\\mathrm{disc}(Q) = n(n-4)``. 
+In all three cases, if the optional argument `Q` is left unspecified, then it defaults to a principal form given by `Q = QuadBin( 1, 2-n, 1)`, where `n` is the integer `(d^2-1)/(r(d-r))`, since this has ``\\mathrm{disc}(Q) = n(n-4)``.
 
 The final way to specify an input is as a tuple `(d,Q)` or `(d,r,Q)`.
 
@@ -109,50 +109,37 @@ The defined (and precomputed) fields in an `AdmissibleTuple` are given by:
     R ::BigFloat                    # log of u
 ```
 
-\\
-The fields marked '(lazy)', namely 'H' and 'g', are not initialized at first since their computation is substantially more expensive than the other fields. 
-Once they have been computed their values are memoized and do not have to be recomputed. 
+The fields marked '(lazy)', namely 'H' and 'g', are not initialized at first since their computation is substantially more expensive than the other fields.
+Once they have been computed their values are memoized and do not have to be recomputed.
 
-From the way that `H` is computed currently, `K` is not recognized as a subfield. 
-This could lead to some non-intuitive results. 
-For example, the quadratic generator `a` is an element of `K`, but *not* a recognized element of `H`. 
+From the way that `H` is computed currently, `K` is not recognized as a subfield.
+This could lead to some non-intuitive results.
+For example, the quadratic generator `a` is an element of `K`, but *not* a recognized element of `H`.
 If an explicit embedding is needed, it can be obtained using `is_subfield(K,H)`.
 
 # Examples
 
 ```jldoctest
-AdmissibleTuple(5)
-
-# output
-
+julia> AdmissibleTuple(5)
 AdmissibleTuple( d = 5, K = ℚ(√12), q = 1, Q = ⟨1,-4,1⟩, h = 1 )
 ```
 ```jldoctest
-AdmissibleTuple(11,3)
-
-# output
-
+julia> AdmissibleTuple(11,3)
 AdmissibleTuple( d = 11, r = 3, K = ℚ(√5), q = 1, Q = ⟨1,-3,1⟩, h = 1 )
 ```
 ```jldoctest
-AdmissibleTuple(5,1,1)
-
-# output
-
+julia> AdmissibleTuple(5,1,1)
 AdmissibleTuple( d = 4, K = ℚ(√5), q = 1, Q = ⟨1,-3,1⟩, h = 1 )
 ```
 ```jldoctest
-AdmissibleTuple(11,QuadBin(3,-12,4))
-
-# output
-
+julia> AdmissibleTuple(11,QuadBin(3,-12,4))
 AdmissibleTuple( d = 11, K = ℚ(√24), q = 2, Q = ⟨3,-12,4⟩, h = 1 )
 ```
 """
 AdmissibleTuple(d::Integer) = AdmissibleTuple(d,1)
 
 function AdmissibleTuple(d::Integer,r::Integer)
-    @req 0 < 2r < (d-1) "r must satisfy 0 < 2r < d-1." 
+    @req 0 < 2r < (d-1) "r must satisfy 0 < 2r < d-1."
     n = Int((d^2-1)//(r*(d-r))) # throws an error if (d,r) is not admissible
     @req n > 4 "n must be > 4."
     D, f = Int.(coredisc(n*(n-4)))
@@ -181,7 +168,7 @@ AdmissibleTuple(dQ::Tuple{Integer, QuadBin{ZZRingElem}}) = AdmissibleTuple(dQ...
 AdmissibleTuple(drQ::Tuple{Integer, Integer, QuadBin{ZZRingElem}}) = AdmissibleTuple(dQ...)
 
 function AdmissibleTuple(d::Integer,r::Integer,Q::QuadBin)
-    @req 0 < 2r < (d-1) "r must satisfy 0 < 2r < d-1." 
+    @req 0 < 2r < (d-1) "r must satisfy 0 < 2r < d-1."
     n = Int((d^2-1)//(r*(d-r))) # throws an error if (d,r) is not admissible
     @req n > 4 "n must be > 4."
     D, f = Int.(coredisc(n*(n-4)))
@@ -257,14 +244,11 @@ function AdmissibleTuple(D::Integer,j::Integer,m::Integer,Q::QuadBin)
 end
 
 
-
-
 @doc raw"""
     is_admissible( d::Integer [, Q::QuadBin])
     is_admissible( d::Integer, r::Integer [, Q::QuadBin])
     is_admissible( D::Integer, j::Integer, m::Integer [, Q::QuadBin])
 
-\\
 Test whether the arguments form an admissible tuple.
 
 # Examples
@@ -329,7 +313,7 @@ function ==(F::AdmissibleTuple, G::AdmissibleTuple)
     for p in  (:d, :r, :n, :D, :f, :q, :j, :m, :k, :K, :a, :h, :L, :A)
         test &= getfield(F,p) == getfield(G,p)
     end
-    return test    
+    return test
 end
 
 
@@ -337,20 +321,14 @@ end
 
 # Def 7.20, Lemma 7.21, and Def. 4.31 of main.tex
 # Anti-unitary if and only if the following hold:
-#     j_min must be odd; 
+#     j_min must be odd;
 #     d_min - 3 must be a square, k^2;
 #     kf_Q must divide f_{j_min}.
-# The following are all anti-unitary and would 
-# make good unit tests.
-# F = AdmissibleTuple(  4)
-# F = AdmissibleTuple(  7, QuadBin( 2, -4, 1) )
-# F = AdmissibleTuple( 19, QuadBin( 1, -3, 1) )
-# F = AdmissibleTuple( 19, QuadBin( 4, -6, 1) )
-# These are all non-examples for unit tests.
-# F = AdmissibleTuple( 5)
-# F = AdmissibleTuple( 6)
-# F = AdmissibleTuple( 8)
-# F = AdmissibleTuple( 9)
+@doc """
+    is_antiunitary(F::AdmissibleTuple)
+
+Test if the tuple `F` has antiunitary symmetry.
+"""
 function is_antiunitary(F::AdmissibleTuple)
     @assert F.r == 1 "Only rank = 1 is supported."
 
@@ -377,7 +355,11 @@ function is_antiunitary(F::AdmissibleTuple)
 
 end
 
-# also returns the symmetry generator
+@doc """
+    is_antiunitary_with_generator(F::AdmissibleTuple)
+
+Test if the tuple `F` has antiunitary symmetry and return a tuple: if the first output is `true`, the second element of the tuple is a symmetry generator, and if `false`, the second output is the zero matrix.
+"""
 function is_antiunitary_with_generator(F::AdmissibleTuple)
     @assert F.r == 1 "Only rank = 1 is supported."
 
@@ -407,63 +389,4 @@ function is_antiunitary_with_generator(F::AdmissibleTuple)
         end
     end
 
-end
-
-
-# Expensive direct computation of all ghost overlaps starting 
-# from the real projective form of a ghost.
-# Useful for testing, but not exported.
-function _ghost_validation_norm(z::Vector{BigFloat})
-    d = 1+length(z)÷2
-    ψ = re_im_proj(z)
-    ϕ = circshift(reverse(ψ),1)
-    ov = [ϕ'*wh(p,q,ψ)*ϕ'*wh(-p,-q,ψ) for p=0:d-1, q=0:d-1]./(ϕ'ψ)^2
-    
-    # check approximate reality and normalization
-    @assert all(ov .≈ real.(ov))
-    ov = real.(ov)
-    @assert ov[1,1] ≈ 1.0
-    # test approximate equality of all non-identity overlaps
-    # @assert all(ov[2:end] .≈ one(BigFloat)/(d+1))
-
-    # quantify the deviation
-    norm( ov[2:end] .- one(BigFloat)/(d+1) )
-end
-
-
-# Expensive direct computation of all ghost overlaps starting 
-# from the real projective form of a ghost.
-# Useful for testing, but not exported.
-function _ghost_validation_norm_2(ψ::Vector{Complex{BigFloat}})
-    T = eltype(ψ)
-    d = length(ψ)
-    ϕ = circshift(reverse(ψ),1)
-    ov = zero(BigFloat)
-    n = (ϕ'ψ)^2/(d+one(T)) # normalizing factor
-    for j = 0:(d+1)÷2, k = 0:j
-        ov += abs2( sum( ψ .* circshift(ψ, j+k) .* conj(circshift(ϕ),j) .* conj(circshift(ϕ),k) ) - 
-            ((j==0) + (k==0)) * n )
-    end
-    
-    # quantify the deviation
-    sqrt( ov )
-end
-
-# same, but for sics. 
-function _sic_validation_norm(z::Vector{BigFloat})
-    d = 1+length(z)÷2
-    ψ = re_im_proj(z)
-    ψ ./ sqrt(ψ'ψ)
-    ov = [abs2(ψ'*wh(p,q,ψ)) for p=0:d-1, q=0:d-1]
-    
-    # quantify the deviation from equiangularity
-    norm( ov[2:end] .- one(BigFloat)/(d+1) )
-end
-
-function sic_overlap_test(ψ::AbstractVector)
-    d = length(ψ)
-    ov = [abs2(ψ'*wh(p,q,ψ)) for p=0:d-1, q=0:d-1]
-    
-    # quantify the deviation from equiangularity
-    maximum( abs.(ov[2:end] .- one(BigFloat)/(d+1)) )
 end

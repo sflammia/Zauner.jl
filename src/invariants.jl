@@ -200,9 +200,9 @@ function necromancy(F::AdmissibleTuple;
     verbose && println("Now searching through Galois shifts using matrix completion.")
     for k = 0:n-1
         ψ = matrix_completion(circshift(x,radix(k,ords)),F)
-        sot = sic_overlap_test(ψ)
+        sot = sic_frame_test(ψ)
         if sot < overlap_precision_max_tol
-            verbose && println("Fiducial vector found with all overlaps correct to ≤ $sot.")
+            verbose && println("Fiducial vector found with frame equations correct to ≤ $sot.")
             break
         end
     end
