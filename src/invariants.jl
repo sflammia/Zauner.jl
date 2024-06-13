@@ -211,7 +211,7 @@ function necromancy(F::AdmissibleTuple;
     verbose && println("Increasing precision...")
     # need to implement precision bumping for SICs.
     z = re_im_proj(Complex{BigFloat}.(ψ))
-    const buffer_bits = 10
+    buffer_bits = 10
     precision_bump!(z, _sic_olp_func, overlap_target_prec + buffer_bits; base = base, verbose = verbose)
     ψ = re_im_proj(z)
     ψ = ψ/sqrt(ψ'ψ)
