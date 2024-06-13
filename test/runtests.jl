@@ -1,16 +1,14 @@
 using Test
 using Zauner
 
-#####
-#=
 
-TODO list:
- - add tests for `dsShift` part of `double_sine`
- - add tests for `quadclassunit`, or whatever replaces it
-=#
-####
+print("Precompiling...")
+necromancy(AdmissibleTuple(7));
+println("done.")
 
-@testset "Zauner algebraic tests" begin
+println("Zauner test set:")
+
+@testset "algebraic" begin
 
     @test conductor(QuadBin(1,1,-1)) == 1
     @test conductor(QuadBin(2,4,8)) == 4
@@ -50,7 +48,7 @@ TODO list:
     @test wh([1; 0],3) == [ 0  0  1; 1  0  0; 0  1  0]
 end # end algebraic testset
 
-@testset "Zauner hj tests" begin
+@testset "hj" begin
 
     @test length(reduced_hj_orbit(QuadBin(1,-4,1))) == 3
     @test length(reduced_hj_orbit(QuadBin(1,-101,1))) == 100
@@ -62,7 +60,7 @@ end # end algebraic testset
 
 end # end hj testset
 
-@testset "Zauner analytic tests" begin
+@testset "analytic" begin
 
     @test e(1) == 1
     @test e(0) == 1
@@ -82,7 +80,7 @@ end # end hj testset
 end # end analytic testset
 
 
-@testset "Zauner quadform tests" begin
+@testset "quadform" begin
 
     a,b,c = [1,2,3]
     Q = QuadBin(a,b,c)
@@ -112,7 +110,7 @@ end # end analytic testset
 end # end quadform testset
 
 
-@testset "Zauner SL(2,ℤ) tests" begin
+@testset "SL(2,ℤ)" begin
     S = [0 -1; 1 0]
     T = [1  1; 0 1]
     U = [1  0; 1 1]
@@ -180,15 +178,12 @@ end # end quadform testset
     AA = psl2word(w)
     @test AA == A || AA == -A
 
-    # test stabilizer
-
-
 end # SL(2,Z) testset
 
 
 
 # Unit tests for the real double sine function
-@testset "Zauner double sine tests" begin
+@testset "double sine" begin
     # Our convention for double sine follows Shintani (and is reciprical to K & K).
     t0 = sqrt(BigFloat(21))
     sq2 = sqrt(BigFloat(2))
@@ -231,12 +226,11 @@ end # SL(2,Z) testset
     # from K & W
     @test 1/double_sine(2-sq2,1,sq2) ≈ -2^(BigFloat(5)/4) * cos(pi/sq2)
 
-    # need to add a few more to test the shift formulas.
 end # double sine testset
 
 
 
-@testset "Zauner utils tests" begin
+@testset "utils" begin
 
     # Test radix function
     @test radix(5,[2,2,2]) == [1,0,1]
@@ -285,7 +279,6 @@ end # double sine testset
     @test is_admissible(5, 2, 1, QuadBin(1,-7,1))
     @test is_admissible(11, 1, QuadBin(3,-12,4))
 
-
     # The first four are anti-unitary, the last four are not.
     @test true == is_antiunitary(AdmissibleTuple(  4))
     @test true == is_antiunitary(AdmissibleTuple(  7, QuadBin( 2, -4, 1) ))
@@ -298,44 +291,16 @@ end # double sine testset
 
 end # utils testset
 
-@testset "Zauner ghost tests" begin
+@testset "ghost" begin
 
-    # check the first 25 ghosts for all overlaps.
-    q = map(x->QuadBin(x...),
-          [ ( 1,  -3,  1),
-            ( 1,  -4,  1),
-            ( 1,  -5,  1),
-            ( 2,  -4,  1),
-            ( 1,  -6,  1),
-            ( 1,  -3,  1),
-            ( 1,  -7,  1),
-            ( 1,  -8,  1),
-            ( 2, -10,  5),
-            ( 1,  -9,  1),
-            ( 3,  -6,  1),
-            ( 1, -10,  1),
-            ( 3, -12,  4),
-            ( 3,  -5,  1),
-            ( 1, -11,  1),
-            ( 1, -12,  1),
-            ( 2, -14,  7),
-            ( 1, -13,  1),
-            ( 3, -15,  5),
-            ( 1,  -4,  1),
-            ( 4,  -8,  1),
-            ( 1, -14,  1),
-            ( 3, -18, 11),
-            ( 1, -15,  1),
-            ( 5, -21, 11) ]
-        )
-    d = [4; 5; 6; 7; 7; 8; 8; 9; 9; 10; 11; 11; 11; 12; 12; 13; 13; 14; 14; 15; 15; 15; 15; 16; 16]
-    # S = deserialize("../data/ghosts")
+    # check the first 15 ghosts for all overlaps.
     setprecision(BigFloat,128) do
-        for k=1:25
-            F = AdmissibleTuple(d[k],q[k])
+        for k=1:15
+            d,q = dq(k)
+            F = AdmissibleTuple(d,q)
             ψ = ghost(F)
             ϕ = circshift(reverse(ψ),1)
-            ov = [ϕ'*wh([p,q],ψ)*ϕ'*wh(-[p,q],ψ) for p=0:F.d-1, q=0:F.d-1]./(ϕ'ψ)^2
+            ov = [ϕ'*wh(p,q,ψ)*ϕ'*wh(-p,-q,ψ) for p=0:d-1, q=0:d-1]./(ϕ'ψ)^2
 
             # check reality
             @test all(ov .≈ real.(ov))
@@ -345,7 +310,7 @@ end # utils testset
             @test ov[1,1] ≈ 1
 
             # check equality of all non-identity overlaps
-            @test all(ov[2:end] .≈ 1/(F.d + one(BigFloat)))
+            @test all(ov[2:end] .≈ 1/(d + one(BigFloat)))
 
             # G is manifestly idempotent, but check anyway
             # G = ψ*ϕ'/ϕ'ψ
@@ -355,7 +320,7 @@ end # utils testset
 end # end ghost testset
 
 
-@testset "Zauner precision_bump tests" begin
+@testset "precision" begin
 
     @test all(re_im_proj( BigFloat[ 1.0; 1.0]) .≈ Complex{BigFloat}[1.0; 1.0 + im*1.0])
     @test all(re_im_proj( Complex{BigFloat}[1.0; 1.0 + im*1.0]) .≈ BigFloat[ 1.0; 1.0])
@@ -370,48 +335,33 @@ end # end ghost testset
 
     @test all(pow_to_elem_sym_poly([1.0; 1.0; 1.0]) .≈ [1.0; 1.0; 0.0; 0.0])
 
-
 end # end precision_bump tests
 
 
-@testset "Zauner galois tests" begin
+@testset "galois" begin
     # check the first 25 ghosts
-    q = map(x->QuadBin(x...),
-          [ ( 1,  -3,  1),
-            ( 1,  -4,  1),
-            ( 1,  -5,  1),
-            ( 2,  -4,  1),
-            ( 1,  -6,  1),
-            ( 1,  -3,  1),
-            ( 1,  -7,  1),
-            ( 1,  -8,  1),
-            ( 2, -10,  5),
-            ( 1,  -9,  1),
-            ( 3,  -6,  1),
-            ( 1, -10,  1),
-            ( 3, -12,  4),
-            ( 3,  -5,  1),
-            ( 1, -11,  1),
-            ( 1, -12,  1),
-            ( 2, -14,  7),
-            ( 1, -13,  1),
-            ( 3, -15,  5),
-            ( 1,  -4,  1),
-            ( 4,  -8,  1),
-            ( 1, -14,  1),
-            ( 3, -18, 11),
-            ( 1, -15,  1),
-            ( 5, -21, 11) ]
-        )
-    d = [4; 5; 6; 7; 7; 8; 8; 9; 9; 10; 11; 11; 11; 12; 12; 13; 13; 14; 14; 15; 15; 15; 15; 16; 16]
     # This test set tests that the galois normal form and centralizer elements are compatible.
     for k=1:25
+        d,q = dq(k)
         # remove this if statement once even dimensions are supported.
-        if isodd(d[k])
-            F = AdmissibleTuple(d[k],q[k])
+        if isodd(d)
+            F = AdmissibleTuple(d,q)
             g, n = galois_normal_form(F)
             c = length(Zauner.centralizer_elements(F))
             @test c == prod(n)*2^is_antiunitary(F)*F.k
         end
     end
 end # end galois tests
+
+@testset "necromancy" begin
+
+    # d = 5, 7a, 7b
+    for k in [2,4,5]
+        ψ = necromancy( AdmissibleTuple(dq(k)...) )
+        @test sic_overlap_test(ψ) < floatmin(Float32)
+        @test sic_frame_test(ψ) < floatmin(Float32)
+    end
+
+end # end necromancy tests
+
+println("Zauner tests complete.")
