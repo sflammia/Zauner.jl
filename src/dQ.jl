@@ -3306,17 +3306,17 @@ the period of the Hirzebruch-Jung continued fraction expansion of their positive
 # Examples
 
 ```jldoctest
-julia> dQ(1)
- (4, Binary quadratic form over ZZ: x^2 - 3*x*y + y^2)
+julia> dq(1)
+(4, Binary quadratic form over ZZ: x^2 - 3*x*y + y^2)
 ```
 It can also be called with collections to access multiple tuples.
 ```jldoctest
 julia> dq(20:23)
- 4-element Vector{Tuple{Int64, QuadBin{ZZRingElem}}}:
-  (15, Binary quadratic form over ZZ: x^2 - 4*x*y + y^2)
-  (15, Binary quadratic form over ZZ: 4*x^2 - 8*x*y + y^2)
-  (15, Binary quadratic form over ZZ: x^2 - 14*x*y + y^2)
-  (15, Binary quadratic form over ZZ: 11*x^2 - 18*x*y + 3*y^2)
+4-element Vector{Tuple{Int64, QuadBin{ZZRingElem}}}:
+ (15, Binary quadratic form over ZZ: x^2 - 4*x*y + y^2)
+ (15, Binary quadratic form over ZZ: 4*x^2 - 8*x*y + y^2)
+ (15, Binary quadratic form over ZZ: x^2 - 14*x*y + y^2)
+ (15, Binary quadratic form over ZZ: 11*x^2 - 18*x*y + 3*y^2)
 ```
 The associated `AdmissibleTuple` can be obtained by splatting.
 ```jldoctest
