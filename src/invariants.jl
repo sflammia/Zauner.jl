@@ -67,7 +67,7 @@ true
 function necromancy(F::AdmissibleTuple;
     max_prec::Integer = 2^23,
     overlap_precision_max_tol::Float64 = 1e-6,
-    overlap_target_prec::Integer = 30,
+    overlap_target_prec::Integer = 256,
     base::Integer = 2,
     verbose::Bool = false)
     # Ensure that we have initialized the class field for F
@@ -211,9 +211,14 @@ function necromancy(F::AdmissibleTuple;
     verbose && println("Increasing precision...")
     # need to implement precision bumping for SICs.
     z = re_im_proj(Complex{BigFloat}.(ψ))
-    precision_bump!(z, _sic_olp_func, overlap_target_prec; base = base, verbose = verbose)
+    const buffer_bits = 10
+    precision_bump!(z, _sic_olp_func, overlap_target_prec + buffer_bits; base = base, verbose = verbose)
     ψ = re_im_proj(z)
-    return ψ/sqrt(ψ'ψ)
+    ψ = ψ/sqrt(ψ'ψ)
+    setprecision(BigFloat,overlap_target_prec)
+    z = reim(ψ)
+    # round down the the desired precision so that the new precision of BigFloat is predictable
+    return BigFloat.(z[1]) + im*BigFloat.(z[2])
 end
 
 
