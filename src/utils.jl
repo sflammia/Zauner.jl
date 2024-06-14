@@ -101,7 +101,7 @@ The defined (and precomputed) fields in an `AdmissibleTuple` are given by:
     h ::Integer                     # class number, or degree of H/K
     G ::Vector{Integer}             # orders of class group generators
     c ::Vector{QuadBin}             # basis of generator Q's for the class group
-    Q ::QuadBin                     # form
+    Q ::QuadBin                     # binary quadratic form
     L ::Matrix{ZZRingElem}          # S(Q) generator
     k ::Integer                     # L^k = I mod d
     A ::Matrix{ZZRingElem}          # S_d(Q) generator
@@ -148,7 +148,7 @@ function AdmissibleTuple(d::Integer,r::Integer)
     t = sqrt(BigFloat(D))*f/2
     j = round(Int,asinh(t)/R)
     m = round(Int,asinh(t*r)/asinh(t))
-    Q = QuadBin(one(ZZ),2one(ZZ)-ZZ(n),one(ZZ)) # disc(Q) = n*(n-4)
+    Q = binary_quadratic_form(1,2-n,1) # disc(Q) = n*(n-4)
     q = Int(conductor(Q))
     # H = ghostclassfield(K,q)
     # g = signswitch(H,D)
@@ -164,8 +164,8 @@ end
 
 AdmissibleTuple(d::Integer,Q::QuadBin) = AdmissibleTuple(d,1,Q)
 
-AdmissibleTuple(dQ::Tuple{Integer, QuadBin{ZZRingElem}}) = AdmissibleTuple(dQ...)
-AdmissibleTuple(drQ::Tuple{Integer, Integer, QuadBin{ZZRingElem}}) = AdmissibleTuple(dQ...)
+AdmissibleTuple(dQ::Tuple{Integer, QuadBin}) = AdmissibleTuple(dQ...)
+AdmissibleTuple(drQ::Tuple{Integer, Integer, QuadBin}) = AdmissibleTuple(dQ...)
 
 function AdmissibleTuple(d::Integer,r::Integer,Q::QuadBin)
     @req 0 < 2r < (d-1) "r must satisfy 0 < 2r < d-1."
@@ -203,7 +203,7 @@ function AdmissibleTuple(D::Integer,j::Integer,m::Integer)
     r = Int(ZZ((u^(j*m) - u^(-j*m))//(f*a)))
     d = Int(ZZ((u^(j*(m+1)) - u^(-j*(m+1)))//(f*a))) + r
     n = Int((d^2-1)//(r*(d-r))) # throws an error if (d,r) is not admissible
-    Q = QuadBin(one(ZZ),2one(ZZ)-ZZ(n),one(ZZ)) # disc(Q) = n*(n-4)
+    Q = binary_quadratic_form(1,2-n,1) # disc(Q) = n*(n-4)
     q = Int(conductor(Q))
     # H = ghostclassfield(K,q)
     # g = signswitch(H,D)
