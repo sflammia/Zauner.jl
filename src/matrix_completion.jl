@@ -20,7 +20,7 @@ function matrix_completion( nu::AbstractArray, F::AdmissibleTuple;
 
     X = HermitianSemidefinite(F.d)
     obj = real(tr(X))
-    cons = Convex.EqConstraint[ ]
+    cons = typeof(tr(X)==0)[ ]
     # Possible idea to speed this up: only need about 4d - O(1) constraints
     # for injectivity with POVMs (Heinosaari, Mazzarella & Wolf).
     # Instead of a maximal orbit, we could sample a random sparse set
