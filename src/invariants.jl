@@ -9,8 +9,9 @@ function _ghost_invariants(K::AbstractArray{BigFloat})
     ords = size(K)
     r, n = length(ords), prod(ords)
     prec = precision(K[1])
+    THRESHOLD = BigFloat(2)^(10-prec/2)
 
-    V = Vandermonde{BigFloat}[]
+    V = Vandermonde{BigFloat}
     a = Matrix{BigFloat}[]
     b = Vector{BigFloat}[]
     s = Vector{BigFloat}[]
@@ -19,26 +20,48 @@ function _ghost_invariants(K::AbstractArray{BigFloat})
         # first compute "l_j".
         for l = 1:n÷ords[j]
             c = dropdims(sum( K.^l ; dims=notj); dims=notj)
-            # If these are distinct and nonzero with at least 10 bits above
-            # our base precision, then we've found l_j
-            if all( abs.([diff(sort(c)); c]) .> BigFloat(2)^(10-prec) )
-                push!( V, Vandermonde(c))
-                push!( b, V[j] \ circshift(c,-1) )
+            # If these are distinct and nonzero then we've found l_j.
+            # We test this with at least 10 bits above 1/2 of our base precision.
+            if _distinct_nonzero( c, THRESHOLD)
+                V = Vandermonde(c)
+                push!( b, V \ circshift(c,-1) )
+                # note: s is called "e" in the draft, but that conflicts with e(z).
+                # These are the power sums in the c_{j,t,l_j} over each t.
+                push!( s, [ sum( c.^k ) for k=1:ords[j] ] )
                 break
             end
         end
-        # now compute a and s
-        # note: s is called "e" in the draft, but that conflicts with e(z).
-        # These are the power sums in the c_{j,t,l_j} over each t.
+        # now compute a
         push!( a, zeros(BigFloat, (ords[j], n÷ords[j])) )
-        push!( s, [ sum( (V[j].c).^k ) for k=1:ords[j] ] )
         for l = 1:n÷ords[j]
             x = dropdims(sum( K.^l ; dims=notj); dims=notj)
-            a[j][:,l] = V[j] \ x
+            a[j][:,l] = V \ x
         end
     end
 
+    # println("prec of a = ",precision(a[1][1]),"\n")
+    # println("\na = ",a[1][1:4],"\n")
+    # println("------")
+    # println("precision = ",BigFloat(2)^(10-precision(b[1][1])/2),"\n")
+    # println("a = $a\n\nb = $b\n\ns = $s\n\n-------\n\n")
+    # println(map( x -> abs.(x) .> BigFloat(2)^(10-precision(b[1][1])/2), s))
+    # println("size of a = ",map(size,a))
+    # println(a[1][:,24],"\n")
+    # # println(a[2][:,6],"\n")
+    # println(a[1][:,24],"\n")
+
+
     return a, b, s
+end
+
+
+@doc """
+    _distinct_nonzero(v::Vector{<:T},prec::T) where T<:Real
+
+Internal function to test if the elements in a real vector `v` are distinct and nonzero to precision `prec`.
+"""
+function _distinct_nonzero(v::Vector{<:T},prec::T) where T<:Real
+    all( abs.([diff(sort(v)); v]) .> prec )
 end
 
 
@@ -71,6 +94,7 @@ function necromancy(F::AdmissibleTuple;
     base::Integer = 2,
     verbose::Bool = false)
     # Ensure that we have initialized the class field for F
+    d = Int(F.d)
     ghostclassfield(F)
     signswitch(F)
     hb = lll(maximal_order(F.H)).basis_nf # find an LLL-reduced basis for H
@@ -79,6 +103,7 @@ function necromancy(F::AdmissibleTuple;
 
     # the normal form orders of the Galois group and a maximal p-orbit
     ords, porb = galois_order_orbit(F)
+    verbose && println("Galois group with orders ",ords)
     r, n = length(ords), prod(ords)
 
     # get a low-precision ghost
@@ -86,7 +111,7 @@ function necromancy(F::AdmissibleTuple;
     setprecision(BigFloat, prec; base = 2)
     verbose && println("Computing the ghost.")
     ψ = (verbose ? (@time ghost(F)) : ghost(F) )
-    x = zeros(Complex{Float64},F.d)
+    x = zeros(Complex{Float64},d)
 
     # new target precision.
     max_prec < 128 && error("max_prec should be at least 128 bits.")
@@ -95,13 +120,13 @@ function necromancy(F::AdmissibleTuple;
 
         # this is a hack since too much precision makes it hard to converge,
         # and d = 5 is so small that we already overshoot at 256.
-        if F.d == 5; prec = 200; end
+        if d == 5; prec = 200; end
 
         # bump up the precision
         verbose && println("Current precision = ",precision(real(ψ[1]))," bits.")
         ψ = precision_bump( ψ, prec; base = 2, verbose = verbose)
         ϕ = circshift(reverse(ψ),1)
-        ϕ .*= (F.d+1)/ϕ'ψ # include normalization factors
+        ϕ .*= (BigFloat(d+1))/ϕ'ψ # include normalization factors
         verbose && println("new precision = ",precision(real(ψ[1]))," bits")
 
         # compute the ghost overlaps
@@ -119,12 +144,12 @@ function necromancy(F::AdmissibleTuple;
         fH = x -> BigFloat.(real.(evaluation_function( eH, prec).(x)))
         primalbasis = fH.(hb)
         dualbasis   = fH.(gb)
-        dual = x -> _dualize( primalbasis, dualbasis, x )
+        _dual(x) = _dualize( primalbasis, dualbasis, x )
         # sign-switch
         for j=1:r
-            a[j] = dual.(a[j])
-            b[j] = dual.(b[j])
-            s[j] = dual.(s[j])
+            a[j] = _dual.(a[j])
+            b[j] = _dual.(b[j])
+            s[j] = _dual.(s[j])
             s[j] = reverse(pow_to_elem_sym_poly(s[j]))
         end
         # From this point on we are in SIC world.
@@ -141,6 +166,7 @@ function necromancy(F::AdmissibleTuple;
             verbose && println("Some invariants were infinite.\n    ...Doubling precision.")
         else
             θ = map( x -> -roots(BigFloat.(x)) , s)
+            # println("θ = ",θ)
 
             # Compute c', map to elementary symmetric polynomials
             # then find roots to get K'
@@ -155,6 +181,8 @@ function necromancy(F::AdmissibleTuple;
                     L[j][t,:] = -roots( reverse(pow_to_elem_sym_poly(L[j][t,:])) )
                 end
                 L[j] = L[j] / sqrt(BigFloat(F.d)+1)
+                # These should all be approximate phases
+                # println("all(abs.(L[$j]) .≈ 1)? ", all(abs.(L[j]) .≈ 1) )
             end
 
             # now intersect to get x, which is nu up to an unknown Galois action.
@@ -164,9 +192,13 @@ function necromancy(F::AdmissibleTuple;
             for k = 0:n-1
                 t = radix(k,ords) .+ 1
                 Kt = Tuple([ L[j][t[j],:] for j = 1:r])
-                # intersect at 256-bit precision by default
-                a = reduce( (x,y) -> _approx_complex_intersection(x,y; prec = 256), Kt)
-                if length(a) == 1
+                # println("Sizes of Kt = ",map(size,Kt),"\n\n")
+                # println(maximum(map(x->norm(abs.(x).-1),Kt)))
+                # intersect at 128-bit precision by default
+                a = reduce( (x,y) -> _approx_complex_intersection(x,y; prec = 256÷2), Kt)
+                # println("sizes of Kt = ",map(size,Kt))
+                # println("\n\n|Kt| = ",map(x->abs.(x),Kt),"\n\n")
+                if length(a) == 1 # the intersection is indeed unique
                     x[t...] = a[1]
                 else
                     verbose && println("Intersection error.\n    Doubling precision.")
@@ -198,7 +230,7 @@ function necromancy(F::AdmissibleTuple;
     end # while
 
     # Now try every shift in the Galois group until one of them gives a SIC
-    verbose && println("Now searching through Galois shifts using matrix completion.")
+    verbose && println("Now searching through Galois shifts and using matrix completion.")
     for k = 0:n-1
         ψ = matrix_completion(circshift(x,radix(k,ords)),F)
         sot = sic_frame_test(ψ)
