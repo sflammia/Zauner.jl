@@ -12,7 +12,11 @@ where ``\nu_{\boldsymbol{p}} = \langle\psi|D_{\boldsymbol{p}}|\psi\rangle`` are 
 function sic_overlap_test(ψ::AbstractVector)
     d = length(ψ)
     t = eltype(ψ)
-    maximum( [ abs(abs2(ψ'*wh(p,ψ)) - one(t)/(d+1)) for p=1:d^2-1])
+    dev = abs(zero(t))
+    for p = 1:d^2-1
+        dev = max( abs( abs2(ψ'*wh(p,ψ)) - one(t)/(d+1) ), dev)
+    end
+    dev
 end
 
 
