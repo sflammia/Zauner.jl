@@ -55,8 +55,9 @@ end
 
 
 # compute the rank-1 ghosts in two cases
-# Ideally this should test if F.Q is equiv to principle
-# rather than using the reduced principle form
+# Ideally this should test if F.Q is equivalent to principle
+# (using 'is_equivalent( Q1, Q2; proper = true)')
+# rather than using only the reduced principle form
 _rank_1_ghost(F::AdmissibleTuple) = ( F.Q.a == 1 && F.Q.b == 1-F.d && F.Q.c == 1 ? _principle_ghost(F) : _generic_rank_1_ghost(F) )
 
 
@@ -97,23 +98,24 @@ end
 
 # use special features of the rank-1 case to avoid calculating all nu.
 function _generic_rank_1_ghost(F::AdmissibleTuple)
-    ζ = -cispi(BigFloat(1)/F.d)
+    d = Int(F.d)
+    ζ = -cispi(BigFloat(1)/d)
     QQ = QuadBin(F.A[2,1],F.A[2,2]-F.A[1,1],-F.A[1,2])
-    c = e(-BigFloat(rademacher(F.A))/24) / sqrt(BigFloat(F.d+1))
+    c = e(-BigFloat(rademacher(F.A))/24) / sqrt(BigFloat(d+1))
 
     ω = _get_periods(F.A,F.x)
     r = ω ./ circshift(ω,-1)
 
-    χ = zeros(Complex{BigFloat},F.d,2)
+    χ = zeros(Complex{BigFloat},d,2)
     χ[1,1] = 1
-    for j = 1:2*F.d-1
-        p = radix(j,[F.d,F.d])
-        z = (ω[1]*p[2]-ω[2]*p[1])/F.d
-        m = Int((-F.A[2,1]*p[1]+(F.A[1,1]-1)*p[2])/F.d)
+    for j = 1:2*d-1
+        p = radix(j,[d,d])
+        z = (ω[1]*p[2]-ω[2]*p[1])/d
+        m = Int((-F.A[2,1]*p[1]+(F.A[1,1]-1)*p[2])/d)
 
-        QA = BigFloat(-QQ(p...)/(F.d*(F.d-2)))
-        s = ( F.d%2 == 1 ? 1 : (1+p[1])*(1+p[2]) )
-        nu = ζ^QA * (-1)^s * c / q_pochhammer_exp( (p[2]*F.x-p[1])/F.d, F.x, m )
+        QA = BigFloat(-QQ(p...)/(d*(d-2)))
+        s = ( isodd(d) ? 1 : (1+p[1])*(1+p[2]) )
+        nu = ζ^QA * (-1)^s * c / q_pochhammer_exp( (p[2]*F.x-p[1])/d, F.x, m )
         for i=1:(length(ω)-2)
             nu *= _sigma_s(z/ω[i+2],r[i+1])
         end
