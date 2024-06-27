@@ -283,3 +283,7 @@ Manifest.toml
 # Julia
 /docs/Manifest.toml
 /test/Manifest.toml
+
+# local folder for pdfs, etc.
+/stash/
+
