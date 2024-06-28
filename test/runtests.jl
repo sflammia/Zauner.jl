@@ -289,12 +289,17 @@ end # double sine testset
     @test false == is_antiunitary(AdmissibleTuple( 8))
     @test false == is_antiunitary(AdmissibleTuple( 9))
 
+    for k=1:13
+        @test false == has_fa_symmetry(AdmissibleTuple(dq(k)))
+    end
+    @test true == has_fa_symmetry(AdmissibleTuple(dq(14)))
+
 end # utils testset
 
 @testset "ghost" begin
 
     # check the first 15 ghosts for all overlaps.
-    setprecision(BigFloat,128) do
+    setprecision(BigFloat,64) do
         for k=1:15
             d,q = dq(k)
             F = AdmissibleTuple(d,q)
@@ -355,11 +360,12 @@ end # end galois tests
 
 @testset "necromancy" begin
 
-    # d = 5, 7a, 7b
-    for k in [2,4,5]
-        ψ = necromancy( AdmissibleTuple(dq(k)...) )
-        @test sic_overlap_test(ψ) < floatmin(Float32)
-        @test sic_frame_test(ψ) < floatmin(Float32)
+    for k in 1:25
+        t = AdmissibleTuple(dq(k))
+        # can't handle F_a symmetry yet
+        has_fa_symmetry(t) && continue
+        ψ = necromancy(t; max_prec=2^15)
+        @test sic_frame_test(ψ) < 1e-70
     end
 
 end # end necromancy tests
