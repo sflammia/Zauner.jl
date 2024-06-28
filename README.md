@@ -4,6 +4,4 @@
 
 # Zauner
 
-Zauner.jl:
-
-Julia package for computing SICs and related objects.
+A Julia package for computing SICs and related objects.
