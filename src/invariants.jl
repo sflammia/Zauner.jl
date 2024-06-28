@@ -65,12 +65,11 @@ function _distinct_nonzero(v::Vector{<:T},prec::T) where T<:Real
 end
 
 
-
 @doc raw"""
     necromancy( F::AdmissibleTuple [; max_prec = 2^23, verbose = false])
 
 Compute numerical approximations to the ghost invariants of `F`.
-The maximum number of bits used in integer relation finding is set to `max_prec` (default of 1 MB) and `verbose` can be toggled `true` or `false`.
+The maximum number of bits used in integer relation finding is set to `max_prec` (default of 1 Mb) and `verbose` can be toggled `true` or `false`.
 
 # Examples
 
@@ -88,12 +87,13 @@ true
 ```
 """
 function necromancy(F::AdmissibleTuple;
-    max_prec::Integer = 2^23,
-    overlap_precision_max_tol::Float64 = 1e-6,
-    overlap_target_prec::Integer = 256,
-    base::Integer = 2,
-    verbose::Bool = false)
+                    max_prec::Integer = 2^20,
+                    overlap_tol::Float64 = 1e-6,
+                    overlap_prec::Integer = 256,
+                    base::Integer = 2,
+                    verbose::Bool = false)
     # Ensure that we have initialized the class field for F
+    verbose && println(F)
     d = Int(F.d)
     ghostclassfield(F)
     signswitch(F)
@@ -107,23 +107,24 @@ function necromancy(F::AdmissibleTuple;
     r, n = length(ords), prod(ords)
 
     # get a low-precision ghost
-    prec = 128
+    prec = 64
     setprecision(BigFloat, prec; base = 2)
     verbose && println("Computing the ghost.")
     ψ = (verbose ? (@time ghost(F)) : ghost(F) )
-    x = zeros(Complex{Float64},d)
+    # initialize for the (potentially shifted) sic overlaps
+    x = Array{Complex{BigFloat}}(undef,Tuple(ords)...)
 
-    # new target precision.
-    max_prec < 128 && error("max_prec should be at least 128 bits.")
     while prec ≤ max_prec
-        verbose && println("target precision ≥ $prec bits")
+        prec *= 2
+        # define some test flags
+        finite_invariants = true
+        complex_phases = true
+        unique_intersections = true
 
-        # this is a hack since too much precision makes it hard to converge,
-        # and d = 5 is so small that we already overshoot at 256.
-        if d == 5; prec = 200; end
+        verbose && println("\n$prec bit target precision.")
 
         # bump up the precision
-        verbose && println("Current precision = ",precision(real(ψ[1]))," bits.")
+        verbose && println("Current working precision = ",precision(real(ψ[1]))," bits.")
         ψ = precision_bump( ψ, prec; base = 2, verbose = verbose)
         ϕ = circshift(reverse(ψ),1)
         ϕ .*= (BigFloat(d+1))/ϕ'ψ # include normalization factors
@@ -131,123 +132,123 @@ function necromancy(F::AdmissibleTuple;
 
         # compute the ghost overlaps
         verbose && println("Computing the high-precision ghost overlaps.")
-        K = ( verbose ? (@time [ real(ϕ'wh(p,ψ)) for p in porb]) :
-                [ real(ϕ'wh(p,ψ)) for p in porb] )
+        (verbose ? (@time K = [ real(ϕ'wh(p,ψ)) for p in porb])
+            : K = [ real(ϕ'wh(p,ψ)) for p in porb])
 
         # compute the ghost invariants
         verbose && println("Computing the ghost invariants.")
-        a,b,s = ( verbose ? (@time _ghost_invariants(K)) : _ghost_invariants(K) )
+        a,b,s = _ghost_invariants(K)
 
         # sign-switch to the SIC invariants.
         verbose && println("Sign-switching to the SIC invariants.")
         # create a high precision embedding map and sign-switching automorphism
-        fH = x -> BigFloat.(real.(evaluation_function( eH, prec).(x)))
-        primalbasis = fH.(hb)
-        dualbasis   = fH.(gb)
+        _fH(x) = BigFloat.(real.(evaluation_function( eH, prec).(x)))
+        primalbasis = _fH.(hb)
+        dualbasis   = _fH.(gb)
         _dual(x) = _dualize( primalbasis, dualbasis, x )
-        # sign-switch
+        # sign-switch and test for finiteness
         for j=1:r
             a[j] = _dual.(a[j])
+            finite_invariants &= all(isfinite.(a[j]))
+            !finite_invariants && break
+
             b[j] = _dual.(b[j])
+            finite_invariants &= all(isfinite.(b[j]))
+            !finite_invariants && break
+
             s[j] = _dual.(s[j])
             s[j] = reverse(pow_to_elem_sym_poly(s[j]))
+            finite_invariants &= all(isfinite.(s[j]))
+            !finite_invariants && break
         end
+        # println("Invariants are finite? ",finite_invariants)
+        # println("\nPrecision of ghost is: ",precision(real(ψ[1])))
+        setprecision( BigFloat, 320; base=2)
+        # println("Precision of ghost after setprecision is: ",precision(real(ψ[1])),"\n")
+        if !finite_invariants
+            verbose && println("Some SIC invariants were not finite.\n    ...Doubling precision.")
+            continue
+        end
+        verbose && finite_invariants && println("All SIC invariants are finite.")
         # From this point on we are in SIC world.
 
         # Lower the precision back to standard BigFloat plus a 64-bit buffer.
+        # NOTE: This line forces a lot of recomputation with ghosts.
+        # Basically, we need to precision bump from this baseline each time instead of the previous level of precision.
+        # However, if we keep the high precision then it is very slow to compute roots.
         setprecision( BigFloat, 320; base=2)
 
-        # if any of the invariants are Nan or Inf, try again.
-        finite_invariants  = all(map( x -> all(isfinite.(x)), a))
-        finite_invariants &= all(map( x -> all(isfinite.(x)), b))
-        finite_invariants &= all(map( x -> all(isfinite.(x)), s))
-
-        if !finite_invariants
-            verbose && println("Some invariants were infinite.\n    ...Doubling precision.")
-        else
-            θ = map( x -> -roots(BigFloat.(x)) , s)
-            # println("θ = ",θ)
-
-            # Compute c', map to elementary symmetric polynomials
-            # then find roots to get K'
-            L = Matrix{Complex{BigFloat}}[]
-            for j = 1:r
-                θprime = [ θ[j][1] ]
-                for k = 2:ords[j]
-                    push!( θprime, dot( b[j], [ θprime[k-1]^n for n=0:(ords[j]-1) ] ) )
-                end
-                push!( L, Vandermonde(θprime) * a[j] )
-                for t = 1:ords[j]
-                    L[j][t,:] = -roots( reverse(pow_to_elem_sym_poly(L[j][t,:])) )
-                end
-                L[j] = L[j] / sqrt(BigFloat(F.d)+1)
-                # These should all be approximate phases
-                # println("all(abs.(L[$j]) .≈ 1)? ", all(abs.(L[j]) .≈ 1) )
+        # Compute c', map to elementary symmetric polynomials
+        # then find roots to get K'
+        θ = map( x -> -roots(BigFloat.(x)) , s)
+        L = Matrix{Complex{BigFloat}}[]
+        for j = 1:r
+            θprime = [ θ[j][1] ]
+            for k = 2:ords[j]
+                push!( θprime, dot( b[j], [ θprime[k-1]^n for n=0:(ords[j]-1) ] ) )
             end
-
-            # now intersect to get x, which is nu up to an unknown Galois action.
-            unique_intersections = true
-            x = Array{Complex{BigFloat}}(undef,Tuple(ords)...)
-            # x = zeros(Complex{BigFloat},Tuple(ords)...)
-            for k = 0:n-1
-                t = radix(k,ords) .+ 1
-                Kt = Tuple([ L[j][t[j],:] for j = 1:r])
-                # println("Sizes of Kt = ",map(size,Kt),"\n\n")
-                # println(maximum(map(x->norm(abs.(x).-1),Kt)))
-                # intersect at 128-bit precision by default
-                a = reduce( (x,y) -> _approx_complex_intersection(x,y; prec = 256÷2), Kt)
-                # println("sizes of Kt = ",map(size,Kt))
-                # println("\n\n|Kt| = ",map(x->abs.(x),Kt),"\n\n")
-                if length(a) == 1 # the intersection is indeed unique
-                    x[t...] = a[1]
-                else
-                    verbose && println("Intersection error.\n    Doubling precision.")
-                    unique_intersections = false
-                    break
-                end
+            push!( L, Vandermonde(θprime) * a[j] )
+            for t = 1:ords[j]
+                L[j][t,:] = -roots( reverse(pow_to_elem_sym_poly(L[j][t,:])) )
             end
+            L[j] = L[j] / sqrt(BigFloat(d+1))
+            # These should all be approximate phases,
+            # otherwise break and try again
+            complex_phases &= all(abs.(L[j]) .≈ 1)
+            !complex_phases && break
+        end
+        if !complex_phases
+            verbose && println("Some SIC overlaps were not complex phases.\n    ...Doubling precision.")
+            continue
+        end
+        verbose && println("All SIC overlaps are complex phases.")
 
-            # if intersections are unique, return to the original BigFloat precision
+        # now intersect to get x, which is nu up to an unknown Galois action.
+        for k = 0:n-1
+            t = radix(k,ords) .+ 1
+            Kt = Tuple([ L[j][t[j],:] for j = 1:r])
+            # intersect at 128-bit precision by default
+            a = reduce( (x,y) -> _approx_complex_intersection(x,y; prec = 128), Kt)
+            unique_intersections &= (length(a) == 1)
             if unique_intersections
-                setprecision( BigFloat, 256; base=2)
-                x = complex.( BigFloat.(real.(x)), BigFloat.(imag.(x)) )
-                if all(abs.(x[:]) .≈ 1.0)
-                    # return x # this will just return the overlap phases
-                    verbose && println("All SIC overlaps are phases!")
-                    break # break the while loop
-                else
-                    verbose && println("Some outputs aren't complex phases.\n    Doubling precision.")
-                end
+                x[t...] = a[1]
+            else
+                verbose && println("Intersection error...\n    Doubling precision.")
+                break
             end
         end
-        # if we run out of precision, return to standard BigFloat precision and err.
-        prec *= 2
-        if (prec > max_prec)
-            setprecision( BigFloat, 256; base=2)
-            error("max_prec exceeded without convergence.")
-        end
-        # print("\n")
+        !unique_intersections && continue
+        verbose && println("All intersections are unique.\n")
+        # the only way we can get to here is if
+        # finite_invariants && complex_phases && unique_intersections
+        break
     end # while
+
+    # Return to standard BigFloat precision
+    setprecision( BigFloat, 256; base=2)
+    (prec > max_prec) && error("max_prec exceeded without convergence.")
+    x = complex.( BigFloat.(real.(x)), BigFloat.(imag.(x)) )
+
+    # if we ran out of precision, return to standard BigFloat precision and err.
 
     # Now try every shift in the Galois group until one of them gives a SIC
     verbose && println("Now searching through Galois shifts and using matrix completion.")
     for k = 0:n-1
         ψ = matrix_completion(circshift(x,radix(k,ords)),F)
-        sot = sic_frame_test(ψ)
-        if sot < overlap_precision_max_tol
-            verbose && println("Fiducial vector found with frame equations correct to ≤ $sot.")
+        sft = sic_frame_test(ψ)
+        if sft < overlap_tol
+            verbose && println("Fiducial vector found with frame equations correct to ≤ $sft.")
             break
         end
     end
 
-    verbose && println("Increasing precision...")
-    # need to implement precision bumping for SICs.
+    # Finally, improve the precision again to standard BigFloat.
     z = re_im_proj(Complex{BigFloat}.(ψ))
     buffer_bits = 10
-    precision_bump!(z, _sic_olp_func, overlap_target_prec + buffer_bits; base = base, verbose = verbose)
+    precision_bump!(z, _sic_olp_func, overlap_prec + buffer_bits; base = base, verbose = verbose)
     ψ = re_im_proj(z)
     ψ = ψ/sqrt(ψ'ψ)
-    setprecision(BigFloat,overlap_target_prec)
+    setprecision(BigFloat,overlap_prec)
     z = reim(ψ)
     # round down the the desired precision so that the new precision of BigFloat is predictable
     return BigFloat.(z[1]) + im*BigFloat.(z[2])
