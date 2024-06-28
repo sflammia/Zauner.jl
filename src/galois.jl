@@ -100,11 +100,10 @@ julia> length(cent)
 ```
 """
 function centralizer_elements(F::AdmissibleTuple)
-    # Need a caveat here about F_a orbits. Will add support later.
-    # this condition for F_a orbits is on p. 83 of main.tex, Thm 7.28.
-    d = Int(F.d)
-    rem(d,9) == 3 && rem(F.f÷F.q,3) == 0 && error("F_a orbits not supported yet")
+    # No support presently for F_a orbits.
+    has_fa_symmetry(F) && error("F_a orbits not supported yet")
 
+    d = Int(F.d)
     dd = 2^iseven(d)*d #  d'
     Z = F.L
     eye = [ 1  0;  0  1]

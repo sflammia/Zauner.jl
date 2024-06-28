@@ -1,6 +1,6 @@
 import Base.==
 
-export radix, hash, AdmissibleTuple, is_admissible, is_antiunitary, is_antiunitary_with_generator
+    export radix, hash, AdmissibleTuple, is_admissible, is_antiunitary, is_antiunitary_with_generator, has_fa_symmetry
 
 # Define a hash for QuadBin type. Useful for a Dict{QuadBin}.
 Base.hash(q::QuadBin{ZZRingElem}, h::UInt) = hash( q.a, hash( q.b, hash( q.c, h)))
@@ -389,4 +389,14 @@ function is_antiunitary_with_generator(F::AdmissibleTuple)
         end
     end
 
+end
+
+
+@doc """
+    has_fa_symmetry(F::AdmissibleTuple)
+
+Test for ``F_a`` symmetry as opposed to Zauner (``F_z``) symmetry.
+"""
+function has_fa_symmetry(F::AdmissibleTuple)
+    rem(F.d,9) == 3 && rem(F.f÷F.q,3) == 0
 end

@@ -40,6 +40,25 @@ function re_im_proj(z::Vector{BigFloat})
 end
 
 
+#=
+    *Empirically*, the following list is sufficient to get a
+    square and full-rank Jacobian. There is room to optimize this.
+    *No check* is done to ensure that the Jacobian is full rank,
+    nor is any effort spent on optimizing the condition number through
+    a judicious choice of rows. However, after taking the symmetries of
+    the function into account, and dropping the (p,q) == (0,0) equation,
+    these are the lexigraphically first independent terms in the real
+    and imaginary parts. It is thus plausible that they should give a
+    full-rank Jacobian, at least for generic perturbations.
+=#
+_lex_first_inds(d) = [
+    [            q for q=1:d÷2];        # real part, first row
+    [        d + q for q=1:d÷2];        # real part, second row
+    [       2d + q for q=2:d÷2];        # real part, third row
+    [ d^2 +  d + q for q=1:(d-1)÷2];    # imag part, second row
+    [ d^2 + 2d + q for q=2:(1-(-1)^d)]  # imag part, one element in the third row for odd d
+]
+
 
 # Take the real and imaginary parts with projective normalization and
 # return the overlap function for a ghost fiducial.
@@ -90,24 +109,7 @@ _ghost_olp_func(z,v::AbstractVector) = [ _ghost_olp_func(z,n) for n in v ]
 
 function _ghost_olp_func(z)
     d = 1+length(z)÷2
-    #=
-        *Empirically*, the following list is sufficient to get a
-        square and full-rank Jacobian. There is room to optimize this.
-        *No check* is done to ensure that the Jacobian is full rank,
-        nor is any effort spent on optimizing the condition number through
-        a judicious choice of rows. However, after taking the symmetries of
-        the function into account, and dropping the (p,q) == (0,0) equation,
-        these are the lexigraphically first independent terms in the real
-        and imaginary parts. It is thus plausible that they should give a
-        full-rank Jacobian, at least for generic perturbations.
-    =#
-    v = [ [            q for q=1:d÷2];        # real part, first row
-          [        d + q for q=1:d÷2];        # real part, second row
-          [       2d + q for q=2:d÷2];        # real part, third row
-          [ d^2 +  d + q for q=1:(d-1)÷2];    # imag part, second row
-          [ d^2 + 2d + q for q=2:(1-(-1)^d)]  # imag part, one element in the third row for odd d
-        ]
-    _ghost_olp_func(z,v)
+    _ghost_olp_func(z,_lex_first_inds(d))
 end
 
 
@@ -151,26 +153,8 @@ _sic_olp_func(z,v::AbstractVector) = [ _sic_olp_func(z,n) for n in v ]
 
 function _sic_olp_func(z)
     d = 1+length(z)÷2
-    #=
-        *Empirically*, the following list is sufficient to get a
-        square and full-rank Jacobian. There is room to optimize this.
-        *No check* is done to ensure that the Jacobian is full rank,
-        nor is any effort spent on optimizing the condition number through
-        a judicious choice of rows. However, after taking the symmetries of
-        the function into account, and dropping the (p,q) == (0,0) equation,
-        these are the lexigraphically first independent terms in the real
-        and imaginary parts. It is thus plausible that they should give a
-        full-rank Jacobian, at least for generic perturbations.
-    =#
-    v = [ [            q for q=1:d÷2];        # real part, first row
-          [        d + q for q=1:d÷2];        # real part, second row
-          [       2d + q for q=2:d÷2];        # real part, third row
-          [ d^2 +  d + q for q=1:(d-1)÷2];    # imag part, second row
-          [ d^2 + 2d + q for q=2:(1-(-1)^d)]  # imag part, one element in the third row for odd d
-        ]
-    _sic_olp_func(z,v)
+    _sic_olp_func(z,_lex_first_inds(d))
 end
-
 
 
 
@@ -207,7 +191,8 @@ function precision_bump!(z::Vector{BigFloat}, prec::Integer; base::Integer = 2, 
         basename = "digits base $base"
     end
     verbose && println("Increase ghost precision...")
-    digits = floor( Int, -log( base, maximum(abs.(_ghost_olp_func(z)))) )
+    # digits = floor( Int, -log( base, maximum(abs.(_ghost_olp_func(z)))) )
+    digits = precision( z[1]; base = base)
     while digits < prec
         setprecision( BigFloat, 2*digits; base = base)
         verbose && println("Current ghost precision is $digits $basename.")
@@ -237,8 +222,9 @@ function precision_bump!(z::Vector{BigFloat}, f::Function, prec::Integer; base::
         basename = "digits base $base"
     end
     verbose && println("Increase precision...")
-    digits = floor( Int, -log( base, maximum(abs.(f(z)))) )
-    digits = maximum([digits; 32]) # minimum precision is single-float, hard-coded
+    # digits = floor( Int, -log( base, maximum(abs.(f(z)))) )
+    digits = precision( z[1]; base = base)
+    digits = maximum([digits; 53]) # minimum precision is  hard-coded
     while digits < prec
         setprecision( BigFloat, 2*digits; base = base)
         verbose && println("Current precision is $digits $basename.")
@@ -249,7 +235,7 @@ function precision_bump!(z::Vector{BigFloat}, f::Function, prec::Integer; base::
             z .-= jacobian(f, z)\f(z)
         end
         digits = floor( Int, -log( base, maximum(abs.(f(z)))) )
-        digits = maximum([digits; 32]) # minimum precision is single-float
+        digits = maximum([digits; 53]) # minimum precision is single-float
     end
     verbose && println("Precision of BigFloat is now ", precision(BigFloat; base = base), " $basename.")
     verbose && println("Final precision is $digits $basename.")
