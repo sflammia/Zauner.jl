@@ -66,21 +66,20 @@ end
 
 
 @doc raw"""
-    necromancy( F::AdmissibleTuple [; max_prec = 2^23, verbose = false])
+    necromancy( F::AdmissibleTuple [; max_prec = 2^20, verbose = false])
 
-Compute numerical approximations to the ghost invariants of `F`.
+Compute a numerical approximations to a SIC associated to the `AdmissibleTuple` `F`.
 The maximum number of bits used in integer relation finding is set to `max_prec` (default of 1 Mb) and `verbose` can be toggled `true` or `false`.
 
 # Examples
 
 Check that the principle SIC in ``d=7`` satisfies the equiangularity conditions.
 
-```jldoctest
+```
 julia> d = 7; F = AdmissibleTuple(d)
 AdmissibleTuple( d = 7, K = ℚ(√8), q = 2, Q = ⟨1,-6,1⟩, h = 1 )
 
 julia> ψ = necromancy(F);
-
 
 julia> all([ abs2(ψ'wh(p,ψ)) for p=1:d^2-1] .≈ 1/(d+1))
 true

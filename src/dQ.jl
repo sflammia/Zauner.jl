@@ -3318,9 +3318,9 @@ julia> dq(20:23)
  (15, Binary quadratic form over ZZ: x^2 - 14*x*y + y^2)
  (15, Binary quadratic form over ZZ: 11*x^2 - 18*x*y + 3*y^2)
 ```
-The associated `AdmissibleTuple` can be obtained by splatting.
+The associated `AdmissibleTuple` can be obtained directly.
 ```jldoctest
-julia> AdmissibleTuple(dq(2)...)
+julia> AdmissibleTuple(dq(2))
 AdmissibleTuple( d = 5, K = ℚ(√12), q = 1, Q = ⟨1,-4,1⟩, h = 1 )
 ```
 """
