@@ -287,3 +287,5 @@ Manifest.toml
 # local folder for pdfs, etc.
 /stash/
 
+# Documenter build
+/docs/build/
