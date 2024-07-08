@@ -17,12 +17,12 @@ Returns the reduced orbit under HJ reduction.
 # Examples
 
 ```jldoctest
-julia> reduced_hj_orbit(QuadBin(1,-4,1))
+julia> reduced_hj_orbit(binary_quadratic_form(1,-4,1))
 3-element Vector{QuadBin{ZZRingElem}}:
  Binary quadratic form over ZZ: x^2 - 4*x*y + y^2
  Binary quadratic form over ZZ: 3*x^2 - 6*x*y + 2*y^2
  Binary quadratic form over ZZ: 2*x^2 - 6*x*y + 3*y^2
- ```
+```
 """
 function reduced_hj_orbit(q::QuadBin{ZZRingElem})
     @assert discriminant(q) > 0

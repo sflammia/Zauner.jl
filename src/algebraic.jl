@@ -212,7 +212,7 @@ Returns class group and unit group data for the quadratic order with disciminant
 Let ``\omega = \bigl(\Delta\bmod 4 + \sqrt{\Delta}\bigr)/2``, so that a ``\mathbb{Z}``-basis is ``\mathbb{Z}+\omega\mathbb{Z}``.
 Then the output is a tuple `(h,c,b,u)`, where
  - `h` is the class number,
- - `c` is an integer vector for the cycle stucture of the class group, ``\mathbb{Z}/{e_1} + \ldots + \mathbb{Z}/{e_r}``.
+ - `c` is an integer vector for the cycle stucture of the class group, ``\mathbb{Z}/{n_1} + \ldots + \mathbb{Z}/{n_r}``.
  - `b` is a vector of binary quadratic forms that generate the corresponding factor in the class group,
  - `u` is the totally positive fundamental unit with norm 1, written as `[x,y]` in the above basis.
 """

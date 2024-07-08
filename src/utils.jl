@@ -78,7 +78,7 @@ Data type for the arithmetic data defining a set of ghost overlaps.
 If only one integer is given, it is interpreted as a dimension and assumed that the rank is `r = 1`.
 The syntax that takes three integers `(D,j,m)` requires that `D` is a *fundamental* discriminant for a real quadratic field.
 
-In all three cases, if the optional argument `Q` is left unspecified, then it defaults to a principal form given by `Q = QuadBin( 1, 2-n, 1)`, where `n` is the integer `(d^2-1)/(r(d-r))`, since this has ``\\mathrm{disc}(Q) = n(n-4)``.
+In all three cases, if the optional argument `Q` is left unspecified, then it defaults to a principal form given by `Q = binary_quadratic_form( 1, 2-n, 1)`, where `n` is the integer `(d^2-1)/(r(d-r))`, since this has ``\\mathrm{disc}(Q) = n(n-4)``.
 
 The final way to specify an input is as a tuple `(d,Q)` or `(d,r,Q)`.
 
@@ -132,7 +132,7 @@ julia> AdmissibleTuple(5,1,1)
 AdmissibleTuple( d = 4, K = ℚ(√5), q = 1, Q = ⟨1,-3,1⟩, h = 1 )
 ```
 ```jldoctest
-julia> AdmissibleTuple(11,QuadBin(3,-12,4))
+julia> AdmissibleTuple(11,binary_quadratic_form(3,-12,4))
 AdmissibleTuple( d = 11, K = ℚ(√24), q = 2, Q = ⟨3,-12,4⟩, h = 1 )
 ```
 """
@@ -263,10 +263,10 @@ false
 julia> is_admissible(5,1,1)
 true
 
-julia> is_admissible(5,2,1,QuadBin(1,-7,1))
+julia> is_admissible(5,2,1,binary_quadratic_form(1,-7,1))
 true
 
-julia> is_admissible(11,1,QuadBin(3,-12,4))
+julia> is_admissible(11,1,binary_quadratic_form(3,-12,4))
 true
 ```
 """
