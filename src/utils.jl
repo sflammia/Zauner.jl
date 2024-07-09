@@ -133,7 +133,7 @@ AdmissibleTuple( d = 4, K = ℚ(√5), q = 1, Q = ⟨1,-3,1⟩, h = 1 )
 ```
 ```jldoctest
 julia> AdmissibleTuple(11,binary_quadratic_form(3,-12,4))
-AdmissibleTuple( d = 11, K = ℚ(√24), q = 2, Q = ⟨3,-12,4⟩, h = 1 )
+AdmissibleTuple( d = 11, K = ℚ(√24), q = 2, Q = ⟨3,-12,4⟩, h = 2 )
 ```
 """
 AdmissibleTuple(d::Integer) = AdmissibleTuple(d,1)
@@ -152,7 +152,7 @@ function AdmissibleTuple(d::Integer,r::Integer)
     q = Int(conductor(Q))
     # H = ghostclassfield(K,q)
     # g = signswitch(H,D)
-    h, G, c, _, _ = quadclassunit(D)
+    h, G, c, _, _ = quadclassunit(q^2*D)
     h = Int(h)
     G = Int.(G)
     L = [ZZ(n)-2one(ZZ) -one(ZZ); one(ZZ) zero(ZZ)]
@@ -165,7 +165,7 @@ end
 AdmissibleTuple(d::Integer,Q::QuadBin) = AdmissibleTuple(d,1,Q)
 
 AdmissibleTuple(dQ::Tuple{Integer, QuadBin}) = AdmissibleTuple(dQ...)
-AdmissibleTuple(drQ::Tuple{Integer, Integer, QuadBin}) = AdmissibleTuple(dQ...)
+AdmissibleTuple(drQ::Tuple{Integer, Integer, QuadBin}) = AdmissibleTuple(drQ...)
 
 function AdmissibleTuple(d::Integer,r::Integer,Q::QuadBin)
     @req 0 < 2r < (d-1) "r must satisfy 0 < 2r < d-1."
@@ -180,7 +180,7 @@ function AdmissibleTuple(d::Integer,r::Integer,Q::QuadBin)
     u, R = pellreg(D)
     # H = ghostclassfield(K,q)
     # g = signswitch(H,D)
-    h, G, c, _, _ = quadclassunit(D)
+    h, G, c, _, _ = quadclassunit(q^2*D)
     h = Int(h)
     G = Int.(G)
     t = sqrt(BigFloat(D))*f/2
@@ -207,7 +207,7 @@ function AdmissibleTuple(D::Integer,j::Integer,m::Integer)
     q = Int(conductor(Q))
     # H = ghostclassfield(K,q)
     # g = signswitch(H,D)
-    h, G, c, _, _ = quadclassunit(D)
+    h, G, c, _, _ = quadclassunit(q^2*D)
     h = Int(h)
     G = Int.(G)
     L = [ZZ(n)-2one(ZZ) -one(ZZ); one(ZZ) zero(ZZ)]
@@ -230,7 +230,7 @@ function AdmissibleTuple(D::Integer,j::Integer,m::Integer,Q::QuadBin)
     @req f % q == 0 "Conductor of Q must divide f_j."
     # H = ghostclassfield(K,q)
     # g = signswitch(H,D)
-    h, G, c, _, _ = quadclassunit(D)
+    h, G, c, _, _ = quadclassunit(q^2*D)
     h = Int(h)
     G = Int.(G)
     r = Int((u^(j*m) - u^(-j*m))//(f*a))
