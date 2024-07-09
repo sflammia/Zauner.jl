@@ -14,8 +14,8 @@ using SCS
 import Hecke.conductor, Hecke.cycle, Hecke.reduction, Hecke.stabilizer
 export conductor, cycle, reduction, stabilizer
 
-include("utils.jl")
 include("dQ.jl")
+include("utils.jl")
 include("algebraic.jl")
 include("hj.jl")
 include("analytic.jl")
