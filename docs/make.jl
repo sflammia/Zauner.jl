@@ -31,3 +31,7 @@ makedocs(
         "Tables" => "tables.md",
     ],
 )
+
+deploydocs(
+    repo = "github.com/sflammia/Zauner.jl.git",
+)
