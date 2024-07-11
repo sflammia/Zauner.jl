@@ -1,4 +1,4 @@
-export wh, coredisc, conductor, pell, pellreg, ghostclassfield, signswitch, quadclassunit, numsics, ghostbasis, ghostelements
+export wh, coredisc, conductor, pell, pellreg, ghostclassfield, signswitch, quadclassunit, class_group_structure, numsics, ghostbasis, ghostelements
 
 @doc """
     wh( p::Vector{<:Integer}, d::Integer [, T::Type = BigFloat])
@@ -243,6 +243,26 @@ function quadclassunit(D)
     x = ZZ((trace(u) - y*(D%4))//2)
 
     (gbcn,gbcyc,gbgens,u,[x,y])
+end
+
+
+
+@doc raw"""
+    class_group_structure(D)
+
+Returns class group structure for the quadratic order with disciminant `D`.
+"""
+function class_group_structure(D)
+    # fundamental discriminant and conductor
+    Δ, f = coredisc(D)
+    _, a = quadratic_field(Δ)
+    ω = (D%4 + f*a)//2
+    # generate the quadratic order from the standard basis
+    Zω = Order([one(ω), ω])
+    # compute the class group
+    cg, _ = picard_group(Zω)
+    # cycle decomposition, with [] for the trivial group
+    return diagonal(rels(cg))
 end
 
 
