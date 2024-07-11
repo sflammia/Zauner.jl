@@ -1,18 +1,18 @@
 # Admissible Tuple data tables
 
-This table contains algebraic data for each inequivalent admissible tuple in dimensions 4-35, comprising 100 total tuples.
+This table contains algebraic data for each inequivalent admissible tuple in dimensions 4--35, comprising 100 total tuples.
 This list is conjecturally complete for all Weyl-Heisenberg covariant SICs in these dimensions.
 Each admissible tuple is specified by a dimension $d$ and an integer binary quadratic form $Q$ as follows.
-First factorize $(d+1)(d-3)=f^2\Delta$ where $\Delta$ is a fundamental discriminant.
-Then $ (d,Q) $ gives an admissible tuple if $\mathrm{disc}(Q) = q^2\Delta$ where $q$ divides $f$.
+First factorize $(d+1)(d-3)=s^2\Delta_0$ where $\Delta_0$ is a fundamental discriminant.
+Then $ (d,Q) $ gives an admissible tuple if $\mathrm{disc}(Q) = f^2\Delta_0$ where $f$ divides $s$.
 The other columns can be computed from these data, but they may be difficult to compute,
 for example requiring integer factoring or finding a fundamental unit.
-The column $\Delta$ contains the fundamental discriminant of $Q$ and $h$ is the order of the class group $\mathrm{Cl}(\mathcal{O}_f)$, given in the next two columns respectively.
-The Galois group $\mathrm{Gal}(H/\mathbb{Q})$ of the ring class field is given in the next column.
+The column $\Delta_0$ contains the fundamental discriminant of $Q$ and $h$ is the order of the class group $\mathrm{Cl}(\mathcal{O}_f)$, given in the next two columns respectively.
+The Galois group $\mathrm{Gal}(H/K)$ of the ring class field over $K=\mathbb{Q}(\sqrt{\Delta_0})$ is given in the next column.
 As both the class group and the Galois group are finite and abelian, we give the canonical decomposition into cyclic groups $C_k$ of order $k$.
 For the special case that the tuple has so-called $F_a$ symmetry, we have not yet worked out the Galois groups, so we mark these entries as tbd.
-The column $L^n$ contains a generator $L$ of the stability group of $Q$ and its order $n$ in $\mathrm{SL}_2(\mathbb{Z}/\bar{d})$;
-that is, treating $Q$ as a symmetric matrix we have $L^T Q L = Q$.
+The column $L^n$ contains a generator $L$ of the stability group of $Q$ in $\mathrm{GL}_2(\mathbb{Z})$ and its order $n$ in $\mathrm{GL}_2(\mathbb{Z}/\bar{d})$;
+that is, treating $Q$ as a symmetric matrix we have $L^T Q L = \det(L) Q$ and $L^n = 1 (\bmod \bar{d})$.
 If the tuple has antiunitary symmetry, we denote this with a Y in the a.u. column.
 Finally, $\ell$ is the length of the word expansion of $L^n$ using the Hirzebruch-Jung (negative regular) reduction into the standard
 ($S$ and $T$) generators of $\mathrm{SL}_2(\mathbb{Z})$.
@@ -20,9 +20,9 @@ This is one measure of the complexity of constructing the actual fiducial vector
 The $Q$ in this list were selected among class representatives to minimize this complexity, although this choice is not generally unique.
 The data here are sufficient to compute a ghost fiducial in each class,
 but to fully specify a SIC,
-one must additionally choose sign-switching a Galois automorphism for $\mathbb{Q}(\sqrt{D})$ or an appropriate field extension.
+one must additionally choose a sign-switching Galois automorphism $\sqrt{\Delta_0}\to-\sqrt{\Delta_0}$ over an appropriate field extension of $K$.
 
-| $d$ | $\Delta$ | $f$ | $h$ | $\mathrm{Cl}(\mathcal{O}_f)$ | $\mathrm{Gal}(H/\mathbb{Q})$ | $Q$ | $L^n$ | $\text{a.u.}$ | $\ell$ |
+| $d$ | $\Delta_0$ | $f$ | $h$ | $\mathrm{Cl}(\mathcal{O}_f)$ | $\mathrm{Gal}(H/K)$ | $Q$ | $L^n$ | $\text{a.u.}$ | $\ell$ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | $4$ | $5$ | $1$ | $1$ | $ C_{1} $ | $C_{2}^{2}$  | $\langle1,-3,1\rangle$|$\left(\begin{smallmatrix}2&-1\\1&-1\end{smallmatrix}\right)^{6}$|$\text{Y}$|$4$|
 | $5$ | $12$ | $1$ | $1$ | $ C_{1} $ | $C_{8}$  | $\langle1,-4,1\rangle$|$\left(\begin{smallmatrix}4&-1\\1&0\end{smallmatrix}\right)^{3}$||$4$|
