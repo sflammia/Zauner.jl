@@ -1,4 +1,4 @@
-export galois_orbit, galois_normal_form, galois_elements, galois_order_orbit, centralizer_elements, stabilizer_elements
+export galois_orbit, galois_normal_form, galois_elements, galois_order_orbit, centralizer_elements, stabilizer_elements, galois_group_structure
 
 @doc """
     galois_orbit(F::AdmissibleTuple)
@@ -300,4 +300,71 @@ function galois_order_orbit(F::AdmissibleTuple)
     p0 = galois_orbit(F)[1]
     porb = map( X -> Integer.(mod.(X*p0, dd)), T)
     return ords, porb
+end
+
+
+@doc raw"""
+    galois_group_structure(F::AdmissibleTuple)
+
+Compute the canonical form (decomposition into cyclic groups) for the Galois group using the Smith normal form.
+"""
+function galois_group_structure(F::AdmissibleTuple)
+    d = Int(F.d)
+    dd = 2^iseven(d)*d
+
+    # G is the centralizer of H (the stabilizer)
+    # compute the nontrivial centralizer orbits
+    G = Matrix{ZZRingElem}.(centralizer_elements(F))
+    sizeofG = length(G)
+
+    # compute the elements of the stabilizer group H
+    H = stabilizer_elements(F)
+    H0 = copy(H) # save a copy of the stabilizer group for later
+    # stabilizer elements are now in `H` with generator `L`
+    # print(H0)
+
+    gens = Matrix{ZZRingElem}[]     # generators
+    ords = Int[]                    # orders
+    setdiff!( G, H)
+
+    while !isempty(G)
+        p = popfirst!(G)
+        push!( gens, p) # add this generator to the list
+        k = 0
+        old_length = 0
+        while length(H) > old_length
+            old_length = length(H)
+            union!( H, map( h -> mod.(h*p, dd), H) )
+            k += 1
+        end
+        push!( ords, k) # order of p
+        setdiff!( G, H)  # trim elements from G
+    end
+    # we need the Smith normal form of this matrix
+    A = diagonal_matrix(ZZ.(ords))
+
+    # Fill in the relations to get the lower triangular part of A
+    for k = 1:length(ords)-1
+        p = mod.(gens[k+1]^ords[k+1],dd)
+        j = -1
+        r = zeros(Int,k)
+        g = [0 0; 0 0]
+        while !(g ∈ H0)
+            j += 1
+            r = radix( j , ords[1:k])
+            g = mod.( foldl( (x,y) -> mod.(x*y, dd) , gens[1:k].^r[1:k]) * p, dd)
+        end
+        for j=1:k
+            A[k+1,j] = r[j]
+        end
+    end
+    # Now A offers complete information about the generators and relations
+
+    # Smith normal form: U*A*V = D, where D is diagonal and D[j,j] | D[j+1,j+1].
+    D = snf(A)
+
+    # We only need diagonal entries > 1, so drop the rest
+    D = diagonal(D)
+    D = D[ D.>1 ]
+    return D
 end
