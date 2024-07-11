@@ -1,4 +1,4 @@
-# Admissible Tuple data tables
+# Admissible tuple data tables
 
 This table contains algebraic data for each inequivalent admissible tuple in dimensions 4--35, comprising 100 total tuples.
 This list is conjecturally complete for all Weyl-Heisenberg covariant SICs in these dimensions.
@@ -8,11 +8,11 @@ Then $ (d,Q) $ gives an admissible tuple if $\mathrm{disc}(Q) = f^2\Delta_0$ whe
 The other columns can be computed from these data, but they may be difficult to compute,
 for example requiring integer factoring or finding a fundamental unit.
 The column $\Delta_0$ contains the fundamental discriminant of $Q$ and $h$ is the order of the class group $\mathrm{Cl}(\mathcal{O}_f)$, given in the next two columns respectively.
-The Galois group $\mathrm{Gal}(H/K)$ of the ring class field over $K=\mathbb{Q}(\sqrt{\Delta_0})$ is given in the next column.
+The Galois group $\mathrm{Gal}(H/K)$ of the ring class field $H$ over $K=\mathbb{Q}(\sqrt{\Delta_0})$ is given in the next column.
 As both the class group and the Galois group are finite and abelian, we give the canonical decomposition into cyclic groups $C_k$ of order $k$.
 For the special case that the tuple has so-called $F_a$ symmetry, we have not yet worked out the Galois groups, so we mark these entries as tbd.
 The column $L^n$ contains a generator $L$ of the stability group of $Q$ in $\mathrm{GL}_2(\mathbb{Z})$ and its order $n$ in $\mathrm{GL}_2(\mathbb{Z}/\bar{d})$;
-that is, treating $Q$ as a symmetric matrix we have $L^T Q L = \det(L) Q$ and $L^n = 1 (\bmod \bar{d})$.
+that is, treating $Q$ as a symmetric matrix we have $L^T Q L = \det(L) Q$ and $L^n = 1\ (\bmod\ \bar{d})$.
 If the tuple has antiunitary symmetry, we denote this with a Y in the a.u. column.
 Finally, $\ell$ is the length of the word expansion of $L^n$ using the Hirzebruch-Jung (negative regular) reduction into the standard
 ($S$ and $T$) generators of $\mathrm{SL}_2(\mathbb{Z})$.

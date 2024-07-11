@@ -88,11 +88,11 @@ sic_overlap_test
 ## Real quadratic orders
 
 ```@docs; canonical=false
+class_group_structure
 coredisc
 pell
 pellreg
 quadclassunit
-class_group_structure
 signswitch
 ```
 
