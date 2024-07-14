@@ -8,7 +8,7 @@ Then $ (d,Q) $ gives an admissible tuple if $\mathrm{disc}(Q) = f^2\Delta_0$ whe
 The other columns can be computed from these data, but they may be difficult to compute,
 for example requiring integer factoring or finding a fundamental unit.
 The column $\Delta_0$ contains the fundamental discriminant of $Q$ and $h$ is the order of the class group $\mathrm{Cl}(\mathcal{O}_f)$, given in the next two columns respectively.
-The Galois group $\mathrm{Gal}(H/K)$ of the ring class field $H$ over $K=\mathbb{Q}(\sqrt{\Delta_0})$ is given in the next column.
+The Galois group $\mathrm{Gal}(E/K)$ of the field containing the overlaps over $K=\mathbb{Q}(\sqrt{\Delta_0})$ is given in the next column.
 As both the class group and the Galois group are finite and abelian, we give the canonical decomposition into cyclic groups $C_k$ of order $k$.
 For the special case that the tuple has so-called $F_a$ symmetry, we have not yet worked out the Galois groups, so we mark these entries as tbd.
 The column $L^n$ contains a generator $L$ of the stability group of $Q$ in $\mathrm{GL}_2(\mathbb{Z})$ and its order $n$ in $\mathrm{GL}_2(\mathbb{Z}/\bar{d})$;
@@ -22,7 +22,7 @@ The data here are sufficient to compute a ghost fiducial in each class,
 but to fully specify a SIC,
 one must additionally choose a sign-switching Galois automorphism $\sqrt{\Delta_0}\to-\sqrt{\Delta_0}$ over an appropriate field extension of $K$.
 
-| $d$ | $\Delta_0$ | $f$ | $h$ | $\mathrm{Cl}(\mathcal{O}_f)$ | $\mathrm{Gal}(H/K)$ | $Q$ | $L^n$ | $\text{a.u.}$ | $\ell$ |
+| $d$ | $\Delta_0$ | $f$ | $h$ | $\mathrm{Cl}(\mathcal{O}_f)$ | $\mathrm{Gal}(E/K)$ | $Q$ | $L^n$ | $\text{a.u.}$ | $\ell$ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | $4$ | $5$ | $1$ | $1$ | $ C_{1} $ | $C_{2}^{2}$  | $\langle1,-3,1\rangle$|$\left(\begin{smallmatrix}2&-1\\1&-1\end{smallmatrix}\right)^{6}$|$\text{Y}$|$4$|
 | $5$ | $12$ | $1$ | $1$ | $ C_{1} $ | $C_{8}$  | $\langle1,-4,1\rangle$|$\left(\begin{smallmatrix}4&-1\\1&0\end{smallmatrix}\right)^{3}$||$4$|

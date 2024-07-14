@@ -11,7 +11,7 @@ function _print_cycle_decomp(io, v::AbstractVector)
         return print(io, "\$ C_{1} \$")
     end
     print(io, "\$")
-    unique_elements = Dict{Int, Int}()
+    unique_elements = Dict{Int,Int}()
     for item in v
         if haskey(unique_elements, item)
             unique_elements[item] += 1
@@ -43,7 +43,7 @@ Then \$ (d,Q) \$ gives an admissible tuple if \$\\mathrm{disc}(Q) = f^2\\Delta_0
 The other columns can be computed from these data, but they may be difficult to compute,
 for example requiring integer factoring or finding a fundamental unit.
 The column \$\\Delta_0\$ contains the fundamental discriminant of \$Q\$ and \$h\$ is the order of the class group \$\\mathrm{Cl}(\\mathcal{O}_f)\$, given in the next two columns respectively.
-The Galois group \$\\mathrm{Gal}(H/K)\$ of the ring class field \$H\$ over \$K=\\mathbb{Q}(\\sqrt{\\Delta_0})\$ is given in the next column.
+The Galois group \$\\mathrm{Gal}(E/K)\$ of the field containing the overlaps over \$K=\\mathbb{Q}(\\sqrt{\\Delta_0})\$ is given in the next column.
 As both the class group and the Galois group are finite and abelian, we give the canonical decomposition into cyclic groups \$C_k\$ of order \$k\$.
 For the special case that the tuple has so-called \$F_a\$ symmetry, we have not yet worked out the Galois groups, so we mark these entries as tbd.
 The column \$L^n\$ contains a generator \$L\$ of the stability group of \$Q\$ in \$\\mathrm{GL}_2(\\mathbb{Z})\$ and its order \$n\$ in \$\\mathrm{GL}_2(\\mathbb{Z}/\\bar{d})\$;
@@ -60,31 +60,31 @@ one must additionally choose a sign-switching Galois automorphism \$\\sqrt{\\Del
 
 open(file_name, "w") do io
     println(io, preamble)
-    println(io, "| \$d\$ | \$\\Delta_0\$ | \$f\$ | \$h\$ | \$\\mathrm{Cl}(\\mathcal{O}_f)\$ | \$\\mathrm{Gal}(H/K)\$ | \$Q\$ | \$L^n\$ | \$\\text{a.u.}\$ | \$\\ell\$ |")
+    println(io, "| \$d\$ | \$\\Delta_0\$ | \$f\$ | \$h\$ | \$\\mathrm{Cl}(\\mathcal{O}_f)\$ | \$\\mathrm{Gal}(E/K)\$ | \$Q\$ | \$L^n\$ | \$\\text{a.u.}\$ | \$\\ell\$ |")
     println(io, "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |")
     d = 1
     q = 0
     # for j=1:282 # 4 ≤ d ≤ 64
-    for j=1:100 # 4 ≤ d ≤ 35
-    # for j=1:10 # testing
+    for j = 1:100 # 4 ≤ d ≤ 35
+        # for j=1:10 # testing
         F = AdmissibleTuple(dq(j))
         au, L = is_antiunitary_with_generator(F)
         if !(au)
             L = F.L
         end
         print(io, "|")
-        print(io, ( F.d==d ? " |" : " \$$(F.d)\$ |")) # dimension d
-        print(io, ( F.d==d ? " |" : " \$$(F.D)\$ |")) # fundamental discriminant Δ
-        print(io, ( F.d==d && F.q == q ? " |" : " \$$(F.q)\$ |")) # conductor f
-        if !(F.d==d && F.q == q)
-            cgp = class_group_structure(F.q^2*F.D)
+        print(io, (F.d == d ? " |" : " \$$(F.d)\$ |")) # dimension d
+        print(io, (F.d == d ? " |" : " \$$(F.D)\$ |")) # fundamental discriminant Δ
+        print(io, (F.d == d && F.q == q ? " |" : " \$$(F.q)\$ |")) # conductor f
+        if !(F.d == d && F.q == q)
+            cgp = class_group_structure(F.q^2 * F.D)
             print(io, " \$$(prod(cgp))\$ | ") # class number
             _print_cycle_decomp(io, cgp)
         else
             print(io, " |")
         end
         print(io, " | ")
-        if !(F.d==d && F.q == q)
+        if !(F.d == d && F.q == q)
             if has_fa_symmetry(F)
                 print(io, " tbd ") # galois group
             else
@@ -92,11 +92,11 @@ open(file_name, "w") do io
                 _print_cycle_decomp(io, ords) # galois group
             end
         end
-        print(io, " | \$\\langle",F.Q.a,",",F.Q.b,",",F.Q.c,"\\rangle\$|\$")
-        print(io, "\\left(\\begin{smallmatrix}",L[1,1],"&",L[1,2],"\\\\",L[2,1],"&",L[2,2])
-        print(io, "\\end{smallmatrix}\\right)^{",2^au*F.k,"}\$|")
-        print(io, (au ? "\$\\text{Y}\$" : ""),"|\$") # is anti-unitary?
-        println(io, length(psl2word(F.A)),"\$|")
+        print(io, " | \$\\langle", F.Q.a, ",", F.Q.b, ",", F.Q.c, "\\rangle\$|\$")
+        print(io, "\\left(\\begin{smallmatrix}", L[1, 1], "&", L[1, 2], "\\\\", L[2, 1], "&", L[2, 2])
+        print(io, "\\end{smallmatrix}\\right)^{", 2^au * F.k, "}\$|")
+        print(io, (au ? "\$\\text{Y}\$" : ""), "|\$") # is anti-unitary?
+        println(io, length(psl2word(F.A)), "\$|")
         d = F.d
         q = F.q
     end

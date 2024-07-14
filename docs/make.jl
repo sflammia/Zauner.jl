@@ -9,8 +9,9 @@ DocMeta.setdocmeta!(
     recursive=true
 )
 
-# repo_url = "https://sflammia.github.io/Zauner.jl"
-repo_url = "https://github.com/sflammia/Zauner.jl"
+
+repo = "github.com/sflammia/Zauner.jl"
+repo_url = "https://" * repo
 
 makedocs(
     modules=[Zauner],
@@ -32,6 +33,6 @@ makedocs(
     ],
 )
 
-deploydocs(
-    repo = "github.com/sflammia/Zauner.jl.git",
-)
+# deploydocs(
+#     repo=repo,
+# )
