@@ -28,24 +28,24 @@ In our implementation, we recursively shift by ``ω_2`` until the fundamental do
 
 *Note*: Many authors, including Koyama & Kurokawa, Kurokawa & Koyama, and Tangedal, use a convention which replaces ``S_2`` by ``1/S_2`` relative to our convention.
 """
-function double_sine( w, b1, b2; points=21)
+function double_sine(w, b1, b2; points=21)
     @assert b1 != 0 && b2 != 0 "Domain error, b1*b2 == 0."
     @assert all(is_real.([w, b1, b2])) "Only real values supported by this function."
     @assert sign(b1) == sign(b2) "Signs of b1 and b2 must agree."
 
     # return double sine with positive periods and BigFloat
-    z, w1, w2 = BigFloat.(flipsign.([w,b1,b2],b1))
-    return _ds_shift( z, w1, w2, points)
+    z, w1, w2 = BigFloat.(flipsign.([w, b1, b2], b1))
+    return _ds_shift(z, w1, w2, points)
 end
 
 
 
 # domain shift recursively into the fundamental domain
-function _ds_shift(z,w1,w2,points)
+function _ds_shift(z, w1, w2, points)
     if z <= 0
-        return _ds_shift(z+w2, w1, w2, points)/(2*sin((pi*z)/w1))
-    elseif z >= w1+w2
-        return _ds_shift(z-w2, w1, w2, points)*(2*sin((pi*(z-w2))/w1))
+        return _ds_shift(z + w2, w1, w2, points) / (2 * sin((pi * z) / w1))
+    elseif z >= w1 + w2
+        return _ds_shift(z - w2, w1, w2, points) * (2 * sin((pi * (z - w2)) / w1))
     else
         return _ds_int_qgk(z, w1, w2, points)
     end
@@ -54,24 +54,26 @@ end
 
 
 # some helper functions for the double sine integral
-_g0(w,b1,b2,t) = sinh.(((b1+b2)/2-w)*t)./(2t.*sinh.(b1*t/2).*sinh.(b2*t/2)).-(b1+b2-2w)./(b1*b2*t.^2)
-_g1(w,b1,b2,t) = exp.(-w)./(expm1.(-b1.*(t./w .+ 1)).*expm1.(-b2.*(t./w.+1)).*(t.+w))
-_g(w,b1,b2,t)  = _g1(w,b1,b2,t) .- _g1(b1+b2-w,b1,b2,t)
+_g0(w, b1, b2, t) = sinh.(((b1 + b2) / 2 - w) * t) ./ (2t .* sinh.(b1 * t / 2) .* sinh.(b2 * t / 2)) .- (b1 + b2 - 2w) ./ (b1 * b2 * t .^ 2)
+_g1(w, b1, b2, t) = exp.(-w) ./ (expm1.(-b1 .* (t ./ w .+ 1)) .* expm1.(-b2 .* (t ./ w .+ 1)) .* (t .+ w))
+_g(w, b1, b2, t) = _g1(w, b1, b2, t) .- _g1(b1 + b2 - w, b1, b2, t)
 
 
 
 # numerical integration using gauss-kronrod quadrature
 function _ds_int_qgk(w, b1, b2, pts)
-    if b1 + b2 ≈ 2w; return one(BigFloat); end
+    if b1 + b2 ≈ 2w
+        return one(BigFloat)
+    end
 
     # integrate from [0,1]
-    a = quadgk(t -> _g0(w,b1,b2,t), BigFloat(0), BigFloat(1), order = pts)[1]
+    a = quadgk(t -> _g0(w, b1, b2, t), BigFloat(0), BigFloat(1), order=pts)[1]
 
     # boundary term
-    b = -(b1+b2-2w)/(b1*b2)
+    b = -(b1 + b2 - 2w) / (b1 * b2)
 
     # integrate the rest, the change of variables makes it from [0,∞).
-    c = quadgk(t -> exp(-t).*_g(w,b1,b2,t), BigFloat(0), BigFloat(Inf), order = pts)[1]
+    c = quadgk(t -> exp(-t) .* _g(w, b1, b2, t), BigFloat(0), BigFloat(Inf), order=pts)[1]
 
-    exp(a+b+c)
+    exp(a + b + c)
 end
