@@ -1,6 +1,5 @@
 export re_im_proj, precision_bump, precision_bump!, pow_to_elem_sym_poly
 
-
 @doc """
     re_im_proj(ψ::Vector{Complex{BigFloat}})
     re_im_proj(z::Vector{BigFloat})
@@ -30,7 +29,7 @@ re_im_proj(v)
 """
 function re_im_proj(ψ::Vector{Complex{BigFloat}})
     ψ[1] ≈ zero(eltype(ψ)) && error("First entry must be nonzero.")
-    vcat(reim(ψ[2:end]./ψ[1])...)
+    vcat(reim(ψ[2:end] ./ ψ[1])...)
 end
 
 
@@ -52,11 +51,11 @@ end
     full-rank Jacobian, at least for generic perturbations.
 =#
 _lex_first_inds(d) = [
-    [            q for q=1:d÷2];        # real part, first row
-    [        d + q for q=1:d÷2];        # real part, second row
-    [       2d + q for q=2:d÷2];        # real part, third row
-    [ d^2 +  d + q for q=1:(d-1)÷2];    # imag part, second row
-    [ d^2 + 2d + q for q=2:(1-(-1)^d)]  # imag part, one element in the third row for odd d
+    [q for q = 1:d÷2];        # real part, first row
+    [d + q for q = 1:d÷2];        # real part, second row
+    [2d + q for q = 2:d÷2];        # real part, third row
+    [d^2 + d + q for q = 1:(d-1)÷2];    # imag part, second row
+    [d^2 + 2d + q for q = 2:(1-(-1)^d)]  # imag part, one element in the third row for odd d
 ]
 
 
@@ -68,92 +67,92 @@ _lex_first_inds(d) = [
 #    (p,q) → ( q, p)
 #    (p,q) → ( p,-q)*
 # where the last one means apply the symmetry then complex conjugate the result.
-function _ghost_olp_func(z,r,p,q)
+function _ghost_olp_func(z, r, p, q)
     T = eltype(z)
-    d  = 1+length(z)÷2
-    x0 = [  one(T); z[1:d-1] ] # real part of ψ
-    y0 = [ zero(T); z[d:end]]  # imag part of ψ
-    xi = circshift(reverse(x0),1)
-    yi = circshift(reverse(y0),1)
-    xp = circshift(xi,-p)
-    yp = circshift(yi,-p)
-    xq = circshift(xi,-q)
-    yq = circshift(yi,-q)
-    xr = circshift(x0,-p-q)
-    yr = circshift(y0,-p-q)
+    d = 1 + length(z) ÷ 2
+    x0 = [one(T); z[1:d-1]] # real part of ψ
+    y0 = [zero(T); z[d:end]]  # imag part of ψ
+    xi = circshift(reverse(x0), 1)
+    yi = circshift(reverse(y0), 1)
+    xp = circshift(xi, -p)
+    yp = circshift(yi, -p)
+    xq = circshift(xi, -q)
+    yq = circshift(yi, -q)
+    xr = circshift(x0, -p - q)
+    yr = circshift(y0, -p - q)
 
     # real and imaginary parts.
     if r == 0
         # real part
         sum((xq .* xr + yq .* yr) .* (x0 .* xp + y0 .* yp) +
-            (xr .* yq - xq .* yr) .* (xp .* y0 - x0 .* yp) ) -
-        ((p==0) + (q==0))/(d+one(T)) * sum(xi.*x0 + yi.*y0)^2
-    elseif r==1
+            (xr .* yq - xq .* yr) .* (xp .* y0 - x0 .* yp)) -
+        ((p == 0) + (q == 0)) / (d + one(T)) * sum(xi .* x0 + yi .* y0)^2
+    elseif r == 1
         # imaginary part
-        if ( p==0 || q == 0 || 2p == d || 2q == d )
+        if (p == 0 || q == 0 || 2p == d || 2q == d)
             zero(T) # these values are manifestly real and don't contribute.
         else
             sum((xq .* yr - yq .* xr) .* (x0 .* xp + y0 .* yp) +
-                (yr .* yq + xq .* xr) .* (xp .* y0 - x0 .* yp) )
+                (yr .* yq + xq .* xr) .* (xp .* y0 - x0 .* yp))
         end
     end
 end
 
 
 # both real and imaginary parts on a combined index
-_ghost_olp_func(z,n::Integer) = _ghost_olp_func(z, radix(n, [2,1+(length(z)÷2),1+(length(z)÷2)])... )
+_ghost_olp_func(z, n::Integer) = _ghost_olp_func(z, radix(n, [2, 1 + (length(z) ÷ 2), 1 + (length(z) ÷ 2)])...)
 
 # list over a vector
-_ghost_olp_func(z,v::AbstractVector) = [ _ghost_olp_func(z,n) for n in v ]
+_ghost_olp_func(z, v::AbstractVector) = [_ghost_olp_func(z, n) for n in v]
 
 
 function _ghost_olp_func(z)
-    d = 1+length(z)÷2
-    _ghost_olp_func(z,_lex_first_inds(d))
+    d = 1 + length(z) ÷ 2
+    _ghost_olp_func(z, _lex_first_inds(d))
 end
 
 
 # now we do the same thing for SIC overlaps
-function _sic_olp_func(z,r,p,q)
+function _sic_olp_func(z, r, p, q)
     T = eltype(z)
-    d  = 1+length(z)÷2
-    x0 = [  one(T); z[1:d-1] ] # real part of ψ
-    y0 = [ zero(T); z[d:end]]  # imag part of ψ
-    xp = circshift(x0,-p)
-    yp = circshift(y0,-p)
-    xq = circshift(x0,-q)
-    yq = circshift(y0,-q)
-    xr = circshift(x0,-p-q)
-    yr = circshift(y0,-p-q)
+    d = 1 + length(z) ÷ 2
+    x0 = [one(T); z[1:d-1]] # real part of ψ
+    y0 = [zero(T); z[d:end]]  # imag part of ψ
+    xp = circshift(x0, -p)
+    yp = circshift(y0, -p)
+    xq = circshift(x0, -q)
+    yq = circshift(y0, -q)
+    xr = circshift(x0, -p - q)
+    yr = circshift(y0, -p - q)
 
     # real and imaginary parts.
     if r == 0
         # real part
         sum((xq .* xr + yq .* yr) .* (x0 .* xp + y0 .* yp) +
-            (xr .* yq - xq .* yr) .* (xp .* y0 - x0 .* yp) ) -
-        ((p==0) + (q==0))/(d+one(T)) * sum(x0.*x0 + y0.*y0)^2
-    elseif r==1
+            (xr .* yq - xq .* yr) .* (xp .* y0 - x0 .* yp)) -
+        ((p == 0) + (q == 0)) / (d + one(T)) * sum(x0 .* x0 + y0 .* y0)^2
+    elseif r == 1
         # imaginary part
-        if ( p==0 || q == 0 || 2p == d || 2q == d )
+        if (p == 0 || q == 0 || 2p == d || 2q == d)
             zero(T) # these values are manifestly real and don't contribute.
         else
             sum((xq .* yr - yq .* xr) .* (x0 .* xp + y0 .* yp) +
-                (yr .* yq + xq .* xr) .* (xp .* y0 - x0 .* yp) )
+                (yr .* yq + xq .* xr) .* (xp .* y0 - x0 .* yp))
         end
     end
 end
 
 
 # both real and imaginary parts on a combined index
-_sic_olp_func(z,n::Integer) = _sic_olp_func(z, radix(n, [2,1+(length(z)÷2),1+(length(z)÷2)])... )
+_sic_olp_func(z, n::Integer) = _sic_olp_func(z, radix(n, [2, 1 + (length(z) ÷ 2), 1 + (length(z) ÷ 2)])...)
 
 # list over a vector
-_sic_olp_func(z,v::AbstractVector) = [ _sic_olp_func(z,n) for n in v ]
+_sic_olp_func(z, v::AbstractVector) = [_sic_olp_func(z, n) for n in v]
 
 
 function _sic_olp_func(z)
-    d = 1+length(z)÷2
-    _sic_olp_func(z,_lex_first_inds(d))
+    d = 1 + length(z) ÷ 2
+    _sic_olp_func(z, _lex_first_inds(d))
 end
 
 
@@ -165,7 +164,7 @@ end
 Attempt to use Newton's method to improve the precision of `ψ` to at least `prec` digits in base `base`.
 In the second version, the function `f` is used for root finding.
 """
-function precision_bump(ψ::Vector{Complex{BigFloat}}, prec::Integer; base::Integer = 10, verbose::Bool = true)
+function precision_bump(ψ::Vector{Complex{BigFloat}}, prec::Integer; base::Integer=10, verbose::Bool=true)
     z = re_im_proj(ψ)
     precision_bump!(z, prec; base, verbose)
     re_im_proj(z)
@@ -181,7 +180,7 @@ Attempt to use Newton's method to improve the precision of `z` to at least `prec
 where `z` is the real projective representation of `ψ`.
 In the second version, the function `f` is used for root finding.
 """
-function precision_bump!(z::Vector{BigFloat}, prec::Integer; base::Integer = 2, verbose::Bool = true)
+function precision_bump!(z::Vector{BigFloat}, prec::Integer; base::Integer=2, verbose::Bool=true)
     @assert base > 1 "base must be an integer ≥ 2"
     if base == 2
         basename = "bits"
@@ -192,19 +191,19 @@ function precision_bump!(z::Vector{BigFloat}, prec::Integer; base::Integer = 2, 
     end
     verbose && println("Increase ghost precision...")
     # digits = floor( Int, -log( base, maximum(abs.(_ghost_olp_func(z)))) )
-    digits = precision( z[1]; base = base)
+    digits = precision(z[1]; base=base)
     while digits < prec
-        setprecision( BigFloat, 2*digits; base = base)
+        setprecision(BigFloat, 2 * digits; base=base)
         verbose && println("Current ghost precision is $digits $basename.")
         # Run an iteration of Newton's method
         if verbose
-            @time z .-= jacobian(_ghost_olp_func, z)\_ghost_olp_func(z)
+            @time z .-= jacobian(_ghost_olp_func, z) \ _ghost_olp_func(z)
         else
-            z .-= jacobian(_ghost_olp_func, z)\_ghost_olp_func(z)
+            z .-= jacobian(_ghost_olp_func, z) \ _ghost_olp_func(z)
         end
-        digits = floor( Int, -log( base, maximum(abs.(_ghost_olp_func(z)))) )
+        digits = floor(Int, -log(base, maximum(abs.(_ghost_olp_func(z)))))
     end
-    verbose && println("Precision of BigFloat is now ", precision(BigFloat; base = base), " $basename.")
+    verbose && println("Precision of BigFloat is now ", precision(BigFloat; base=base), " $basename.")
     verbose && println("Final ghost precision is $digits $basename.")
     return z
 end
@@ -212,7 +211,7 @@ end
 
 # Here is a version that allows for a function input.
 # This can be used with _sic_olp_func to improve the precision of a SIC
-function precision_bump!(z::Vector{BigFloat}, f::Function, prec::Integer; base::Integer = 2, verbose::Bool = true)
+function precision_bump!(z::Vector{BigFloat}, f::Function, prec::Integer; base::Integer=2, verbose::Bool=true)
     @assert base > 1 "base must be an integer ≥ 2"
     if base == 2
         basename = "bits"
@@ -223,21 +222,21 @@ function precision_bump!(z::Vector{BigFloat}, f::Function, prec::Integer; base::
     end
     verbose && println("Increase precision...")
     # digits = floor( Int, -log( base, maximum(abs.(f(z)))) )
-    digits = precision( z[1]; base = base)
+    digits = precision(z[1]; base=base)
     digits = maximum([digits; 53]) # minimum precision is  hard-coded
     while digits < prec
-        setprecision( BigFloat, 2*digits; base = base)
+        setprecision(BigFloat, 2 * digits; base=base)
         verbose && println("Current precision is $digits $basename.")
         # Run an iteration of Newton's method
         if verbose
-            @time z .-= jacobian(f, z)\f(z)
+            @time z .-= jacobian(f, z) \ f(z)
         else
-            z .-= jacobian(f, z)\f(z)
+            z .-= jacobian(f, z) \ f(z)
         end
-        digits = floor( Int, -log( base, maximum(abs.(f(z)))) )
+        digits = floor(Int, -log(base, maximum(abs.(f(z)))))
         digits = maximum([digits; 53]) # minimum precision is single-float
     end
-    verbose && println("Precision of BigFloat is now ", precision(BigFloat; base = base), " $basename.")
+    verbose && println("Precision of BigFloat is now ", precision(BigFloat; base=base), " $basename.")
     verbose && println("Final precision is $digits $basename.")
     return z
 end
@@ -254,9 +253,9 @@ Output `e` is indexed so that `e[1] == 1` is the zeroth elementary symmetric pol
 function pow_to_elem_sym_poly(p::AbstractVector)
     L = length(p)
     esp = copy(p)
-    pushfirst!( esp, one(eltype(p))) # e0 = 1
-    for k=1:L
-        esp[k + 1] = sum( [ (-1)^(j-1)*esp[k-j+1]*p[j]/k for j=1:k] )
+    pushfirst!(esp, one(eltype(p))) # e0 = 1
+    for k = 1:L
+        esp[k+1] = sum([(-1)^(j - 1) * esp[k-j+1] * p[j] / k for j = 1:k])
     end
     esp
 end

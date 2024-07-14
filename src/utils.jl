@@ -1,9 +1,9 @@
 import Base.==
 
-    export radix, hash, AdmissibleTuple, is_admissible, is_antiunitary, is_antiunitary_with_generator, has_fa_symmetry
+export radix, hash, AdmissibleTuple, is_admissible, is_antiunitary, is_antiunitary_with_generator, has_fa_symmetry
 
 # Define a hash for QuadBin type. Useful for a Dict{QuadBin}.
-Base.hash(q::QuadBin{ZZRingElem}, h::UInt) = hash( q.a, hash( q.b, hash( q.c, h)))
+Base.hash(q::QuadBin{ZZRingElem}, h::UInt) = hash(q.a, hash(q.b, hash(q.c, h)))
 
 
 @doc """
@@ -28,7 +28,7 @@ julia> radix(86400,[7; 24; 60; 60])
  0
 ```
 """
-radix(n,r) = [div(n,prod(r[k+1:end])) % r[k] for k=1:length(r)]
+radix(n, r) = [div(n, prod(r[k+1:end])) % r[k] for k = 1:length(r)]
 
 
 # convert expansion n back from mixed radix r
@@ -61,8 +61,8 @@ radix(n,r) = [div(n,prod(r[k+1:end])) % r[k] for k=1:length(r)]
 end
 
 
-Base.show(io::IO, ::MIME"text/plain", F::AdmissibleTuple) = print(io,"AdmissibleTuple( d = $(F.d), ",(F.r==1 ? "" : "r = $(F.r), "),"K = ℚ(√$(F.D)), q = $(F.q), Q = ⟨$(F.Q.a),$(F.Q.b),$(F.Q.c)⟩, h = $(F.h) )")
-Base.show(io::IO, F::AdmissibleTuple) = print(io,"AdmissibleTuple( d = $(F.d), ",(F.r==1 ? "" : "r = $(F.r), "),", K = ℚ(√$(F.D)), q = $(F.q), Q = ⟨$(F.Q.a),$(F.Q.b),$(F.Q.c)⟩, h = $(F.h) )")
+Base.show(io::IO, ::MIME"text/plain", F::AdmissibleTuple) = print(io, "AdmissibleTuple( d = $(F.d), ", (F.r == 1 ? "" : "r = $(F.r), "), "K = ℚ(√$(F.D)), q = $(F.q), Q = ⟨$(F.Q.a),$(F.Q.b),$(F.Q.c)⟩, h = $(F.h) )")
+Base.show(io::IO, F::AdmissibleTuple) = print(io, "AdmissibleTuple( d = $(F.d), ", (F.r == 1 ? "" : "r = $(F.r), "), ", K = ℚ(√$(F.D)), q = $(F.q), Q = ⟨$(F.Q.a),$(F.Q.b),$(F.Q.c)⟩, h = $(F.h) )")
 
 
 @doc """
@@ -136,42 +136,42 @@ julia> AdmissibleTuple(11,binary_quadratic_form(3,-12,4))
 AdmissibleTuple( d = 11, K = ℚ(√24), q = 2, Q = ⟨3,-12,4⟩, h = 2 )
 ```
 """
-AdmissibleTuple(d::Integer) = AdmissibleTuple(d,1)
+AdmissibleTuple(d::Integer) = AdmissibleTuple(d, 1)
 
-function AdmissibleTuple(d::Integer,r::Integer)
-    @req 0 < 2r < (d-1) "r must satisfy 0 < 2r < d-1."
-    n = Int((d^2-1)//(r*(d-r))) # throws an error if (d,r) is not admissible
+function AdmissibleTuple(d::Integer, r::Integer)
+    @req 0 < 2r < (d - 1) "r must satisfy 0 < 2r < d-1."
+    n = Int((d^2 - 1) // (r * (d - r))) # throws an error if (d,r) is not admissible
     @req n > 4 "n must be > 4."
-    D, f = Int.(coredisc(n*(n-4)))
+    D, f = Int.(coredisc(n * (n - 4)))
     K, a = quadratic_field(D)
     u, R = pellreg(D)
-    t = sqrt(BigFloat(D))*f/2
-    j = round(Int,asinh(t)/R)
-    m = round(Int,asinh(t*r)/asinh(t))
-    Q = binary_quadratic_form(1,2-n,1) # disc(Q) = n*(n-4)
+    t = sqrt(BigFloat(D)) * f / 2
+    j = round(Int, asinh(t) / R)
+    m = round(Int, asinh(t * r) / asinh(t))
+    Q = binary_quadratic_form(1, 2 - n, 1) # disc(Q) = n*(n-4)
     q = Int(conductor(Q))
     # H = ghostclassfield(K,q)
     # g = signswitch(H,D)
-    h, G, c, _, _ = quadclassunit(q^2*D)
+    h, G, c, _, _ = quadclassunit(q^2 * D)
     h = Int(h)
     G = Int.(G)
     L = [ZZ(n)-2one(ZZ) -one(ZZ); one(ZZ) zero(ZZ)]
     k = Int(sl2zorder(L, d))
     A = L^k
     x = (-BigInt(Q.b) + sqrt(BigInt(discriminant(Q)))) / (2BigInt(Q.a))
-    return AdmissibleTuple(d,r,n,D,f,q,j,m,k,K,a,u,uninit,uninit,h,G,c,Q,L,A,x,R)
+    return AdmissibleTuple(d, r, n, D, f, q, j, m, k, K, a, u, uninit, uninit, h, G, c, Q, L, A, x, R)
 end
 
-AdmissibleTuple(d::Integer,Q::QuadBin) = AdmissibleTuple(d,1,Q)
+AdmissibleTuple(d::Integer, Q::QuadBin) = AdmissibleTuple(d, 1, Q)
 
-AdmissibleTuple(dQ::Tuple{Integer, QuadBin}) = AdmissibleTuple(dQ...)
-AdmissibleTuple(drQ::Tuple{Integer, Integer, QuadBin}) = AdmissibleTuple(drQ...)
+AdmissibleTuple(dQ::Tuple{Integer,QuadBin}) = AdmissibleTuple(dQ...)
+AdmissibleTuple(drQ::Tuple{Integer,Integer,QuadBin}) = AdmissibleTuple(drQ...)
 
-function AdmissibleTuple(d::Integer,r::Integer,Q::QuadBin)
-    @req 0 < 2r < (d-1) "r must satisfy 0 < 2r < d-1."
-    n = Int((d^2-1)//(r*(d-r))) # throws an error if (d,r) is not admissible
+function AdmissibleTuple(d::Integer, r::Integer, Q::QuadBin)
+    @req 0 < 2r < (d - 1) "r must satisfy 0 < 2r < d-1."
+    n = Int((d^2 - 1) // (r * (d - r))) # throws an error if (d,r) is not admissible
     @req n > 4 "n must be > 4."
-    D, f = Int.(coredisc(n*(n-4)))
+    D, f = Int.(coredisc(n * (n - 4)))
     DQ, q = coredisc(Q)
     q = Int(q)
     @req DQ == D "Fundamental discriminant of Q and K must match."
@@ -180,67 +180,67 @@ function AdmissibleTuple(d::Integer,r::Integer,Q::QuadBin)
     u, R = pellreg(D)
     # H = ghostclassfield(K,q)
     # g = signswitch(H,D)
-    h, G, c, _, _ = quadclassunit(q^2*D)
+    h, G, c, _, _ = quadclassunit(q^2 * D)
     h = Int(h)
     G = Int.(G)
-    t = sqrt(BigFloat(D))*f/2
-    j = round(Int,asinh(t)/R)
-    m = round(Int,asinh(t*r)/asinh(t))
+    t = sqrt(BigFloat(D)) * f / 2
+    j = round(Int, asinh(t) / R)
+    m = round(Int, asinh(t * r) / asinh(t))
     L = stabilizer(Q)
     k = Int(sl2zorder(L, d))
     A = L^k
     x = (-BigInt(Q.b) + sqrt(BigInt(discriminant(Q)))) / (2BigInt(Q.a))
-    return AdmissibleTuple(d,r,n,D,f,q,j,m,k,K,a,u,uninit,uninit,h,G,c,Q,L,A,x,R)
+    return AdmissibleTuple(d, r, n, D, f, q, j, m, k, K, a, u, uninit, uninit, h, G, c, Q, L, A, x, R)
 end
 
 
-function AdmissibleTuple(D::Integer,j::Integer,m::Integer)
-    @req D>1 && is_fundamental_discriminant(D) "D must be a positive fundamental discriminant."
+function AdmissibleTuple(D::Integer, j::Integer, m::Integer)
+    @req D > 1 && is_fundamental_discriminant(D) "D must be a positive fundamental discriminant."
     @req j > 0 && m > 0 "j and m must be > 0."
     K, a = quadratic_field(D)
     u, R = pellreg(D)
-    f = Int(ZZ((u^j - u^(-j))//a))
-    r = Int(ZZ((u^(j*m) - u^(-j*m))//(f*a)))
-    d = Int(ZZ((u^(j*(m+1)) - u^(-j*(m+1)))//(f*a))) + r
-    n = Int((d^2-1)//(r*(d-r))) # throws an error if (d,r) is not admissible
-    Q = binary_quadratic_form(1,2-n,1) # disc(Q) = n*(n-4)
+    f = Int(ZZ((u^j - u^(-j)) // a))
+    r = Int(ZZ((u^(j * m) - u^(-j * m)) // (f * a)))
+    d = Int(ZZ((u^(j * (m + 1)) - u^(-j * (m + 1))) // (f * a))) + r
+    n = Int((d^2 - 1) // (r * (d - r))) # throws an error if (d,r) is not admissible
+    Q = binary_quadratic_form(1, 2 - n, 1) # disc(Q) = n*(n-4)
     q = Int(conductor(Q))
     # H = ghostclassfield(K,q)
     # g = signswitch(H,D)
-    h, G, c, _, _ = quadclassunit(q^2*D)
+    h, G, c, _, _ = quadclassunit(q^2 * D)
     h = Int(h)
     G = Int.(G)
     L = [ZZ(n)-2one(ZZ) -one(ZZ); one(ZZ) zero(ZZ)]
     k = Int(sl2zorder(L, d))
     A = L^k
     x = (-BigInt(Q.b) + sqrt(BigInt(discriminant(Q)))) / (2BigInt(Q.a))
-    return AdmissibleTuple(d,r,n,D,f,q,j,m,k,K,a,u,uninit,uninit,h,G,c,Q,L,A,x,R)
+    return AdmissibleTuple(d, r, n, D, f, q, j, m, k, K, a, u, uninit, uninit, h, G, c, Q, L, A, x, R)
 end
 
 
-function AdmissibleTuple(D::Integer,j::Integer,m::Integer,Q::QuadBin)
-    @req D>1 && is_fundamental_discriminant(D) "D must be a positive fundamental discriminant."
+function AdmissibleTuple(D::Integer, j::Integer, m::Integer, Q::QuadBin)
+    @req D > 1 && is_fundamental_discriminant(D) "D must be a positive fundamental discriminant."
     @req j > 0 && m > 0 "j and m must be > 0."
     K, a = quadratic_field(D)
     u, R = pellreg(D)
-    f = Int((u^j - u^(-j))//a)
+    f = Int((u^j - u^(-j)) // a)
     DQ, q = coredisc(Q)
     q = Int(q)
     @req DQ == D "Fundamental discriminant of Q and K must match."
     @req f % q == 0 "Conductor of Q must divide f_j."
     # H = ghostclassfield(K,q)
     # g = signswitch(H,D)
-    h, G, c, _, _ = quadclassunit(q^2*D)
+    h, G, c, _, _ = quadclassunit(q^2 * D)
     h = Int(h)
     G = Int.(G)
-    r = Int((u^(j*m) - u^(-j*m))//(f*a))
-    d = Int((u^(j*(m+1)) - u^(-j*(m+1)))//(f*a)) - r
-    n = Int((d^2-1)//(r*(d-r))) # throws an error if (d,r) is not admissible
+    r = Int((u^(j * m) - u^(-j * m)) // (f * a))
+    d = Int((u^(j * (m + 1)) - u^(-j * (m + 1))) // (f * a)) - r
+    n = Int((d^2 - 1) // (r * (d - r))) # throws an error if (d,r) is not admissible
     L = stabilizer(Q)
     k = Int(sl2zorder(L, d))
     A = L^k
     x = (-BigInt(Q.b) + sqrt(BigInt(discriminant(Q)))) / (2BigInt(Q.a))
-    return AdmissibleTuple(d,r,n,D,f,q,j,m,k,K,a,u,uninit,uninit,h,G,c,Q,L,A,x,R)
+    return AdmissibleTuple(d, r, n, D, f, q, j, m, k, K, a, u, uninit, uninit, h, G, c, Q, L, A, x, R)
 end
 
 
@@ -270,48 +270,48 @@ julia> is_admissible(11,1,binary_quadratic_form(3,-12,4))
 true
 ```
 """
-is_admissible(d::Integer) = is_admissible(d,1)
+is_admissible(d::Integer) = is_admissible(d, 1)
 
-function is_admissible(d::Integer,r::Integer)
-    n = Int((d^2-1)//(r*(d-r)))
-    0 < 2r < (d-1) && n > 4
+function is_admissible(d::Integer, r::Integer)
+    n = Int((d^2 - 1) // (r * (d - r)))
+    0 < 2r < (d - 1) && n > 4
 end
 
-is_admissible(d::Integer,Q::QuadBin) = is_admissible(d,1,Q)
+is_admissible(d::Integer, Q::QuadBin) = is_admissible(d, 1, Q)
 
-function is_admissible(d::Integer,r::Integer,Q::QuadBin)
-    n = Int((d^2-1)//(r*(d-r)))
-    D, f = Int.(coredisc(n*(n-4)))
+function is_admissible(d::Integer, r::Integer, Q::QuadBin)
+    n = Int((d^2 - 1) // (r * (d - r)))
+    D, f = Int.(coredisc(n * (n - 4)))
     DQ, q = coredisc(discriminant(Q))
 
-    is_admissible(d,r) && (D == DQ) && (f % q == 0)
+    is_admissible(d, r) && (D == DQ) && (f % q == 0)
 end
 
-function is_admissible(D::Integer,j::Integer,k::Integer)
-    D>1 && is_fundamental_discriminant(D) && j > 0 && k > 0
+function is_admissible(D::Integer, j::Integer, k::Integer)
+    D > 1 && is_fundamental_discriminant(D) && j > 0 && k > 0
 end
 
-function is_admissible(D::Integer,j::Integer,k::Integer,Q::QuadBin)
+function is_admissible(D::Integer, j::Integer, k::Integer, Q::QuadBin)
     DQ, q = coredisc(discriminant(Q))
     K, a = quadratic_field(D)
     u = pell(D)
-    f = Int(ZZ((u^j - u^(-j))//a))
+    f = Int(ZZ((u^j - u^(-j)) // a))
 
-    is_admissible(D,j,k) && (D == DQ) && (f % q == 0)
+    is_admissible(D, j, k) && (D == DQ) && (f % q == 0)
 end
 
 
 # Equality testing for AdmissibleTuples
 # need to add a tests for :H and :g with conditions for if they are defined.
 function ==(F::AdmissibleTuple, G::AdmissibleTuple)
-    test  = F.Q.a == G.Q.a
+    test = F.Q.a == G.Q.a
     test &= F.Q.b == G.Q.b
     test &= F.Q.c == G.Q.c
     test &= coordinates(F.u) == coordinates(G.u)
     test &= F.x ≈ G.x
-    test &= isapprox( F.R, G.R, atol = 2^-120) # only good to about half BigFloat default prec.
-    for p in  (:d, :r, :n, :D, :f, :q, :j, :m, :k, :K, :a, :h, :L, :A)
-        test &= getfield(F,p) == getfield(G,p)
+    test &= isapprox(F.R, G.R, atol=2^-120) # only good to about half BigFloat default prec.
+    for p in (:d, :r, :n, :D, :f, :q, :j, :m, :k, :K, :a, :h, :L, :A)
+        test &= getfield(F, p) == getfield(G, p)
     end
     return test
 end
@@ -339,7 +339,7 @@ function is_antiunitary(F::AdmissibleTuple)
     # calculate j_min, d_min, f_min
     for j = 1:F.j
         dmin = Integer(trace(F.u^j)) + 1
-        _ , fmin = coredisc( (dmin+1)*(dmin-3) )
+        _, fmin = coredisc((dmin + 1) * (dmin - 3))
         if fmin % fQ == 0
             jmin = j
             break
@@ -350,7 +350,7 @@ function is_antiunitary(F::AdmissibleTuple)
         return false
     else
         test, k = is_square_with_sqrt(dmin - 3)
-        return test && (fmin % (k*fQ) == 0)
+        return test && (fmin % (k * fQ) == 0)
     end
 
 end
@@ -370,7 +370,7 @@ function is_antiunitary_with_generator(F::AdmissibleTuple)
     # calculate j_min, d_min, f_min
     for j = 1:F.j
         dmin = Integer(trace(F.u^j)) + 1
-        _ , fmin = coredisc( (dmin+1)*(dmin-3) )
+        _, fmin = coredisc((dmin + 1) * (dmin - 3))
         if fmin % fQ == 0
             jmin = j
             break
@@ -381,8 +381,8 @@ function is_antiunitary_with_generator(F::AdmissibleTuple)
         return false, ZZ.([0 0; 0 0])
     else
         test, k = is_square_with_sqrt(dmin - 3)
-        if test && (fmin % (k*fQ) == 0)
-            M = ZZ.( k//2*[1 0; 0 1] + [0 -1; 1 0]*qmat(F.Q).*fmin//(k*fQ) )
+        if test && (fmin % (k * fQ) == 0)
+            M = ZZ.(k // 2 * [1 0; 0 1] + [0 -1; 1 0] * qmat(F.Q) .* fmin // (k * fQ))
             return true, M
         else
             return false, ZZ.([0 0; 0 0])
@@ -398,5 +398,5 @@ end
 Test for ``F_a`` symmetry as opposed to Zauner (``F_z``) symmetry.
 """
 function has_fa_symmetry(F::AdmissibleTuple)
-    rem(F.d,9) == 3 && rem(F.f÷F.q,3) == 0
+    rem(F.d, 9) == 3 && rem(F.f ÷ F.q, 3) == 0
 end
