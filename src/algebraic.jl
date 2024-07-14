@@ -33,21 +33,21 @@ julia> wh(1,2,v) ≈ [0.0; 1.0im; 0.0; 0.0]
 true
 ```
 """
-wh( m::Integer, n::Integer, d::Integer, T::Type=BigFloat) =
-    [ (-e(T(1)/(2*d)))^(m*n) * (rem(j-k-m,d) == 0) * e((k-1)*T(n)/d) for j=1:d, k=1:d]
+wh(m::Integer, n::Integer, d::Integer, T::Type=BigFloat) =
+    [(-e(T(1) / (2 * d)))^(m * n) * (rem(j - k - m, d) == 0) * e((k - 1) * T(n) / d) for j = 1:d, k = 1:d]
 
-wh( p::Vector{<:Integer}, d::Integer, T::Type=BigFloat) = wh(p[1],p[2],d,T)
+wh(p::Vector{<:Integer}, d::Integer, T::Type=BigFloat) = wh(p[1], p[2], d, T)
 
-wh( p::Tuple{Integer,Integer}, d::Integer, T::Type=BigFloat) = wh(p[1],p[2],d,T)
+wh(p::Tuple{Integer,Integer}, d::Integer, T::Type=BigFloat) = wh(p[1], p[2], d, T)
 
-wh( m::Integer, n::Integer, v::Vector) =
-    [ (-e( eltype(v)(1)/(2*length(v))) )^((2k-m)*n) * v[mod(k-m,length(v))+1] for k=0:length(v)-1]
+wh(m::Integer, n::Integer, v::Vector) =
+    [(-e(eltype(v)(1) / (2 * length(v))))^((2k - m) * n) * v[mod(k - m, length(v))+1] for k = 0:length(v)-1]
 
-wh( p::Vector{<:Integer}, v::Vector) = wh(p[1],p[2],v)
+wh(p::Vector{<:Integer}, v::Vector) = wh(p[1], p[2], v)
 
-wh( p::Tuple{Integer,Integer}, v::Vector) = wh(p[1],p[2],v)
+wh(p::Tuple{Integer,Integer}, v::Vector) = wh(p[1], p[2], v)
 
-wh( n::Integer, v::Vector) = wh( divrem( n, length(v)), v)
+wh(n::Integer, v::Vector) = wh(divrem(n, length(v)), v)
 
 
 @doc """
@@ -71,7 +71,7 @@ julia> coredisc( QuadBin(1,-7,1) ) # -4*det( [1 -7//2; -7//2 1]) == 3^2 * 5
 
 See also `conductor`.
 """
-coredisc(D) = ( fundamental_discriminant(D), conductor(D) )
+coredisc(D) = (fundamental_discriminant(D), conductor(D))
 coredisc(Q::QuadBin) = coredisc(discriminant(Q))
 
 
@@ -104,23 +104,25 @@ julia> pell(5)
 ```
 """
 function pell(D)
-    @req D>0 && is_discriminant(D) "D must be a positive discriminant."
+    @req D > 0 && is_discriminant(D) "D must be a positive discriminant."
     Δ, f = coredisc(D)
     K, a = quadratic_field(Δ)
-    ω = (D%4 + f*a)//2
+    ω = (D % 4 + f * a) // 2
     # generate the quadratic order from the standard basis
     Zω = Order([one(ω), ω])
     pell(Zω)
 end
 function pell(Zω::AbsSimpleNumFieldOrder)
-    @req degree(Zω)==2 "Order must have degree 2."
+    @req degree(Zω) == 2 "Order must have degree 2."
 
     Ug, fu = unit_group(Zω)
     u = fu(Ug[2])
-    x, y = Int.(sign.(coordinates(one(Zω.nf)*u))) # coordinates wrt K basis, not Zω.
+    x, y = Int.(sign.(coordinates(one(Zω.nf) * u))) # coordinates wrt K basis, not Zω.
     n = norm(u)
-    u = ( x*y > 0 ? x*u : x*n*u^(-1)) # choose totally positive unit
-    if n == -1 u=u^2 end # if the fundamental unit has norm -1, we square it
+    u = (x * y > 0 ? x * u : x * n * u^(-1)) # choose totally positive unit
+    if n == -1
+        u = u^2
+    end # if the fundamental unit has norm -1, we square it
     u
 end
 pell(Q::QuadBin) = pell(discriminant(Q))
@@ -142,24 +144,26 @@ The output is a tuple with the unit and a `BigFloat` of the log of that unit (wh
 See also `pell`.
 """
 function pellreg(D)
-    @req D>0 && is_discriminant(D) "D must be a positive discriminant."
+    @req D > 0 && is_discriminant(D) "D must be a positive discriminant."
     Δ, f = coredisc(D)
     K, a = quadratic_field(Δ)
-    ω = (D%4 + f*a)//2
+    ω = (D % 4 + f * a) // 2
     # generate the quadratic order from the standard basis
     Zω = Order([one(ω), ω])
     pellreg(Zω)
 end
 function pellreg(Zω::AbsSimpleNumFieldOrder)
-    @req degree(Zω)==2 "Order must have degree 2."
+    @req degree(Zω) == 2 "Order must have degree 2."
 
     Ug, fu = unit_group(Zω)
     u = fu(Ug[2])
-    x, y = Int.(sign.(coordinates(one(Zω.nf)*u))) # coordinates wrt K basis, not Zω.
+    x, y = Int.(sign.(coordinates(one(Zω.nf) * u))) # coordinates wrt K basis, not Zω.
     n = norm(u)
-    u = ( x*y > 0 ? x*u : x*n*u^(-1)) # choose totally positive unit
-    if n == -1 u=u^2 end
-    u, BigFloat(regulator(Zω)*(3-n)/2) # only accurate to about 127 bits, in fact.
+    u = (x * y > 0 ? x * u : x * n * u^(-1)) # choose totally positive unit
+    if n == -1
+        u = u^2
+    end
+    u, BigFloat(regulator(Zω) * (3 - n) / 2) # only accurate to about 127 bits, in fact.
 end
 pellreg(Q::QuadBin) = pellreg(discriminant(Q))
 
@@ -174,13 +178,13 @@ The output is an LLL-reduced `AbsSimpleNumField`, and so is an absolute field ra
 
 Given an `AdmissibleTuple` `F` it initializes the field `F.H` to be this ring class field.
 """
-function ghostclassfield( K::AbsSimpleNumField, q::Integer)
+function ghostclassfield(K::AbsSimpleNumField, q::Integer)
     # @assert degree(K) == 2
-    rcf = Hecke.ring_class_field( Order(K, q*basis(maximal_order(K))))
+    rcf = Hecke.ring_class_field(Order(K, q * basis(maximal_order(K))))
     simplify(absolute_simple_field(number_field(rcf))[1])[1]
 end
 
-ghostclassfield( F::AdmissibleTuple ) = ( (@isinit F.H) ? F.H : (@init! F.H = ghostclassfield(F.K,F.q)); F.H)
+ghostclassfield(F::AdmissibleTuple) = ((@isinit F.H) ? F.H : (@init! F.H = ghostclassfield(F.K, F.q)); F.H)
 
 # Note: no unit tests yet for this function
 @doc """
@@ -192,17 +196,17 @@ If `H` is the (absolute) ring class field for a ghost with fundamental discrimin
 If `F` is an `AdmissibleTuple` then is initializes the field `F.g`.
 This requires that the field `F.H` has already been initialized with `ghostclassfield`.
 """
-function signswitch( H::AbsSimpleNumField, D::Integer)
+function signswitch(H::AbsSimpleNumField, D::Integer)
     _, x = H["x"]
     f = collect(keys((factor(x^2 - D).fac)))
     @assert length(f) == 2 # (x^2 - D) should factor completely in H
-    r = Hecke.evaluate(f[1],0) # a root of x^2 – D
+    r = Hecke.evaluate(f[1], 0) # a root of x^2 – D
     @assert r^2 == D # sanity check
     auts = automorphism_list(H)
-    return auts[findfirst([ s(r) == -r for s in auts])]
+    return auts[findfirst([s(r) == -r for s in auts])]
 end
 
-signswitch( F::AdmissibleTuple) = ( (@isinit F.g) ? F.g : (@init! F.g = signswitch(F.H,F.D)); F.g)
+signswitch(F::AdmissibleTuple) = ((@isinit F.g) ? F.g : (@init! F.g = signswitch(F.H, F.D)); F.g)
 
 
 @doc raw"""
@@ -218,9 +222,9 @@ Then the output is a tuple `(h,c,b,u)`, where
 """
 function quadclassunit(D)
     # fundamental discriminant and conductor
-    Δ,f = coredisc(D)
+    Δ, f = coredisc(D)
     K, a = quadratic_field(Δ)
-    ω = (D%4 + f*a)//2
+    ω = (D % 4 + f * a) // 2
     # generate the quadratic order from the standard basis
     Zω = Order([one(ω), ω])
     # fundamental totally positive unit of norm 1
@@ -234,15 +238,15 @@ function quadclassunit(D)
 
     # the generators, cycle decomposition, and (reduced) quadratic form generators
     gcg = gens(cg)
-    gbcyc = (gbcn == 1 ? [ZZ(1)] : diagonal(rels(cg)) )
+    gbcyc = (gbcn == 1 ? [ZZ(1)] : diagonal(rels(cg)))
     gbgens = (length(gcg) == 0 ? [quadbinid(D)] : [QuadBin(cm(g)) for g in gcg])
     gbgens = reduction.(gbgens)
 
     # compute the unit group and the expansion in the standard Z basis for Zω
-    y = ZZ(f*trace(a*u)//D)
-    x = ZZ((trace(u) - y*(D%4))//2)
+    y = ZZ(f * trace(a * u) // D)
+    x = ZZ((trace(u) - y * (D % 4)) // 2)
 
-    (gbcn,gbcyc,gbgens,u,[x,y])
+    (gbcn, gbcyc, gbgens, u, [x, y])
 end
 
 
@@ -256,7 +260,7 @@ function class_group_structure(D)
     # fundamental discriminant and conductor
     Δ, f = coredisc(D)
     _, a = quadratic_field(Δ)
-    ω = (D%4 + f*a)//2
+    ω = (D % 4 + f * a) // 2
     # generate the quadratic order from the standard basis
     Zω = Order([one(ω), ω])
     # compute the class group
@@ -293,16 +297,16 @@ julia> foreach(d -> println( (d, numsics(d)) ), 4:15)
 """
 function numsics(d)
     # fundamental discriminant and conductor
-    D = (d+1)*(d-3)
+    D = (d + 1) * (d - 3)
     Δ, f0 = coredisc(D)
     F = sort(divisors(f0))
     s = 0
     for f in F
-        D = f^2*Δ
+        D = f^2 * Δ
         _, a = quadratic_field(D)
-        ω = (D%4 + a)//2
+        ω = (D % 4 + a) // 2
         # generate the quadratic order from the standard basis
-        Zω = Order( [one(ω), ω])
+        Zω = Order([one(ω), ω])
 
         # compute the class group
         cg, _ = picard_group(Zω)
@@ -334,22 +338,22 @@ Dict{ZZRingElem, Tuple{Vector{ZZRingElem}, Vector{QuadBin}}} with 3 entries:
 In this example, `Q = QuadBin(3,12,-4)` has order 2, so we have `Q^2 == QuadBin(1,12,-12)` since this is the principle form with the same discriminant.
 """
 function ghostbasis(d)
-    D = (d+1)*(d-3)
-    Δ,f0 = coredisc(D)
+    D = (d + 1) * (d - 3)
+    Δ, f0 = coredisc(D)
     F = sort(divisors(f0))
     B = Dict{ZZRingElem,Tuple{Vector{ZZRingElem},Vector{QuadBin}}}()
     for f in F
-        D = f^2*Δ
+        D = f^2 * Δ
         K, a = quadratic_field(D)
-        ω = (D%4 + a)//2
+        ω = (D % 4 + a) // 2
         # generate the quadratic order from the standard basis
-        Zω = Order( [one(ω), ω])
+        Zω = Order([one(ω), ω])
         # compute the class group and generator map
         cg, cm = picard_group(Zω)
 
         # the generators, cycle decomposition, and (reduced) quadratic form generators
         gcg = gens(cg)
-        gbcyc = (order(cg) == 1 ? [ZZ(1)] : diagonal(rels(cg)) )
+        gbcyc = (order(cg) == 1 ? [ZZ(1)] : diagonal(rels(cg)))
         gbgens = (length(gcg) == 0 ? [quadbinid(D)] : [QuadBin(cm(g)) for g in gcg])
 
         gbgens = reduction.(gbgens)
@@ -367,30 +371,30 @@ There are a total of `numsics(d)` such forms.
 These forms are merely Euclidean reduced, not Hirzebruch-Jung reduced.
 """
 function ghostelements(d)
-    D = (d+1)*(d-3)
-    Δ,f0 = coredisc(D)
+    D = (d + 1) * (d - 3)
+    Δ, f0 = coredisc(D)
     F = sort(divisors(f0))
     B = QuadBin{ZZRingElem}[]
     for f in F
-        D = f^2*Δ
+        D = f^2 * Δ
         K, a = quadratic_field(D)
-        ω = (D%4 + a)//2
+        ω = (D % 4 + a) // 2
         # generate the quadratic order from the standard basis
-        Zω = Order( [one(ω), ω])
+        Zω = Order([one(ω), ω])
         # compute the class group and generator map
         cg, cm = picard_group(Zω)
         cgcn = order(cg)
 
         # the generators, cycle decomposition, and (reduced) quadratic form generators
         gcg = gens(cg)
-        gbcyc = (cgcn == 1 ? [ZZ(1)] : diagonal(rels(cg)) )
+        gbcyc = (cgcn == 1 ? [ZZ(1)] : diagonal(rels(cg)))
         gbgens = (length(gcg) == 0 ? [quadbinid(D)] : [QuadBin(cm(g)) for g in gcg])
 
         gbgens = reduction.(gbgens)
 
         for k = 0:cgcn-1
-            a = radix(k,gbcyc)
-            push!( B, prod(gbgens .^ a) )
+            a = radix(k, gbcyc)
+            push!(B, prod(gbgens .^ a))
         end
     end
     B
