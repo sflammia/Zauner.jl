@@ -1,6 +1,5 @@
 export dq
 
-
 const _precomputed_dq_values = [
     (4, binary_quadratic_form(1, -3, 1));
     (5, binary_quadratic_form(1, -4, 1));

@@ -9,7 +9,6 @@ DocMeta.setdocmeta!(
     recursive=true
 )
 
-
 repo = "github.com/sflammia/Zauner.jl"
 repo_url = "https://" * repo
 
