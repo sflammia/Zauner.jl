@@ -16,7 +16,7 @@ function _ghost_invariants(K::AbstractArray{BigFloat})
     b = Vector{BigFloat}[]
     s = Vector{BigFloat}[]
     for j = 1:r
-        notj = Tuple(setdiff(1:r, j))
+        notj = NTuple{r-1,Int}(setdiff(1:r, j))
         # first compute "l_j".
         for l = 1:n÷ords[j]
             c = dropdims(sum(K .^ l; dims=notj); dims=notj)
@@ -38,18 +38,6 @@ function _ghost_invariants(K::AbstractArray{BigFloat})
             a[j][:, l] = V \ x
         end
     end
-
-    # println("prec of a = ",precision(a[1][1]),"\n")
-    # println("\na = ",a[1][1:4],"\n")
-    # println("------")
-    # println("precision = ",BigFloat(2)^(10-precision(b[1][1])/2),"\n")
-    # println("a = $a\n\nb = $b\n\ns = $s\n\n-------\n\n")
-    # println(map( x -> abs.(x) .> BigFloat(2)^(10-precision(b[1][1])/2), s))
-    # println("size of a = ",map(size,a))
-    # println(a[1][:,24],"\n")
-    # # println(a[2][:,6],"\n")
-    # println(a[1][:,24],"\n")
-
 
     return a, b, s
 end
