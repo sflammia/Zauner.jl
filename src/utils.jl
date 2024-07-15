@@ -9,7 +9,7 @@ Base.hash(q::QuadBin{ZZRingElem}, h::UInt) = hash(q.a, hash(q.b, hash(q.c, h)))
 @doc """
     radix(n,r)
 
-The `length(r)` least significant digits of the integer `n` in mixed radix `r = [r1,r2,...,rk]`.
+The `length(r)` least significant digits of the integer `n` in mixed radix `r = [r1; r2; ...; rk]`.
 # Examples
 ```jldoctest
 julia> radix(5,[2; 2; 2; 2; 2])

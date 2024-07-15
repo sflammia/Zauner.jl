@@ -69,31 +69,33 @@ _rank_1_ghost(F::AdmissibleTuple) = (F.Q.a == 1 && F.Q.b == 1 - F.d && F.Q.c == 
 # NOTE: This function averages over the action of [-1 -1; 1 0]
 # The original choice of Zauner is [0 -1; 1 -1], and we could use this instead
 function _triple_double_sine(p, q, F::AdmissibleTuple)
-    r = mod(-p - q, F.d)
-    (-1)^(F.d * (p + q) + p * q + min(F.d, p + q)) *
-    double_sine(1 + (q * F.x - p) / F.d, F.x, 1) *
-    double_sine(1 + (p * F.x - r) / F.d, F.x, 1) *
-    double_sine(1 + (r * F.x - q) / F.d, F.x, 1)
+    d = Int(F.d)
+    r = mod(-p - q, d)
+    (-1)^(d * (p + q) + p * q + min(d, p + q)) *
+    double_sine(1 + (q * F.x - p) / d, F.x, 1) *
+    double_sine(1 + (p * F.x - r) / d, F.x, 1) *
+    double_sine(1 + (r * F.x - q) / d, F.x, 1)
 end
 
 
 # compute the principle ghost with the simplified algorithm
 function _principle_ghost(F::AdmissibleTuple)
-    dsp = zeros(BigFloat, 2, F.d)
-    dsp[1, 1] = sqrt(F.d + one(BigFloat))
-    k = div(F.d, 2)
+    d = Int(F.d)
+    dsp = zeros(BigFloat, 2, d)
+    dsp[1, 1] = sqrt(d + one(BigFloat))
+    k = div(d, 2)
     for p2 = 1:k
         dsp[0+1, p2+1] = _triple_double_sine(0, p2, F)
-        dsp[0+1, F.d-p2+1] = one(BigFloat) / dsp[0+1, p2+1]
+        dsp[0+1, d-p2+1] = one(BigFloat) / dsp[0+1, p2+1]
     end
-    for p2 = 0:F.d-3
+    for p2 = 0:d-3
         dsp[1+1, p2+1] = _triple_double_sine(1, p2, F)
     end
     dsp[1+1, end-1] = dsp[1+1, 1+1]
     dsp[1+1, end] = dsp[0+1, 1+1]
 
-    ζ = -cispi(BigFloat(1) / F.d)
-    χ = [ζ^(p * q) for p = 0:1, q = 0:F.d-1] .* dsp
+    ζ = -cispi(BigFloat(1) / d)
+    χ = [ζ^(p * q) for p = 0:1, q = 0:d-1] .* dsp
     χ = ifft(χ, 2)
     χ = circshift(cumprod(χ[2, :] ./ χ[1, :]), 1)
     χ ./ χ[1]
