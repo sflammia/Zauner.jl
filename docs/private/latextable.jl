@@ -1,3 +1,5 @@
+# This script generates the data tables in the appendix in latex format
+
 parent_dir_name = dirname(@__DIR__)
 table_name = "data.tex"
 file_name = parent_dir_name * "/src/" * table_name
