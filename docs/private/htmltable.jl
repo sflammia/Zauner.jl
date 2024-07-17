@@ -220,10 +220,10 @@ and
   </msup>
   <mo> =</mo>
   <mn>1</mn>
-  <mo>&thinsp;</mo>
+  <mo>&VeryThinSpace;</mo>
   <mo stretchy="false">(</mo>
   <mi>mod</mi>
-  <mo>&thinsp;</mo>
+  <mo>&VeryThinSpace;</mo>
   <mi>d</mi>
   <mo>'</mo>
   <mo stretchy="false">)</mo>
