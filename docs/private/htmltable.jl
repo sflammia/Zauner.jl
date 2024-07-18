@@ -332,7 +332,7 @@ open(file_name, "w") do io
         else
             print(io,"""          <td data-title="Gal(E/K)"></td>""")
         end
-        print(io,"""          <td data-title="Q">&langle;<math><mn>$(Int(F.Q.a))</mn><mi>,</mi><mn>$(Int(F.Q.b))</mn><mi>,</mi><mn>$(Int(F.Q.c))</mn></math>&rangle;</td>\n""")
+        print(io,"""          <td data-title="Q"><math><mrow><mo>&langle;</mo><mn>$(Int(F.Q.a))</mn><mi>,</mi><mn>$(Int(F.Q.b))</mn><mi>,</mi><mn>$(Int(F.Q.c))</mn><mo>&rangle;</mo></mrow></math></td>\n""")
         print(io,"""          <td data-title="L"><math><mrow><mo>(</mo>\n""")
         print(io,"""            <mtable rowspacing="4px" columnspacing="6px" columnalign="center">\n""")
         print(io,"""              <mtr><mtd><mn>$(Int(L[1,1]))</mn></mtd><mtd><mn>$(Int(L[1,2]))</mn></mtd></mtr>\n""")
