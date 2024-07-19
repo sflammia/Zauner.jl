@@ -1,5 +1,8 @@
 # This script generates the html version of the data table
 
+# N_max = 35 # testing
+N_max = 614 # 4 ≤ d ≤ 100
+# N_max = 3292 # 4 ≤ d ≤ 256, ambitious
 parent_dir_name = dirname(@__DIR__)
 table_name = "table.html"
 file_name = parent_dir_name * "/src/" * table_name
@@ -42,40 +45,63 @@ preamble = """<!DOCTYPE html>
     <meta name="keywords" content="SIC, SICPOVM, algebraic number theory, Zauner's conjecture, equiangular lines, Stark conjectures">
 </head>
 <style>
-    td {
-        padding-right: 15px;
-        padding-top: 3px;
-        padding-bottom: 3px;
-    }
-    th {
-        padding: 15px;
-        text-align: center;
-    }
-    thead {
-        border-bottom: thin solid #000000;
-        border-top: medium solid #000000;
-    }
-    tbody {
-        border-bottom: medium solid #000000;
-    }
-    tr, td .third {
-        text-align: right;
-    }
-    tr:hover {background-color: #f5f5f5}
-    p {text-align: justify;}
-    table {
-        border-collapse: collapse;
-    }
+body {
+            margin: 25px;
+            margin-bottom: 100px;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .content {
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .table-container {
+            min-width: 700px;
+            width: 100%;
+            overflow-x: auto; /* Allows scrolling for small screens */
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        td {
+            padding-right: 15px;
+            padding-top: 3px;
+            padding-bottom: 3px;
+        }
+        th {
+            padding: 15px;
+            text-align: center;
+        }
+        thead {
+            border-bottom: thin solid #000000;
+            border-top: medium solid #000000;
+        }
+        tbody {
+            border-bottom: medium solid #000000;
+        }
+        tr, td .third {
+            text-align: right;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        p {
+            text-align: justify;
+        }
 </style>
 
-<body style="margin:25px;width:800px;margin-bottom:100px; ">
-
+<body>
+<div class="content">
 <h1>SIC data tables</h1>
 
 <p>This table contains algebraic data for each inequivalent admissible tuple in dimensions <math><mn>4</mn><mo>–</mo><mn>100</mn></math>, comprising <math><mn>614</mn></math> total tuples.
 This list is conjecturally complete for all Weyl-Heisenberg covariant SICs in these dimensions.
 Each admissible tuple is specified by a dimension <math><mi>d</mi></math> and an integer binary quadratic form <math><mi>Q</mi></math> as follows.
-First factorize <math>
+First factorize
+<math>
   <mrow>
   <mo stretchy="false">(</mo>
   <mi>d</mi>
@@ -97,7 +123,9 @@ First factorize <math>
     <mn>0</mn>
   </msub>
   </mrow>
-</math> where <math>
+</math>
+where
+<math>
   <msub>
     <mi>&Delta;</mi>
     <mn>0</mn>
@@ -265,13 +293,12 @@ one must additionally choose a sign-switching Galois automorphism
     </msub>
   </msqrt>
 </mrow>
-
 </math>
 over an appropriate field extension of <math><mi>K</mi></math>.
 </p>
 
-<div id="SICs">
-  <table id="table" style="margin-left:100px; text-align:left">
+<div class="table-container" id="SICs">
+  <table>
     <thead>
       <tr>
         <th><math><mi>d</mi></math></th>
@@ -294,11 +321,7 @@ open(file_name, "w") do io
     print(io, preamble)
     d = 1
     q = 0
-    # for j=1:3292 # 4 ≤ d ≤ 256
-    # for j=1:282 # 4 ≤ d ≤ 64
-    # for j = 1:100 # 4 ≤ d ≤ 35
-    # for j=1:35 # testing
-    for j=1:614 # 4 ≤ d ≤ 100
+    for j=1:N_max
         F = AdmissibleTuple(dq(j))
         au, L = is_antiunitary_with_generator(F)
         if !(au)
@@ -350,7 +373,7 @@ open(file_name, "w") do io
       </tbody>
     </table>
     </div>
-
+    </div>
     </body>
 </html>
 """
