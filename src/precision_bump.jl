@@ -255,7 +255,7 @@ function pow_to_elem_sym_poly(p::AbstractVector)
     esp = copy(p)
     pushfirst!(esp, one(eltype(p))) # e0 = 1
     for k = 1:L
-        esp[k+1] = sum([(-1)^(j - 1) * esp[k-j+1] * p[j] / k for j = 1:k])
+        esp[k+1] = sum((-1)^(j - 1) * esp[k-j+1] * p[j] / k for j = 1:k)
     end
     esp
 end

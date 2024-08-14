@@ -6,7 +6,7 @@ export q_pochhammer, q_pochhammer_exp, e, ghost, shin
 Finite q-Pochhammer symbol, ``\\prod_{k=0}^{n-1} \\bigl(1-a q^k\\bigr)``.
 """
 function q_pochhammer(a, q, n)
-    prod([one(a) - a * q^k for k = 0:n-1])
+    prod(one(a) - a * q^k for k = 0:n-1)
 end
 
 
