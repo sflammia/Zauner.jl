@@ -148,10 +148,9 @@ function necromancy(F::AdmissibleTuple;
             finite_invariants &= all(isfinite.(s[j]))
             !finite_invariants && break
         end
-        # println("Invariants are finite? ",finite_invariants)
-        # println("\nPrecision of ghost is: ",precision(real(ψ[1])))
+
         setprecision(BigFloat, 320; base=2)
-        # println("Precision of ghost after setprecision is: ",precision(real(ψ[1])),"\n")
+
         if !finite_invariants
             verbose && println("Some SIC invariants were not finite.\n    ...Doubling precision.")
             continue
@@ -163,7 +162,7 @@ function necromancy(F::AdmissibleTuple;
         # NOTE: This line forces a lot of recomputation with ghosts.
         # Basically, we need to precision bump from this baseline each time instead of the previous level of precision.
         # However, if we keep the high precision then it is very slow to compute roots.
-        setprecision(BigFloat, 320; base=2)
+        # setprecision(BigFloat, 320; base=2)
 
         # Compute c', map to elementary symmetric polynomials
         # then find roots to get K'
