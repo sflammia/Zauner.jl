@@ -174,14 +174,14 @@ The Galois group
   <mo stretchy="false">(</mo>
   <mi>E</mi>
   <mo>/</mo>
-  <mi>K</mi>
+  <mi>H</mi>
   <mo stretchy="false">)</mo>
   </mrow>
 </math>
 of the field containing the overlaps over
 <math>
   <mrow>
-  <mi>K</mi>
+  <mi>H</mi>
   <mo> =</mo>
   <mi mathvariant="double-struck">Q</mi>
   <mo stretchy="false">(</mo>
@@ -306,7 +306,7 @@ over an appropriate field extension of <math><mi>K</mi></math>.
         <th><math><mi>f</mi></math></th>
         <th><math><mi>h</mi></math></th>
         <th><math><mrow><mi mathvariant="normal">Cl</mi><mo  stretchy="false">(</mo><msub><mi mathvariant="script">O</mi><mi>f</mi></msub><mo stretchy="false">)</mo></mrow></math></th>
-        <th><math><mrow><mi mathvariant="normal">Gal</mi><mo  stretchy="false">(</mo><mi>E</mi><mo>/</mo><mi>K</mi><mo stretchy="false">)</mo></mrow></math></th>
+        <th><math><mrow><mi mathvariant="normal">Gal</mi><mo  stretchy="false">(</mo><mi>E</mi><mo>/</mo><mi>H</mi><mo stretchy="false">)</mo></mrow></math></th>
         <th><math><mi>Q</mi></math></th>
         <th><math><mi>L</mi></math></th>
         <th><math><mi>n</mi></math></th>
@@ -321,51 +321,51 @@ open(file_name, "w") do io
     print(io, preamble)
     d = 1
     q = 0
-    for j=1:N_max
+    for j = 1:N_max
         F = AdmissibleTuple(dq(j))
         au, L = is_antiunitary_with_generator(F)
         if !(au)
             L = F.L
         end
-        print(io,"""        <tr>\n""")
-        print(io,"""          <td data-title="d"><math><mn>$( F.d==d ? "" : Int(F.d))</mn></math></td>\n""")
-        print(io,"""          <td data-title="Delta"><math><mn>$( F.d==d ? "" : Int(F.D))</mn></math></td>\n""")
-        print(io,"""          <td data-title="f"><math><mn>$( F.d==d && F.q == q ? "" : Int(F.q))</mn></math></td>\n""")
+        print(io, """        <tr>\n""")
+        print(io, """          <td data-title="d"><math><mn>$( F.d==d ? "" : Int(F.d))</mn></math></td>\n""")
+        print(io, """          <td data-title="Delta"><math><mn>$( F.d==d ? "" : Int(F.D))</mn></math></td>\n""")
+        print(io, """          <td data-title="f"><math><mn>$( F.d==d && F.q == q ? "" : Int(F.q))</mn></math></td>\n""")
         if !(F.d == d && F.q == q)
             cgp = class_group_structure(F.q^2 * F.D)
-            print(io,"""          <td data-title="h"><math><mn>$(prod(cgp))</mn></math></td>\n""") # class number
-            print(io,"""          <td data-title="Cl(O_f)"><math>""")
+            print(io, """          <td data-title="h"><math><mn>$(prod(cgp))</mn></math></td>\n""") # class number
+            print(io, """          <td data-title="Cl(O_f)"><math>""")
             _print_cycle_decomp(io, cgp)
-            print(io,"""</math></td>\n""")
+            print(io, """</math></td>\n""")
         else
             print(io, """          <td data-title="h"></td>\n""")
             print(io, """          <td data-title="Cl(O_f)"></td>\n""")
         end
         if !(F.d == d && F.q == q)
-            print(io,"""          <td data-title="Gal(E/K)">""")
+            print(io, """          <td data-title="Gal(E/K)">""")
             if has_fa_symmetry(F)
                 print(io, "<math><mn> tbd </math></mn>") # galois group
             else
                 ords = galois_group_structure(F)
-                print(io,"""<math>""")
+                print(io, """<math>""")
                 _print_cycle_decomp(io, ords) # galois group
-                print(io,"""</math>""")
+                print(io, """</math>""")
             end
             print(io, """</td>\n""")
         else
-            print(io,"""          <td data-title="Gal(E/K)"></td>""")
+            print(io, """          <td data-title="Gal(E/K)"></td>""")
         end
-        print(io,"""          <td data-title="Q"><math><mrow><mo>&langle;</mo><mn>$(Int(F.Q.a))</mn><mi>,</mi><mn>$(Int(F.Q.b))</mn><mi>,</mi><mn>$(Int(F.Q.c))</mn><mo>&rangle;</mo></mrow></math></td>\n""")
-        print(io,"""          <td data-title="L"><math><mrow><mo>(</mo>\n""")
-        print(io,"""            <mtable rowspacing="4px" columnspacing="6px" columnalign="center">\n""")
-        print(io,"""              <mtr><mtd><mn>$(Int(L[1,1]))</mn></mtd><mtd><mn>$(Int(L[1,2]))</mn></mtd></mtr>\n""")
-        print(io,"""              <mtr><mtd><mn>$(Int(L[2,1]))</mn></mtd><mtd><mn>$(Int(L[2,2]))</mn></mtd></mtr>\n""")
-        print(io,"""            </mtable><mo>)</mo></mrow></math>\n""")
-        print(io,"""          </td>\n""")
-        print(io,"""          <td data-title="n"><math><mn>$(Int(2^au*F.k))</mn></math></td>\n""")
-        print(io,"""          <td data-title="antiunitary"><math><mn>$(au ? "Y" : "")</mn></math></td>\n""")
-        print(io,"""          <td data-title="ell"><math><mn>$(Int(length(psl2word(F.A))))</mn></math></td>\n""")
-        print(io,"""        </tr>\n""")
+        print(io, """          <td data-title="Q"><math><mrow><mo>&langle;</mo><mn>$(Int(F.Q.a))</mn><mi>,</mi><mn>$(Int(F.Q.b))</mn><mi>,</mi><mn>$(Int(F.Q.c))</mn><mo>&rangle;</mo></mrow></math></td>\n""")
+        print(io, """          <td data-title="L"><math><mrow><mo>(</mo>\n""")
+        print(io, """            <mtable rowspacing="4px" columnspacing="6px" columnalign="center">\n""")
+        print(io, """              <mtr><mtd><mn>$(Int(L[1,1]))</mn></mtd><mtd><mn>$(Int(L[1,2]))</mn></mtd></mtr>\n""")
+        print(io, """              <mtr><mtd><mn>$(Int(L[2,1]))</mn></mtd><mtd><mn>$(Int(L[2,2]))</mn></mtd></mtr>\n""")
+        print(io, """            </mtable><mo>)</mo></mrow></math>\n""")
+        print(io, """          </td>\n""")
+        print(io, """          <td data-title="n"><math><mn>$(Int(2^au*F.k))</mn></math></td>\n""")
+        print(io, """          <td data-title="antiunitary"><math><mn>$(au ? "Y" : "")</mn></math></td>\n""")
+        print(io, """          <td data-title="ell"><math><mn>$(Int(length(psl2word(F.A))))</mn></math></td>\n""")
+        print(io, """        </tr>\n""")
         d = F.d
         q = F.q
     end
@@ -377,5 +377,5 @@ open(file_name, "w") do io
     </body>
 </html>
 """
-    print(io,epilogue)
+    print(io, epilogue)
 end

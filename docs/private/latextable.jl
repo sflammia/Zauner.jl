@@ -36,20 +36,20 @@ open(file_name, "w") do io
     println(io, "\\begin{center}")
     println(io, "\\begin{longtable}{tttttttttt}")
     println(io, "\\toprule")
-    println(io, "d & \\Delta_0 & f & h & \\Cl(\\mathcal{O}_f) & \\Gal(E/K) & Q & L^n & \\text{a.u.} & \\ell \\\\")
+    println(io, "d & \\Delta_0 & f & h & \\Cl(\\mathcal{O}_f) & \\Gal(E/H) & Q & L^n & \\text{a.u.} & \\ell \\\\")
 
     d = 1
     q = 0
-    for j=1:614
+    for j = 1:614
         F = AdmissibleTuple(dq(j))
         au, L = is_antiunitary_with_generator(F)
         if !(au)
             L = F.L
         end
-        print(io, ( F.d==d ? "" : "\\midrule\n"))
-        print(io, ( F.d==d ? "" : F.d),"&") # dimension d
-        print(io, ( F.d==d ? "" : F.D),"&") # fundamental discriminant Δ
-        print(io, ( F.d==d && F.q == q ? "" : F.q),"&") # conductor f
+        print(io, (F.d == d ? "" : "\\midrule\n"))
+        print(io, (F.d == d ? "" : F.d), "&") # dimension d
+        print(io, (F.d == d ? "" : F.D), "&") # fundamental discriminant Δ
+        print(io, (F.d == d && F.q == q ? "" : F.q), "&") # conductor f
         if !(F.d == d && F.q == q)
             cgp = class_group_structure(F.q^2 * F.D)
             print(io, " $(prod(cgp)) & ") # class number
@@ -66,11 +66,11 @@ open(file_name, "w") do io
                 _print_cycle_decomp(io, ords) # galois group
             end
         end
-        print(io, "&\\langle",F.Q.a,",",F.Q.b,",",F.Q.c,"\\rangle&")
-        print(io, "\\smt{",L[1,1],"&",L[1,2],"\\\\",L[2,1],"&",L[2,2])
-        print(io, "}^{",(au ? 2 : 1)*F.k,"}&")
+        print(io, "&\\langle", F.Q.a, ",", F.Q.b, ",", F.Q.c, "\\rangle&")
+        print(io, "\\smt{", L[1, 1], "&", L[1, 2], "\\\\", L[2, 1], "&", L[2, 2])
+        print(io, "}^{", (au ? 2 : 1) * F.k, "}&")
         print(io, (au ? "\\text{Y}&" : "&")) # is anti-unitary?
-        println(io, length(psl2word(F.A)),"\\\\")
+        println(io, length(psl2word(F.A)), "\\\\")
         d = F.d
         q = F.q
     end

@@ -60,7 +60,7 @@ one must additionally choose a sign-switching Galois automorphism \$\\sqrt{\\Del
 
 open(file_name, "w") do io
     println(io, preamble)
-    println(io, "| \$d\$ | \$\\Delta_0\$ | \$f\$ | \$h\$ | \$\\mathrm{Cl}(\\mathcal{O}_f)\$ | \$\\mathrm{Gal}(E/K)\$ | \$Q\$ | \$L^n\$ | \$\\text{a.u.}\$ | \$\\ell\$ |")
+    println(io, "| \$d\$ | \$\\Delta_0\$ | \$f\$ | \$h\$ | \$\\mathrm{Cl}(\\mathcal{O}_f)\$ | \$\\mathrm{Gal}(E/H)\$ | \$Q\$ | \$L^n\$ | \$\\text{a.u.}\$ | \$\\ell\$ |")
     println(io, "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |")
     d = 1
     q = 0

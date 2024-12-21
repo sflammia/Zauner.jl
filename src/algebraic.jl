@@ -65,7 +65,7 @@ julia> coredisc(45) # 45 = 3^2 * 5
 (5, 3)
 ```
 ```jldoctest
-julia> coredisc( QuadBin(1,-7,1) ) # -4*det( [1 -7//2; -7//2 1]) == 3^2 * 5
+julia> coredisc( binary_quadratic_form(1,-7,1) ) # -4*det( [1 -7//2; -7//2 1]) == 3^2 * 5
 (5, 3)
 ```
 
