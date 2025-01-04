@@ -3,7 +3,8 @@ on:
   push:
     branches:
       - main
-    tags: '*'
+    tags:
+      - "**"
   pull_request:
 jobs:
   test:
@@ -12,16 +13,14 @@ jobs:
     strategy:
       matrix:
         version:
-          - '1.10'
-          - '1'
+          - "1.11"
+          - "1"
         os:
-          # - macOS-latest # 10x the cost
+          - macOS-latest
           - ubuntu-latest
         arch:
           - x64
-        exclude:
-          # MacOS not available on x86
-          # - {os: 'macOS-latest', arch: 'x86'}
+      exclude: []
     steps:
       - uses: actions/checkout@v2
       - uses: julia-actions/setup-julia@latest
