@@ -43,7 +43,7 @@ Then \$ (d,Q) \$ gives an admissible tuple if \$\\mathrm{disc}(Q) = f^2\\Delta_0
 The other columns can be computed from these data, but they may be difficult to compute,
 for example requiring integer factoring or finding a fundamental unit.
 The column \$\\Delta_0\$ contains the fundamental discriminant of \$Q\$ and \$h\$ is the order of the class group \$\\mathrm{Cl}(\\mathcal{O}_f)\$, given in the next two columns respectively.
-The Galois group \$\\mathrm{Gal}(E/K)\$ of the field containing the overlaps over \$K=\\mathbb{Q}(\\sqrt{\\Delta_0})\$ is given in the next column.
+The Galois group \$\\mathrm{Gal}(E_t^{(2)}/H)\$ of the field containing the overlaps over the class field \$H\$ of \$K=\\mathbb{Q}(\\sqrt{\\Delta_0})\$ is given in the next column.
 As both the class group and the Galois group are finite and abelian, we give the canonical decomposition into cyclic groups \$C_k\$ of order \$k\$.
 For the special case that the tuple has so-called \$F_a\$ symmetry, we have not yet worked out the Galois groups, so we mark these entries as tbd.
 The column \$L^n\$ contains a generator \$L\$ of the stability group of \$Q\$ in \$\\mathrm{GL}_2(\\mathbb{Z})\$ and its order \$n\$ in \$\\mathrm{GL}_2(\\mathbb{Z}/\\bar{d})\$;
