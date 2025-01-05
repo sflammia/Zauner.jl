@@ -32,6 +32,8 @@ makedocs(
     ],
 )
 
-# deploydocs(
-#     repo=repo,
-# )
+deploydocs(
+    repo=repo,
+    target="gh-pages",
+    devbranch="main",
+)
