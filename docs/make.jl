@@ -34,6 +34,4 @@ makedocs(
 
 deploydocs(
     repo=repo,
-    target="gh-pages",
-    devbranch="main",
 )
