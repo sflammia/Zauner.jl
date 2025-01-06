@@ -8,9 +8,8 @@ Then $ (d,Q) $ gives an admissible tuple if $\mathrm{disc}(Q) = f^2\Delta_0$ whe
 The other columns can be computed from these data, but they may be difficult to compute,
 for example requiring integer factoring or finding a fundamental unit.
 The column $\Delta_0$ contains the fundamental discriminant of $Q$ and $h$ is the order of the class group $\mathrm{Cl}(\mathcal{O}_f)$, given in the next two columns respectively.
-The Galois group $\mathrm{Gal}(E/K)$ of the field containing the overlaps over $K=\mathbb{Q}(\sqrt{\Delta_0})$ is given in the next column.
+The Galois group $\mathrm{Gal}(E_t^{(1)}/H)$ of the candidate overlap field ramified at the first infinite place over the class field $H$ of $K=\mathbb{Q}(\sqrt{\Delta_0})$ is given in the next column.
 As both the class group and the Galois group are finite and abelian, we give the canonical decomposition into cyclic groups $C_k$ of order $k$.
-For the special case that the tuple has so-called $F_a$ symmetry, we have not yet worked out the Galois groups, so we mark these entries as tbd.
 The column $L^n$ contains a generator $L$ of the stability group of $Q$ in $\mathrm{GL}_2(\mathbb{Z})$ and its order $n$ in $\mathrm{GL}_2(\mathbb{Z}/\bar{d})$;
 that is, treating $Q$ as a symmetric matrix we have $L^T Q L = \det(L) Q$ and $L^n = 1\ (\bmod\ \bar{d})$.
 If the tuple has antiunitary symmetry, we denote this with a Y in the a.u. column.
@@ -22,7 +21,7 @@ The data here are sufficient to compute a ghost fiducial in each class,
 but to fully specify a SIC,
 one must additionally choose a sign-switching Galois automorphism $\sqrt{\Delta_0}\to-\sqrt{\Delta_0}$ over an appropriate field extension of $K$.
 
-| $d$ | $\Delta_0$ | $f$ | $h$ | $\mathrm{Cl}(\mathcal{O}_f)$ | $\mathrm{Gal}(E/K)$ | $Q$ | $L^n$ | $\text{a.u.}$ | $\ell$ |
+| $d$ | $\Delta_0$ | $f$ | $h$ | $\mathrm{Cl}(\mathcal{O}_f)$ | $\mathrm{Gal}(E/H)$ | $Q$ | $L^n$ | $\text{a.u.}$ | $\ell$ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | $4$ | $5$ | $1$ | $1$ | $ C_{1} $ | $C_{2}^{2}$  | $\langle1,-3,1\rangle$|$\left(\begin{smallmatrix}2&-1\\1&-1\end{smallmatrix}\right)^{6}$|$\text{Y}$|$4$|
 | $5$ | $12$ | $1$ | $1$ | $ C_{1} $ | $C_{8}$  | $\langle1,-4,1\rangle$|$\left(\begin{smallmatrix}4&-1\\1&0\end{smallmatrix}\right)^{3}$||$4$|
@@ -37,7 +36,7 @@ one must additionally choose a sign-switching Galois automorphism $\sqrt{\Delta_
 | $11$ | $24$ | $1$ | $1$ | $ C_{1} $ | $C_{40}$  | $\langle3,-6,1\rangle$|$\left(\begin{smallmatrix}11&-2\\6&-1\end{smallmatrix}\right)^{3}$||$7$|
 | | | $2$ | $2$ | $C_{2}$  | $C_{40}$  | $\langle1,-10,1\rangle$|$\left(\begin{smallmatrix}10&-1\\1&0\end{smallmatrix}\right)^{3}$||$4$|
 | | | | | |  | $\langle3,-12,4\rangle$|$\left(\begin{smallmatrix}11&-4\\3&-1\end{smallmatrix}\right)^{3}$||$7$|
-| $12$ | $13$ | $1$ | $1$ | $ C_{1} $ |  tbd  | $\langle3,-5,1\rangle$|$\left(\begin{smallmatrix}4&-1\\3&-1\end{smallmatrix}\right)^{6}$|$\text{Y}$|$10$|
+| $12$ | $13$ | $1$ | $1$ | $ C_{1} $ |  $C_{2}^{4}$  | $\langle3,-5,1\rangle$|$\left(\begin{smallmatrix}4&-1\\3&-1\end{smallmatrix}\right)^{6}$|$\text{Y}$|$10$|
 | | | $3$ | $1$ | $ C_{1} $ | $C_{2}^{3}\times{}C_{6}$  | $\langle1,-11,1\rangle$|$\left(\begin{smallmatrix}11&-1\\1&0\end{smallmatrix}\right)^{3}$||$4$|
 | $13$ | $140$ | $1$ | $2$ | $C_{2}$  | $C_{4}\times{}C_{12}$  | $\langle1,-12,1\rangle$|$\left(\begin{smallmatrix}12&-1\\1&0\end{smallmatrix}\right)^{3}$||$4$|
 | | | | | |  | $\langle7,-14,2\rangle$|$\left(\begin{smallmatrix}13&-2\\7&-1\end{smallmatrix}\right)^{3}$||$7$|
@@ -61,7 +60,7 @@ one must additionally choose a sign-switching Galois automorphism $\sqrt{\Delta_
 | | | | | |  | $\langle5,-20,4\rangle$|$\left(\begin{smallmatrix}19&-4\\5&-1\end{smallmatrix}\right)^{3}$||$7$|
 | $20$ | $357$ | $1$ | $2$ | $C_{2}$  | $C_{2}^{3}\times{}C_{24}$  | $\langle1,-19,1\rangle$|$\left(\begin{smallmatrix}19&-1\\1&0\end{smallmatrix}\right)^{3}$||$4$|
 | | | | | |  | $\langle7,-21,3\rangle$|$\left(\begin{smallmatrix}20&-3\\7&-1\end{smallmatrix}\right)^{3}$||$7$|
-| $21$ | $44$ | $1$ | $1$ | $ C_{1} $ |  tbd  | $\langle5,-8,1\rangle$|$\left(\begin{smallmatrix}22&-3\\15&-2\end{smallmatrix}\right)^{3}$||$10$|
+| $21$ | $44$ | $1$ | $1$ | $ C_{1} $ |  $C_{2}^{2}\times{}C_{24}$  | $\langle5,-8,1\rangle$|$\left(\begin{smallmatrix}22&-3\\15&-2\end{smallmatrix}\right)^{3}$||$10$|
 | | | $3$ | $4$ | $C_{4}$  | $C_{2}\times{}C_{6}^{2}$  | $\langle1,-20,1\rangle$|$\left(\begin{smallmatrix}20&-1\\1&0\end{smallmatrix}\right)^{3}$||$4$|
 | | | | | |  | $\langle5,-24,9\rangle$|$\left(\begin{smallmatrix}22&-9\\5&-2\end{smallmatrix}\right)^{3}$||$10$|
 | | | | | |  | $\langle11,-22,2\rangle$|$\left(\begin{smallmatrix}21&-2\\11&-1\end{smallmatrix}\right)^{3}$||$7$|
@@ -95,7 +94,7 @@ one must additionally choose a sign-switching Galois automorphism $\sqrt{\Delta_
 | | | | | |  | $\langle15,-30,2\rangle$|$\left(\begin{smallmatrix}29&-2\\15&-1\end{smallmatrix}\right)^{3}$||$7$|
 | | | | | |  | $\langle10,-30,3\rangle$|$\left(\begin{smallmatrix}29&-3\\10&-1\end{smallmatrix}\right)^{3}$||$7$|
 | | | | | |  | $\langle6,-30,5\rangle$|$\left(\begin{smallmatrix}29&-5\\6&-1\end{smallmatrix}\right)^{3}$||$7$|
-| $30$ | $93$ | $1$ | $1$ | $ C_{1} $ |  tbd  | $\langle7,-11,1\rangle$|$\left(\begin{smallmatrix}31&-3\\21&-2\end{smallmatrix}\right)^{3}$||$10$|
+| $30$ | $93$ | $1$ | $1$ | $ C_{1} $ |  $C_{2}\times{}C_{6}\times{}C_{24}$  | $\langle7,-11,1\rangle$|$\left(\begin{smallmatrix}31&-3\\21&-2\end{smallmatrix}\right)^{3}$||$10$|
 | | | $3$ | $3$ | $C_{3}$  | $C_{2}\times{}C_{6}\times{}C_{24}$  | $\langle1,-29,1\rangle$|$\left(\begin{smallmatrix}29&-1\\1&0\end{smallmatrix}\right)^{3}$||$4$|
 | | | | | |  | $\langle19,-1,-11\rangle$|$\left(\begin{smallmatrix}15&11\\19&14\end{smallmatrix}\right)^{3}$||$10$|
 | | | | | |  | $\langle7,-33,9\rangle$|$\left(\begin{smallmatrix}31&-9\\7&-2\end{smallmatrix}\right)^{3}$||$10$|
