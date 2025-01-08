@@ -86,7 +86,7 @@ sic_frame_test(ψ)
 
 How to cite us:
 ```
-@misc{AFK2024,
+@misc{AFK2025,
 	archiveprefix = {arXiv},
 	author = {Appleby, Marcus and Flammia, Steven T. and Kopp, Gene S.},
 	eprint = {2501.03970},
