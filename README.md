@@ -7,3 +7,5 @@
 A Julia package for computing SICs and related objects.
 
 Documentation available at [sflammia.github.io/Zauner.jl](https://sflammia.github.io/Zauner.jl/).
+
+Paper available at [arXiv:2501.03970](https://arxiv.org/abs/2501.03970).
