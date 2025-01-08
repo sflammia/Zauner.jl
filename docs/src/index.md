@@ -85,15 +85,14 @@ sic_frame_test(ψ)
 ## Citing `Zauner`
 
 How to cite us:
-(**add citation info for the GitHub repo and for the paper**)
 ```
 @misc{AFK2024,
 	archiveprefix = {arXiv},
 	author = {Appleby, Marcus and Flammia, Steven T. and Kopp, Gene S.},
-	eprint = {2407.00001},
-	howpublished = {arXiv:2407.00001},
+	eprint = {2501.03970},
+	howpublished = {arXiv:2501.03970},
 	primaryclass = {math.NT},
 	title = {A constructive approach to Zauner's conjecture via the Stark conjectures},
-	year = {2024}
+	year = {2025}
 }
 ```
