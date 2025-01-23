@@ -335,7 +335,7 @@ Dict{ZZRingElem, Tuple{Vector{ZZRingElem}, Vector{QuadBin}}} with 3 entries:
   2 => ([1], [Binary quadratic form over ZZ: x^2 + 6*x*y - 3*y^2])
   1 => ([1], [Binary quadratic form over ZZ: x^2 + 2*x*y - 2*y^2])
 ```
-In this example, `Q = QuadBin(3,12,-4)` has order 2, so we have `Q^2 == QuadBin(1,12,-12)` since this is the principle form with the same discriminant.
+In this example, `Q = QuadBin(3,12,-4)` has order 2, so we have `Q^2 == QuadBin(1,12,-12)` since this is the principal form with the same discriminant.
 """
 function ghostbasis(d)
     D = (d + 1) * (d - 3)

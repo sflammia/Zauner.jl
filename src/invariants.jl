@@ -16,7 +16,7 @@ function _ghost_invariants(K::AbstractArray{BigFloat})
     b = Vector{BigFloat}[]
     s = Vector{BigFloat}[]
     for j = 1:r
-        notj = NTuple{r-1,Int}(setdiff(1:r, j))
+        notj = NTuple{r - 1,Int}(setdiff(1:r, j))
         # first compute "l_j".
         for l = 1:n÷ords[j]
             c = dropdims(sum(K .^ l; dims=notj); dims=notj)
@@ -61,7 +61,7 @@ The maximum number of bits used in integer relation finding is set to `max_prec`
 
 # Examples
 
-Check that the principle SIC in ``d=7`` satisfies the equiangularity conditions.
+Check that the principal SIC in ``d=7`` satisfies the equiangularity conditions.
 
 ```
 julia> d = 7; F = AdmissibleTuple(d)

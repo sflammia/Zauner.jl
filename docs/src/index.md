@@ -42,7 +42,7 @@ t.D # fundamental discriminant
 ```
 The complete set of fields is given in the documentation for `AdmissibleTuple`.
 
-If no quadratic form is given, then `AdmissibleTuple` defaults to the principle form.
+If no quadratic form is given, then `AdmissibleTuple` defaults to the principal form.
 ```@repl Z
 t = AdmissibleTuple(7)
 t.Q # form

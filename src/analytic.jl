@@ -59,13 +59,13 @@ end
 
 
 # compute the rank-1 ghosts in two cases
-# Ideally this should test if F.Q is equivalent to principle
+# Ideally this should test if F.Q is equivalent to principal
 # (using 'is_equivalent( Q1, Q2; proper = true)')
-# rather than using only the reduced principle form
-_rank_1_ghost(F::AdmissibleTuple) = (F.Q.a == 1 && F.Q.b == 1 - F.d && F.Q.c == 1 ? _principle_ghost(F) : _generic_rank_1_ghost(F))
+# rather than using only the reduced principal form
+_rank_1_ghost(F::AdmissibleTuple) = (F.Q.a == 1 && F.Q.b == 1 - F.d && F.Q.c == 1 ? _principal_ghost(F) : _generic_rank_1_ghost(F))
 
 
-# symmetrized double sine for principle ghosts
+# symmetrized double sine for principal ghosts
 # NOTE: This function averages over the action of [-1 -1; 1 0]
 # The original choice of Zauner is [0 -1; 1 -1], and we could use this instead
 function _triple_double_sine(p, q, F::AdmissibleTuple)
@@ -78,8 +78,8 @@ function _triple_double_sine(p, q, F::AdmissibleTuple)
 end
 
 
-# compute the principle ghost with the simplified algorithm
-function _principle_ghost(F::AdmissibleTuple)
+# compute the principal ghost with the simplified algorithm
+function _principal_ghost(F::AdmissibleTuple)
     d = Int(F.d)
     dsp = zeros(BigFloat, 2, d)
     dsp[1, 1] = sqrt(d + one(BigFloat))
