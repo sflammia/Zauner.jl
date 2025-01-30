@@ -28,5 +28,8 @@ include("galois.jl")
 include("matrix_completion.jl")
 include("invariants.jl")
 include("validation.jl")
+include("sl2z_arithmetic.jl")
+include("hj_cycle.jl")
+include("signed_shin.jl")
 
 end # module
