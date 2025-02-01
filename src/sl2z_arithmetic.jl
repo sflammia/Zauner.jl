@@ -16,5 +16,5 @@ function sl2z_inverse(A::Matrix)
 end
 
 function sl2z_act(A::Matrix, x)
-    (A[1, 1] * x + A[1, 2]) / (A[2, 1] * x + A[2, 2])
+    (A[1, 1] * x + A[1, 2] * one(t.x)) / (A[2, 1] * x + A[2, 2] * one(t.x))
 end

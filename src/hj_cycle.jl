@@ -12,7 +12,7 @@ function _hj_cycle_matrices(t::AdmissibleTuple)
     end
     S = matrix_S
     T = matrix_T
-    Ainvs = typeof(t.A)[matrix_I()]
+    Ainvs = typeof(t.A)[matrix_I]
     for j = 1:(n-1)
         push!(Ainvs, Ainvs[j] * T^BigInt(bs[j]) * S)
     end
