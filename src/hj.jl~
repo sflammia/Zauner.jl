@@ -29,7 +29,7 @@ function reduced_hj_orbit(q::QuadBin{ZZRingElem})
     rootD = sqrt(1.0 * discriminant(q))
     Q = reduction(q)
     V = cycle(Q)
-    n0 = map(x -> ceil(Int, (2.0 * abs(x.a)) / (-1.0 * x.b + rootD)) - 2, V)
+    n0 = map(x -> ceil(Int, (2.0 * abs(x.a)) / (-1.0x.b + rootD)) - 2, V)
     R = typeof(V[1])[]
     for k = 1:length(n0), n = 0:n0[k]
         push!(R, _hj_step(V[k], n))
