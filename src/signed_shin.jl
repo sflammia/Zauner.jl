@@ -4,12 +4,22 @@
 # I plan to make some of these functions internal after some testing.
 export lambda_kopp, gamma_kopp, u_tangedal, shin_of_tuple
 
+@doc """
+    _sympt(p::Vector, x)
+
+Symplectic inner product. Computes `p[2] * x - p[1]`.
+"""
 function _sympt(p::Vector, x)
     p[2] * x - p[1]
 end
 
-# Function $\lambda_(\mathbf{p}/d)(A)$ describing the "$\mathbf{r}$-dependent phase factor" as defined in Proposition 7.20 of Kopp, "The Shintani--Faddeev modular cocycle: Stark units from $q$-Pochhammer ratios"
-# This is known to be a rational number but is not currently computed as such. May modify later.
+
+"""
+    lambda_kopp(t::AdmissibleTuple, p::Vector)
+
+Function ``\\lambda_(\\mathbf{p}/d)(A)`` describing the ``\\mathbf{r}``-dependent phase factor as defined in Proposition 7.20 of Kopp, "The Shintani--Faddeev modular cocycle: Stark units from ``q``-Pochhammer ratios".
+This is known to be a rational number but is not currently computed as such. May modify later.
+"""
 function lambda_kopp(t::AdmissibleTuple, p::Vector)
     hjcd = hj_cycle_data(t, p)
     rhos = hjcd[1]
@@ -26,8 +36,13 @@ function lambda_kopp(t::AdmissibleTuple, p::Vector)
     sum
 end
 
-# Function $\gamma(A)$ describing the "global phase factor" as defined in Proposition 7.20 of Kopp, "The Shintani--Faddeev modular cocycle: Stark units from $q$-Pochhammer ratios"
-# Should be identical to Rademacher function. Implemented for testing purposes.
+
+@doc """
+    gamma_kopp(t::AdmissibleTuple)
+
+Function ``\\gamma(A)`` describing the global phase factor as defined in Proposition 7.20 of Kopp, "The Shintani--Faddeev modular cocycle: Stark units from ``q``-Pochhammer ratios".
+Should be identical to Rademacher function. Implemented for testing purposes.
+"""
 function gamma_kopp(t::AdmissibleTuple)
     hjcd = hj_cycle_data(t, [BigInt(0); BigInt(0)])
     rhos = hjcd[1]
@@ -39,7 +54,12 @@ function gamma_kopp(t::AdmissibleTuple)
     sum
 end
 
-# Stark--Tangedal--Yamamoto invariant as defined in Definition 7.13 of Kopp, "The Shintani--Faddeev modular cocycle: Stark units from $q$-Pochhammer ratios"
+
+@doc """
+    u_tangedal(t::AdmissibleTuple, p::Vector)
+
+Stark--Tangedal--Yamamoto invariant as defined in Definition 7.13 of Kopp, "The Shintani--Faddeev modular cocycle: Stark units from ``q``-Pochhammer ratios".
+"""
 function u_tangedal(t::AdmissibleTuple, p::Vector)
     hjcd = hj_cycle_data(t, p)
     rhos = hjcd[1]
@@ -56,7 +76,12 @@ function u_tangedal(t::AdmissibleTuple, p::Vector)
     prod
 end
 
-# Formula for shin is from Proposition 7.20 of Kopp, "The Shintani--Faddeev modular cocycle: Stark units from $q$-Pochhammer ratios"
+
+"""
+    shin_of_tuple(t::AdmissibleTuple, p::Vector)
+
+Formula for shin is from Proposition 7.20 of Kopp, "The Shintani--Faddeev modular cocycle: Stark units from ``q``-Pochhammer ratios".
+"""
 function shin_of_tuple(t::AdmissibleTuple, p::Vector)
     e(gamma_kopp(t) / typeof(t.x)(24) + lambda_kopp(t, p) / typeof(t.x)(4)) * u_tangedal(t, p)
 end
