@@ -14,9 +14,9 @@ function _hj_cycle_matrices(t::AdmissibleTuple)
         # User should never see this error.
         error("The function _hj_cycle_matrices is not implemented when t.Q is not strictly HJ-reduced. (A strictly HJ-reduced form is one for which the last entry of psl2word(t.A) is zero.)")
     end
-    S = matrix_S
-    T = matrix_T
-    Ainvs = typeof(t.A)[matrix_I]
+    S = sl2z_S
+    T = sl2z_T
+    Ainvs = typeof(t.A)[sl2z_I]
     for j = 1:(n-1)
         push!(Ainvs, Ainvs[j] * T^BigInt(bs[j]) * S)
     end

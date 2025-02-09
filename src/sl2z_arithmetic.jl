@@ -1,35 +1,35 @@
 # Basic 2 x 2 matrices and operations
 # Note that matrices can be added (A+B), multiplied (A*B), and raised to positive integer powers (A^Int64(n))
 
-export matrix_I, matrix_P, matrix_S, matrix_T, sl2z_inverse, sl2z_act
+export sl2z_I, sl2z_P, sl2z_S, sl2z_T, sl2z_inverse, sl2z_act
 
 @doc """
-    matrix_I
+    sl2z_I
 
 The matrix [1 0; 0 1] with entries of type `ZZRingElem`.
 """
-const matrix_I = [ZZ(1) ZZ(0); ZZ(0) ZZ(1)]
+const sl2z_I = [ZZ(1) ZZ(0); ZZ(0) ZZ(1)]
 
 @doc """
-    matrix_P
+    sl2z_P
 
 The matrix [-1 0; 0 -1] with entries of type `ZZRingElem`.
 """
-const matrix_P = [-ZZ(1) ZZ(0); ZZ(0) -ZZ(1)]
+const sl2z_P = [-ZZ(1) ZZ(0); ZZ(0) -ZZ(1)]
 
 @doc """
-    matrix_S
+    sl2z_S
 
 The matrix [0 -1; 1 0] with entries of type `ZZRingElem`.
 """
-const matrix_S = [ZZ(0) -ZZ(1); ZZ(1) ZZ(0)]
+const sl2z_S = [ZZ(0) -ZZ(1); ZZ(1) ZZ(0)]
 
 @doc """
-    matrix_T
+    sl2z_T
 
 The matrix [1 1; 0 1] with entries of type `ZZRingElem`.
 """
-const matrix_T = [ZZ(1) ZZ(1); ZZ(0) ZZ(1)]
+const sl2z_T = [ZZ(1) ZZ(1); ZZ(0) ZZ(1)]
 
 
 @doc """
