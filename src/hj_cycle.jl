@@ -4,11 +4,16 @@ export hj_cycle_data
 
 @doc """
     _hj_cycle_matrices(t::AdmissibleTuple)
+    _hj_cycle_matrices(A::Matrix)
 
 Returns the list of matrices ``A_{n,0}`` from Definition 7.4 of Kopp, "The Shintani--Faddeev modular cocycle: Stark units from ``q``-Pochhammer ratios".
 """
 function _hj_cycle_matrices(t::AdmissibleTuple)
-    bs = psl2word(t.A)
+    _hj_cycle_matrices(t.A)
+end
+
+function _hj_cycle_matrices(A::Matrix)
+    bs = psl2word(A)
     n = length(bs) - 1
     if bs[n+1] != 0
         # User should never see this error.
@@ -16,11 +21,11 @@ function _hj_cycle_matrices(t::AdmissibleTuple)
     end
     S = sl2z_S
     T = sl2z_T
-    Ainvs = typeof(t.A)[sl2z_I]
+    Ainvs = typeof(A)[sl2z_I]
     for j = 1:(n-1)
         push!(Ainvs, Ainvs[j] * T^BigInt(bs[j]) * S)
     end
-    As = typeof(t.A)[]
+    As = typeof(A)[]
     for j = 1:n
         push!(As, sl2z_inverse(Ainvs[j]))
     end
