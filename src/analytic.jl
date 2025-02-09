@@ -106,7 +106,7 @@ end
 function _generic_rank_1_ghost(F::AdmissibleTuple)
     d = Int(F.d)
     ζ = -cispi(BigFloat(1) / d)
-    QQ = QuadBin(F.A[2, 1], F.A[2, 2] - F.A[1, 1], -F.A[1, 2])
+    QQ = binary_quadratic_form(F.A[2, 1], F.A[2, 2] - F.A[1, 1], -F.A[1, 2])
     c = e(-BigFloat(rademacher(F.A)) / 24) / sqrt(BigFloat(d + 1))
 
     ω = _get_periods(F.A, F.x)
