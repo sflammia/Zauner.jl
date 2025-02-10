@@ -1,4 +1,4 @@
-export reduced_hj_orbit, minimal_hj_stabilizer
+export reduced_hj_orbit, minimal_hj_stabilizer, form_sign_fix
 
 @doc """
     _hj_step(Q,n=0)
@@ -27,15 +27,36 @@ julia> reduced_hj_orbit(binary_quadratic_form(1,-4,1))
 function reduced_hj_orbit(q::QuadBin{ZZRingElem})
     @assert discriminant(q) > 0
     rootD = sqrt(1.0 * discriminant(q))
-    Q = reduction(q)
+    # Euclidean reduce the form q and ensure q.a > 0
+    Q = form_sign_fix(reduction(q))
+    # find the Euclidean reduced cycle with a > 0.
     V = cycle(Q)
-    n0 = map(x -> ceil(Int, (2.0 * abs(x.a)) / (-1.0 * x.b + rootD)) - 2, V)
-    R = typeof(V[1])[]
-    for k = 1:length(n0), n = 0:n0[k]
-        push!(R, _hj_step(V[k], n))
+    Vroots = map(x -> (rootD - 1.0 * x.b) / (2.0 * x.a), V)
+    n0 = maximum(ceil.(Int, 1.0 ./ Vroots) .- 1)
+    R = QuadBin{ZZRingElem}[]
+    # Note: this could be faster by dropping elements of Vroots at the first n for which they fail.
+    for n = 0:n0-1
+        for k = 1:length(V)
+            if Vroots[k] < 1 / (n + 1)
+                push!(R, _hj_step(V[k], n))
+            end
+        end
     end
     R
 end
+
+
+
+@doc """
+    form_sign_fix(q::QuadBin{ZZRingElem})
+
+Take a form q = ⟨a,b,c⟩ and if a < 0 return the form r = ⟨-a,b,-c⟩.
+Note that r is Euclidean reduced iff q is Euclidean reduced.
+"""
+function form_sign_fix(q::QuadBin{ZZRingElem})
+    (q.a < 0 ? binary_quadratic_form(-q.a, q.b, -q.c) : q)
+end
+
 
 
 @doc """
@@ -43,16 +64,12 @@ end
 
 Returns a minimal form `Q` among those in `V`.
 Specifically, if `V` is a reduced HJ orbit then the output `Q` minimizes the length of the HJ expansion of the stabilizer of `Q` modulo `d`.
+The function assumes that Q.a > 0 for each form in V.
 To break ties on length, the algorithm further chooses a minimal form by minimizing according first to the sum of the absolute coefficients, then by the maximum absolute coefficient.
 See the internal function `_quadcompare_sum_then_max` for details of the comparison function used for sorting.
 """
 function minimal_hj_stabilizer(V::Vector{QuadBin{ZZRingElem}}, d)
     Q = deepcopy(V)
-    # Flip to an equivalent form with Q.a > 0.
-    for q in Q
-        x = sign(q.a)
-        q.a, q.c = x * q.a, x * q.c
-    end
     L = stabilizer.(Q)
     n = sl2zorder.(L, d)
     A = L .^ n
