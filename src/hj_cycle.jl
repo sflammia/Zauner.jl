@@ -9,27 +9,20 @@ export hj_cycle_data
 Returns the list of matrices ``A_{n,0}`` from Definition 7.4 of Kopp, "The Shintani--Faddeev modular cocycle: Stark units from ``q``-Pochhammer ratios".
 """
 function _hj_cycle_matrices(t::AdmissibleTuple)
-    _hj_cycle_matrices(t.A)
-end
-
-function _hj_cycle_matrices(A::Matrix)
-    bs = psl2word(A)
-    n = length(bs) - 1
-    if bs[n+1] != 0
+    bs = psl2word(t.A)
+    if bs[end] != 0
         # User should never see this error.
         error("The function _hj_cycle_matrices is not implemented when t.Q is not strictly HJ-reduced. (A strictly HJ-reduced form is one for which the last entry of psl2word(t.A) is zero.)")
     end
-    S = sl2z_S
-    T = sl2z_T
-    Ainvs = typeof(A)[sl2z_I]
-    for j = 1:(n-1)
-        push!(Ainvs, Ainvs[j] * T^BigInt(bs[j]) * S)
-    end
-    As = typeof(A)[]
-    for j = 1:n
-        push!(As, sl2z_inverse(Ainvs[j]))
-    end
-    As
+    _hj_cycle_matrices_from_psl2word(bs)
+end
+
+function _hj_cycle_matrices_from_psl2word(W::Vector)
+    # The matrix [0 1; -1 n] is (T^n * S)^(-1), but
+    # this avoids powers and inverses and
+    # easily ensures type consistency
+    U = pushfirst!(map(x -> [0 1; -1 x], W[1:end-2]), eltype(W).([1 0; 0 1]))
+    accumulate((A, B) -> B * A, U)
 end
 
 
