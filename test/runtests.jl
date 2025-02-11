@@ -48,7 +48,7 @@ end # end algebraic testset
     @test length(reduced_hj_orbit(binary_quadratic_form(1, -4, 1))) == 3
     @test length(reduced_hj_orbit(binary_quadratic_form(1, -101, 1))) == 100
 
-    # principle forms are minimal
+    # principal forms are minimal
     Q = binary_quadratic_form(1, -4, 1)
     V = reduced_hj_orbit(Q)
     @test minimal_hj_stabilizer(V, 5) == Q
