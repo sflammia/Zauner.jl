@@ -289,3 +289,6 @@ Manifest.toml
 
 # Documenter build
 /docs/build/
+
+# Temporary files
+*~
