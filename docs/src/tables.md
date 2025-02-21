@@ -8,8 +8,9 @@ Then $ (d,Q) $ gives an admissible tuple if $\mathrm{disc}(Q) = f^2\Delta_0$ whe
 The other columns can be computed from these data, but they may be difficult to compute,
 for example requiring integer factoring or finding a fundamental unit.
 The column $\Delta_0$ contains the fundamental discriminant of $Q$ and $h$ is the order of the class group $\mathrm{Cl}(\mathcal{O}_f)$, given in the next two columns respectively.
-The Galois group $\mathrm{Gal}(E_t^{(1)}/H)$ of the candidate overlap field ramified at the first infinite place over the class field $H$ of $K=\mathbb{Q}(\sqrt{\Delta_0})$ is given in the next column.
+The Galois group $\mathrm{Gal}(E_t^{(2)}/H)$ of the field containing the overlaps over the class field $H$ of $K=\mathbb{Q}(\sqrt{\Delta_0})$ is given in the next column.
 As both the class group and the Galois group are finite and abelian, we give the canonical decomposition into cyclic groups $C_k$ of order $k$.
+For the special case that the tuple has so-called $F_a$ symmetry, we have not yet worked out the Galois groups, so we mark these entries as tbd.
 The column $L^n$ contains a generator $L$ of the stability group of $Q$ in $\mathrm{GL}_2(\mathbb{Z})$ and its order $n$ in $\mathrm{GL}_2(\mathbb{Z}/\bar{d})$;
 that is, treating $Q$ as a symmetric matrix we have $L^T Q L = \det(L) Q$ and $L^n = 1\ (\bmod\ \bar{d})$.
 If the tuple has antiunitary symmetry, we denote this with a Y in the a.u. column.
@@ -36,7 +37,7 @@ one must additionally choose a sign-switching Galois automorphism $\sqrt{\Delta_
 | $11$ | $24$ | $1$ | $1$ | $ C_{1} $ | $C_{40}$  | $\langle3,-6,1\rangle$|$\left(\begin{smallmatrix}11&-2\\6&-1\end{smallmatrix}\right)^{3}$||$7$|
 | | | $2$ | $2$ | $C_{2}$  | $C_{40}$  | $\langle1,-10,1\rangle$|$\left(\begin{smallmatrix}10&-1\\1&0\end{smallmatrix}\right)^{3}$||$4$|
 | | | | | |  | $\langle3,-12,4\rangle$|$\left(\begin{smallmatrix}11&-4\\3&-1\end{smallmatrix}\right)^{3}$||$7$|
-| $12$ | $13$ | $1$ | $1$ | $ C_{1} $ |  $C_{2}^{4}$  | $\langle3,-5,1\rangle$|$\left(\begin{smallmatrix}4&-1\\3&-1\end{smallmatrix}\right)^{6}$|$\text{Y}$|$10$|
+| $12$ | $13$ | $1$ | $1$ | $ C_{1} $ | $C_{2}^{4}$  | $\langle3,-5,1\rangle$|$\left(\begin{smallmatrix}4&-1\\3&-1\end{smallmatrix}\right)^{6}$|$\text{Y}$|$10$|
 | | | $3$ | $1$ | $ C_{1} $ | $C_{2}^{3}\times{}C_{6}$  | $\langle1,-11,1\rangle$|$\left(\begin{smallmatrix}11&-1\\1&0\end{smallmatrix}\right)^{3}$||$4$|
 | $13$ | $140$ | $1$ | $2$ | $C_{2}$  | $C_{4}\times{}C_{12}$  | $\langle1,-12,1\rangle$|$\left(\begin{smallmatrix}12&-1\\1&0\end{smallmatrix}\right)^{3}$||$4$|
 | | | | | |  | $\langle7,-14,2\rangle$|$\left(\begin{smallmatrix}13&-2\\7&-1\end{smallmatrix}\right)^{3}$||$7$|
@@ -60,7 +61,7 @@ one must additionally choose a sign-switching Galois automorphism $\sqrt{\Delta_
 | | | | | |  | $\langle5,-20,4\rangle$|$\left(\begin{smallmatrix}19&-4\\5&-1\end{smallmatrix}\right)^{3}$||$7$|
 | $20$ | $357$ | $1$ | $2$ | $C_{2}$  | $C_{2}^{3}\times{}C_{24}$  | $\langle1,-19,1\rangle$|$\left(\begin{smallmatrix}19&-1\\1&0\end{smallmatrix}\right)^{3}$||$4$|
 | | | | | |  | $\langle7,-21,3\rangle$|$\left(\begin{smallmatrix}20&-3\\7&-1\end{smallmatrix}\right)^{3}$||$7$|
-| $21$ | $44$ | $1$ | $1$ | $ C_{1} $ |  $C_{2}^{2}\times{}C_{24}$  | $\langle5,-8,1\rangle$|$\left(\begin{smallmatrix}22&-3\\15&-2\end{smallmatrix}\right)^{3}$||$10$|
+| $21$ | $44$ | $1$ | $1$ | $ C_{1} $ | $C_{2}^{2}\times{}C_{24}$  | $\langle5,-8,1\rangle$|$\left(\begin{smallmatrix}22&-3\\15&-2\end{smallmatrix}\right)^{3}$||$10$|
 | | | $3$ | $4$ | $C_{4}$  | $C_{2}\times{}C_{6}^{2}$  | $\langle1,-20,1\rangle$|$\left(\begin{smallmatrix}20&-1\\1&0\end{smallmatrix}\right)^{3}$||$4$|
 | | | | | |  | $\langle5,-24,9\rangle$|$\left(\begin{smallmatrix}22&-9\\5&-2\end{smallmatrix}\right)^{3}$||$10$|
 | | | | | |  | $\langle11,-22,2\rangle$|$\left(\begin{smallmatrix}21&-2\\11&-1\end{smallmatrix}\right)^{3}$||$7$|
@@ -69,9 +70,9 @@ one must additionally choose a sign-switching Galois automorphism $\sqrt{\Delta_
 | $23$ | $120$ | $1$ | $2$ | $C_{2}$  | $C_{176}$  | $\langle6,-12,1\rangle$|$\left(\begin{smallmatrix}23&-2\\12&-1\end{smallmatrix}\right)^{3}$||$7$|
 | | | | | |  | $\langle3,-12,2\rangle$|$\left(\begin{smallmatrix}23&-4\\6&-1\end{smallmatrix}\right)^{3}$||$7$|
 | | | $2$ | $4$ | $C_{2}^{2}$  | $C_{176}$  | $\langle1,-22,1\rangle$|$\left(\begin{smallmatrix}22&-1\\1&0\end{smallmatrix}\right)^{3}$||$4$|
-| | | | | |  | $\langle19,-10,-5\rangle$|$\left(\begin{smallmatrix}16&5\\19&6\end{smallmatrix}\right)^{3}$||$13$|
+| | | | | |  | $\langle19,-28,4\rangle$|$\left(\begin{smallmatrix}25&-4\\19&-3\end{smallmatrix}\right)^{3}$||$13$|
 | | | | | |  | $\langle8,-24,3\rangle$|$\left(\begin{smallmatrix}23&-3\\8&-1\end{smallmatrix}\right)^{3}$||$7$|
-| | | | | |  | $\langle15,0,-8\rangle$|$\left(\begin{smallmatrix}11&8\\15&11\end{smallmatrix}\right)^{3}$||$10$|
+| | | | | |  | $\langle7,-26,7\rangle$|$\left(\begin{smallmatrix}24&-7\\7&-2\end{smallmatrix}\right)^{3}$||$10$|
 | $24$ | $21$ | $1$ | $1$ | $ C_{1} $ | $C_{2}\times{}C_{4}\times{}C_{12}$  | $\langle1,-5,1\rangle$|$\left(\begin{smallmatrix}5&-1\\1&0\end{smallmatrix}\right)^{6}$||$7$|
 | | | $5$ | $2$ | $C_{2}$  | $C_{2}^{2}\times{}C_{4}\times{}C_{12}$  | $\langle1,-23,1\rangle$|$\left(\begin{smallmatrix}23&-1\\1&0\end{smallmatrix}\right)^{3}$||$4$|
 | | | | | |  | $\langle17,-27,3\rangle$|$\left(\begin{smallmatrix}25&-3\\17&-2\end{smallmatrix}\right)^{3}$||$10$|
@@ -79,13 +80,13 @@ one must additionally choose a sign-switching Galois automorphism $\sqrt{\Delta_
 | | | | | |  | $\langle13,-26,2\rangle$|$\left(\begin{smallmatrix}25&-2\\13&-1\end{smallmatrix}\right)^{3}$||$7$|
 | $26$ | $69$ | $1$ | $1$ | $ C_{1} $ | $C_{2}\times{}C_{12}^{2}$  | $\langle3,-9,1\rangle$|$\left(\begin{smallmatrix}26&-3\\9&-1\end{smallmatrix}\right)^{3}$||$7$|
 | | | $3$ | $3$ | $C_{3}$  | $C_{2}\times{}C_{12}^{2}$  | $\langle1,-25,1\rangle$|$\left(\begin{smallmatrix}25&-1\\1&0\end{smallmatrix}\right)^{3}$||$4$|
-| | | | | |  | $\langle17,-3,-9\rangle$|$\left(\begin{smallmatrix}14&9\\17&11\end{smallmatrix}\right)^{3}$||$10$|
+| | | | | |  | $\langle11,-29,5\rangle$|$\left(\begin{smallmatrix}27&-5\\11&-2\end{smallmatrix}\right)^{3}$||$10$|
 | | | | | |  | $\langle5,-29,11\rangle$|$\left(\begin{smallmatrix}27&-11\\5&-2\end{smallmatrix}\right)^{3}$||$10$|
 | $27$ | $168$ | $1$ | $2$ | $C_{2}$  | $C_{9}\times{}C_{18}$  | $\langle7,-14,1\rangle$|$\left(\begin{smallmatrix}27&-2\\14&-1\end{smallmatrix}\right)^{3}$||$7$|
 | | | | | |  | $\langle11,-16,2\rangle$|$\left(\begin{smallmatrix}29&-4\\22&-3\end{smallmatrix}\right)^{3}$||$13$|
 | | | $2$ | $4$ | $C_{2}^{2}$  | $C_{9}\times{}C_{18}$  | $\langle1,-26,1\rangle$|$\left(\begin{smallmatrix}26&-1\\1&0\end{smallmatrix}\right)^{3}$||$4$|
-| | | | | |  | $\langle7,14,-17\rangle$|$\left(\begin{smallmatrix}6&17\\7&20\end{smallmatrix}\right)^{3}$||$7$|
-| | | | | |  | $\langle19,-8,-8\rangle$|$\left(\begin{smallmatrix}17&8\\19&9\end{smallmatrix}\right)^{3}$||$10$|
+| | | | | |  | $\langle4,-28,7\rangle$|$\left(\begin{smallmatrix}27&-7\\4&-1\end{smallmatrix}\right)^{3}$||$7$|
+| | | | | |  | $\langle19,-30,3\rangle$|$\left(\begin{smallmatrix}28&-3\\19&-2\end{smallmatrix}\right)^{3}$||$10$|
 | | | | | |  | $\langle11,-32,8\rangle$|$\left(\begin{smallmatrix}29&-8\\11&-3\end{smallmatrix}\right)^{3}$||$10$|
 | $28$ | $29$ | $1$ | $1$ | $ C_{1} $ | $C_{2}^{2}\times{}C_{6}^{2}$  | $\langle5,-7,1\rangle$|$\left(\begin{smallmatrix}6&-1\\5&-1\end{smallmatrix}\right)^{6}$|$\text{Y}$|$16$|
 | | | $5$ | $2$ | $C_{2}$  | $C_{2}^{3}\times{}C_{6}^{2}$  | $\langle1,-27,1\rangle$|$\left(\begin{smallmatrix}27&-1\\1&0\end{smallmatrix}\right)^{3}$||$4$|
@@ -94,13 +95,13 @@ one must additionally choose a sign-switching Galois automorphism $\sqrt{\Delta_
 | | | | | |  | $\langle15,-30,2\rangle$|$\left(\begin{smallmatrix}29&-2\\15&-1\end{smallmatrix}\right)^{3}$||$7$|
 | | | | | |  | $\langle10,-30,3\rangle$|$\left(\begin{smallmatrix}29&-3\\10&-1\end{smallmatrix}\right)^{3}$||$7$|
 | | | | | |  | $\langle6,-30,5\rangle$|$\left(\begin{smallmatrix}29&-5\\6&-1\end{smallmatrix}\right)^{3}$||$7$|
-| $30$ | $93$ | $1$ | $1$ | $ C_{1} $ |  $C_{2}\times{}C_{6}\times{}C_{24}$  | $\langle7,-11,1\rangle$|$\left(\begin{smallmatrix}31&-3\\21&-2\end{smallmatrix}\right)^{3}$||$10$|
+| $30$ | $93$ | $1$ | $1$ | $ C_{1} $ | $C_{2}\times{}C_{6}\times{}C_{24}$  | $\langle7,-11,1\rangle$|$\left(\begin{smallmatrix}31&-3\\21&-2\end{smallmatrix}\right)^{3}$||$10$|
 | | | $3$ | $3$ | $C_{3}$  | $C_{2}\times{}C_{6}\times{}C_{24}$  | $\langle1,-29,1\rangle$|$\left(\begin{smallmatrix}29&-1\\1&0\end{smallmatrix}\right)^{3}$||$4$|
-| | | | | |  | $\langle19,-1,-11\rangle$|$\left(\begin{smallmatrix}15&11\\19&14\end{smallmatrix}\right)^{3}$||$10$|
+| | | | | |  | $\langle9,-33,7\rangle$|$\left(\begin{smallmatrix}31&-7\\9&-2\end{smallmatrix}\right)^{3}$||$10$|
 | | | | | |  | $\langle7,-33,9\rangle$|$\left(\begin{smallmatrix}31&-9\\7&-2\end{smallmatrix}\right)^{3}$||$10$|
 | $31$ | $56$ | $1$ | $1$ | $ C_{1} $ | $C_{10}\times{}C_{30}$  | $\langle2,-8,1\rangle$|$\left(\begin{smallmatrix}31&-4\\8&-1\end{smallmatrix}\right)^{3}$||$7$|
 | | | $2$ | $2$ | $C_{2}$  | $C_{10}\times{}C_{30}$  | $\langle8,-16,1\rangle$|$\left(\begin{smallmatrix}31&-2\\16&-1\end{smallmatrix}\right)^{3}$||$7$|
-| | | | | |  | $\langle11,2,-5\rangle$|$\left(\begin{smallmatrix}13&10\\22&17\end{smallmatrix}\right)^{3}$||$13$|
+| | | | | |  | $\langle5,-18,5\rangle$|$\left(\begin{smallmatrix}33&-10\\10&-3\end{smallmatrix}\right)^{3}$||$13$|
 | | | $4$ | $4$ | $C_{4}$  | $C_{10}\times{}C_{30}$  | $\langle1,-30,1\rangle$|$\left(\begin{smallmatrix}30&-1\\1&0\end{smallmatrix}\right)^{3}$||$4$|
 | | | | | |  | $\langle13,-34,5\rangle$|$\left(\begin{smallmatrix}32&-5\\13&-2\end{smallmatrix}\right)^{3}$||$10$|
 | | | | | |  | $\langle25,-36,4\rangle$|$\left(\begin{smallmatrix}33&-4\\25&-3\end{smallmatrix}\right)^{3}$||$13$|
@@ -120,6 +121,6 @@ one must additionally choose a sign-switching Galois automorphism $\sqrt{\Delta_
 | | | $6$ | $2$ | $C_{2}$  | $C_{2}\times{}C_{6}\times{}C_{24}$  | $\langle9,-18,1\rangle$|$\left(\begin{smallmatrix}35&-2\\18&-1\end{smallmatrix}\right)^{3}$||$7$|
 | | | | | |  | $\langle4,-20,7\rangle$|$\left(\begin{smallmatrix}37&-14\\8&-3\end{smallmatrix}\right)^{3}$||$10$|
 | | | $12$ | $4$ | $C_{4}$  | $C_{2}\times{}C_{6}\times{}C_{24}$  | $\langle1,-34,1\rangle$|$\left(\begin{smallmatrix}34&-1\\1&0\end{smallmatrix}\right)^{3}$||$4$|
-| | | | | |  | $\langle16,8,-17\rangle$|$\left(\begin{smallmatrix}13&17\\16&21\end{smallmatrix}\right)^{3}$||$13$|
+| | | | | |  | $\langle7,-40,16\rangle$|$\left(\begin{smallmatrix}37&-16\\7&-3\end{smallmatrix}\right)^{3}$||$13$|
 | | | | | |  | $\langle4,-36,9\rangle$|$\left(\begin{smallmatrix}35&-9\\4&-1\end{smallmatrix}\right)^{3}$||$7$|
-| | | | | |  | $\langle28,-12,-9\rangle$|$\left(\begin{smallmatrix}23&9\\28&11\end{smallmatrix}\right)^{3}$||$13$|
+| | | | | |  | $\langle16,-40,7\rangle$|$\left(\begin{smallmatrix}37&-7\\16&-3\end{smallmatrix}\right)^{3}$||$13$|
