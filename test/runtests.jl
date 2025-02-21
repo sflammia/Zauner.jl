@@ -5,20 +5,20 @@ println("Zauner test set:")
 
 @testset "algebraic" begin
 
-    @test conductor(QuadBin(1, 1, -1)) == 1
-    @test conductor(QuadBin(2, 4, 8)) == 4
+    @test conductor(binary_quadratic_form(1, 1, -1)) == 1
+    @test conductor(binary_quadratic_form(2, 4, 8)) == 4
 
     @test coredisc(5) == (5, 1)
     @test coredisc(20) == (5, 2)
-    @test coredisc(QuadBin(1, 1, -1)) == (5, 1)
-    @test coredisc(QuadBin(2, 4, 8)) == (-3, 4)
+    @test coredisc(binary_quadratic_form(1, 1, -1)) == (5, 1)
+    @test coredisc(binary_quadratic_form(2, 4, 8)) == (-3, 4)
 
     x = pell(5)
     @test 1 // x + x == trace(x)
     @test norm(x) == 1
     @test (x - 1 // x)^2 == 5
 
-    y = pell(QuadBin(1, 1, -1))
+    y = pell(binary_quadratic_form(1, 1, -1))
     # note: it is false that x == y (!)
     # presumably this is due to partial type initialization
     @test x.elem_in_nf == y.elem_in_nf
@@ -32,7 +32,7 @@ println("Zauner test set:")
     q = [1 -3 1; 1 -4 1; 1 -5 1; 2 -4 1; 1 -6 1; 1 -3 1; 1 -7 1; 1 -8 1; 2 -10 5;
         1 -9 1; 3 -6 1; 1 -10 1; 3 -12 4; 3 -5 1; 1 -11 1; 1 -12 1; 2 -14 7; 1 -13 1;
         3 -15 5; 1 -4 1; 4 -8 1; 1 -14 1; 3 -18 11; 1 -15 1; 5 -21 11]
-    q = [QuadBin(q[k, :]...) for k = 1:25]
+    q = [binary_quadratic_form(q[k, :]...) for k = 1:25]
     for k = 1:25
         @test stabilizer(q[k]) == L[k]
     end
@@ -45,11 +45,11 @@ end # end algebraic testset
 
 @testset "hj" begin
 
-    @test length(reduced_hj_orbit(QuadBin(1, -4, 1))) == 3
-    @test length(reduced_hj_orbit(QuadBin(1, -101, 1))) == 100
+    @test length(reduced_hj_orbit(binary_quadratic_form(1, -4, 1))) == 3
+    @test length(reduced_hj_orbit(binary_quadratic_form(1, -101, 1))) == 100
 
     # principal forms are minimal
-    Q = QuadBin(1, -4, 1)
+    Q = binary_quadratic_form(1, -4, 1)
     V = reduced_hj_orbit(Q)
     @test minimal_hj_stabilizer(V, 5) == Q
 
@@ -78,24 +78,24 @@ end # end analytic testset
 @testset "quadform" begin
 
     a, b, c = [1, 2, 3]
-    Q = QuadBin(a, b, c)
+    Q = binary_quadratic_form(a, b, c)
     @test qmat(Q) == [1 1; 1 3]
 
-    @test quadbinid(5) == QuadBin(1, 1, -1)
-    @test quadbinid(8) == QuadBin(1, 2, -1)
-    @test quadbinid(12) == QuadBin(1, 2, -2)
-    @test quadbinid(13) == QuadBin(1, 3, -1)
-    @test quadbinid(17) == QuadBin(1, 3, -2)
-    @test quadbinid(20) == QuadBin(1, 4, -1)
-    @test quadbinid(21) == QuadBin(1, 3, -3)
+    @test quadbinid(5) == binary_quadratic_form(1, 1, -1)
+    @test quadbinid(8) == binary_quadratic_form(1, 2, -1)
+    @test quadbinid(12) == binary_quadratic_form(1, 2, -2)
+    @test quadbinid(13) == binary_quadratic_form(1, 3, -1)
+    @test quadbinid(17) == binary_quadratic_form(1, 3, -2)
+    @test quadbinid(20) == binary_quadratic_form(1, 4, -1)
+    @test quadbinid(21) == binary_quadratic_form(1, 3, -3)
 
-    Q = QuadBin(1, 3, -3)
+    Q = binary_quadratic_form(1, 3, -3)
     @test Q * Q == Q
     @test Q^2 == Q
 
     # example with class number 2
-    Q1 = QuadBin(-3, 6, 2)
-    Q0 = QuadBin(1, 6, -6)
+    Q1 = binary_quadratic_form(-3, 6, 2)
+    Q0 = binary_quadratic_form(1, 6, -6)
     @test Q0 * Q0 == Q0
     @test Q0^2 == Q0
     @test Q1 * Q0 == Q1
@@ -261,9 +261,9 @@ end # double sine testset
     @test F.m == 1
     @test F == AdmissibleTuple(4)
     @test F == AdmissibleTuple(4, 1)
-    @test F == AdmissibleTuple(4, QuadBin(1, -3, 1))
+    @test F == AdmissibleTuple(4, binary_quadratic_form(1, -3, 1))
 
-    F = AdmissibleTuple(11, 3, QuadBin(1, -3, 1))
+    F = AdmissibleTuple(11, 3, binary_quadratic_form(1, -3, 1))
     @test F.d == 11
     @test F.r == 3
     @test F.Q.a == 1 && F.Q.b == -3 && F.Q.c == 1
@@ -271,14 +271,14 @@ end # double sine testset
     @test is_admissible(5, 1)
     @test !(is_admissible(5, 2))
     @test is_admissible(5, 1, 1)
-    @test is_admissible(5, 2, 1, QuadBin(1, -7, 1))
-    @test is_admissible(11, 1, QuadBin(3, -12, 4))
+    @test is_admissible(5, 2, 1, binary_quadratic_form(1, -7, 1))
+    @test is_admissible(11, 1, binary_quadratic_form(3, -12, 4))
 
     # The first four are anti-unitary, the last four are not.
     @test true == is_antiunitary(AdmissibleTuple(4))
-    @test true == is_antiunitary(AdmissibleTuple(7, QuadBin(2, -4, 1)))
-    @test true == is_antiunitary(AdmissibleTuple(19, QuadBin(1, -3, 1)))
-    @test true == is_antiunitary(AdmissibleTuple(19, QuadBin(4, -6, 1)))
+    @test true == is_antiunitary(AdmissibleTuple(7, binary_quadratic_form(2, -4, 1)))
+    @test true == is_antiunitary(AdmissibleTuple(19, binary_quadratic_form(1, -3, 1)))
+    @test true == is_antiunitary(AdmissibleTuple(19, binary_quadratic_form(4, -6, 1)))
     @test false == is_antiunitary(AdmissibleTuple(5))
     @test false == is_antiunitary(AdmissibleTuple(6))
     @test false == is_antiunitary(AdmissibleTuple(8))
