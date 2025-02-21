@@ -343,14 +343,10 @@ open(file_name, "w") do io
         end
         if !(F.d == d && F.q == q)
             print(io, """          <td data-title="Gal(E/K)">""")
-            if has_fa_symmetry(F)
-                print(io, "<math><mn> tbd </math></mn>") # galois group
-            else
-                ords = galois_group_structure(F)
-                print(io, """<math>""")
-                _print_cycle_decomp(io, ords) # galois group
-                print(io, """</math>""")
-            end
+            ords = galois_group_structure(F)
+            print(io, """<math>""")
+            _print_cycle_decomp(io, ords) # galois group
+            print(io, """</math>""")
             print(io, """</td>\n""")
         else
             print(io, """          <td data-title="Gal(E/K)"></td>""")
