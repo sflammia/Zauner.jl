@@ -59,12 +59,8 @@ open(file_name, "w") do io
         end
         print(io, " & ")
         if !(F.d == d && F.q == q)
-            if has_fa_symmetry(F)
-                print(io, " tbd ") # galois group
-            else
-                ords = galois_group_structure(F)
-                _print_cycle_decomp(io, ords) # galois group
-            end
+            ords = galois_group_structure(F)
+            _print_cycle_decomp(io, ords) # galois group
         end
         print(io, "&\\langle", F.Q.a, ",", F.Q.b, ",", F.Q.c, "\\rangle&")
         print(io, "\\smt{", L[1, 1], "&", L[1, 2], "\\\\", L[2, 1], "&", L[2, 2])
