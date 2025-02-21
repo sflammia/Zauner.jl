@@ -308,63 +308,27 @@ end
 
 Compute the canonical form (decomposition into cyclic groups) for the Galois group using the Smith normal form.
 """
-function galois_group_structure(F::AdmissibleTuple)
-    d = Int(F.d)
-    dd = 2^iseven(d) * d
+function galois_group_structure(t::AdmissibleTuple)
+    db = t.d * 2^(iseven(t.d))
 
-    # G is the centralizer of H (the stabilizer)
-    # compute the nontrivial centralizer orbits
-    G = Matrix{ZZRingElem}.(centralizer_elements(F))
-    sizeofG = length(G)
+    # The order with conductor f
+    Of = Order(t.K, [one(t.a), (((t.q % 4)^2 * (t.D % 4)) % 4 + t.q * t.a) / 2])
 
-    # compute the elements of the stabilizer group H
-    H = stabilizer_elements(F)
-    H0 = copy(H) # save a copy of the stabilizer group for later
-    # stabilizer elements are now in `H` with generator `L`
-    # print(H0)
+    # positive unit generator for O_f
+    Ug, fu = unit_group(Of)
+    u = fu(Ug[2])
+    x, y = Int.(sign.(coordinates(one(Of.nf) * u)))
+    pu = (x * y > 0 ? x * u : x * norm(u) * u^(-1)) # choose positive unit
 
-    gens = Matrix{ZZRingElem}[]     # generators
-    ords = Int[]                    # orders
-    setdiff!(G, H)
+    # unit group of the residue ring, U[ O_f / (db * O_f) ].
+    I = ideal(Of, db)
+    R, gr = quo(Of, I)
+    UR, ur = unit_group(R)
 
-    while !isempty(G)
-        p = popfirst!(G)
-        push!(gens, p) # add this generator to the list
-        k = 0
-        old_length = 0
-        while length(H) > old_length
-            old_length = length(H)
-            union!(H, map(h -> mod.(h * p, dd), H))
-            k += 1
-        end
-        push!(ords, k) # order of p
-        setdiff!(G, H)  # trim elements from G
-    end
-    # we need the Smith normal form of this matrix
-    A = diagonal_matrix(ZZ.(ords))
+    # find the preimage of the positive unit
+    u = codomain(ur)(pu)
+    uq = preimage(ur, u)
 
-    # Fill in the relations to get the lower triangular part of A
-    for k = 1:length(ords)-1
-        p = mod.(gens[k+1]^ords[k+1], dd)
-        j = -1
-        r = zeros(Int, k)
-        g = [0 0; 0 0]
-        while !(g ∈ H0)
-            j += 1
-            r = radix(j, ords[1:k])
-            g = mod.(foldl((x, y) -> mod.(x * y, dd), gens[1:k] .^ r[1:k]) * p, dd)
-        end
-        for j = 1:k
-            A[k+1, j] = r[j]
-        end
-    end
-    # Now A offers complete information about the generators and relations
-
-    # Smith normal form: U*A*V = D, where D is diagonal and D[j,j] | D[j+1,j+1].
-    D = snf(A)
-
-    # We only need diagonal entries > 1, so drop the rest
-    D = diagonal(D)
-    D = D[D.>1]
-    return D
+    # take the quotient of groups and return the smith normal form
+    (snf(quo(UR, [uq])[1])[1]).snf
 end
