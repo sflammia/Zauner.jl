@@ -8,13 +8,16 @@ export hj_cycle_data
 
 Returns the list of matrices ``A_{n,0}`` from Definition 7.4 of Kopp, "The Shintani--Faddeev modular cocycle: Stark units from ``q``-Pochhammer ratios".
 """
-function _hj_cycle_matrices(t::AdmissibleTuple)
-    bs = psl2word(t.A)
+function _hj_cycle_matrices(A::Matrix)
+    bs = psl2word(A)
     if bs[end] != 0
         # User should never see this error.
         error("The function _hj_cycle_matrices is not implemented when t.Q is not strictly HJ-reduced. (A strictly HJ-reduced form is one for which the last entry of psl2word(t.A) is zero.)")
     end
     _hj_cycle_matrices_from_psl2word(bs)
+end
+function _hj_cycle_matrices(t::AdmissibleTuple)
+    _hj_cycle_matrices(t.A)
 end
 
 function _hj_cycle_matrices_from_psl2word(W::Vector)
@@ -37,16 +40,20 @@ end
 
 @doc """
     hj_cycle_data(t::AdmissibleTuple, p::Vector)
+    hj_cycle_data(A:Matrix, x::BigFloat, p::Vector, d::Int64)
 
 Returns the lists of ``\\beta_n`` (called rhos here) and ``d \\mathbf{r}_n`` (called ps here) from Definition 7.4 of Kopp, "The Shintani--Faddeev modular cocycle: Stark units from ``q``-Pochhammer ratios".
 """
-function hj_cycle_data(t::AdmissibleTuple, p::Vector)
-    As = _hj_cycle_matrices(t)
-    rhos = typeof(t.x)[]
+function hj_cycle_data(A::Matrix, x::BigFloat, p::Vector, d::Int64)
+    As = _hj_cycle_matrices(A)
+    rhos = typeof(x)[]
     ps = typeof(p)[]
-    for A in As
-        push!(rhos, sl2z_act(A, t.x))
-        push!(ps, _vec_mod(A * p, t.d))
+    for Aj in As
+        push!(rhos, sl2z_act(Aj, x))
+        push!(ps, _vec_mod(Aj * p, d))
     end
     [rhos, ps]
+end
+function hj_cycle_data(t::AdmissibleTuple, p::Vector)
+    hj_cycle_data(t.A,t.x,p,t.d)
 end
