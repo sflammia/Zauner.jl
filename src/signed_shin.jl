@@ -37,7 +37,7 @@ function lambda_kopp(A::Matrix, x::BigFloat, p::Vector, d::Int64)
     sum
 end
 function lambda_kopp(t::AdmissibleTuple, p::Vector)
-    lamdda_kopp(t.A, t.x,p, t.d)
+    lambda_kopp(t.A, t.x,p, t.d)
 end
 
 
