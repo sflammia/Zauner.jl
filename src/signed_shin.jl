@@ -84,7 +84,7 @@ function u_tangedal(A::Matrix, x::BigFloat, p::Vector, d::Int64)
     prod
 end
 function u_tangedal(t::AdmissibleTuple, p::Vector)
-    u_tangedal(t, x, p, d)
+    u_tangedal(t.A, t.x, p, t.d)
 end
 
 
