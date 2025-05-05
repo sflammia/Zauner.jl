@@ -64,6 +64,7 @@ end
 
 
 @doc """
+    u_tangedal(A::Matrix, x::BigFloat, p::Vector, d::Int64)
     u_tangedal(t::AdmissibleTuple, p::Vector)
 
 Stark--Tangedal--Yamamoto invariant as defined in Definition 7.13 of Kopp, "The Shintani--Faddeev modular cocycle: Stark units from ``q``-Pochhammer ratios".
