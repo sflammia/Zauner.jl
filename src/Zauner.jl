@@ -31,5 +31,6 @@ include("validation.jl")
 include("sl2z_arithmetic.jl")
 include("hj_cycle.jl")
 include("signed_shin.jl")
+include("game_of_sloanes.jl")
 
 end # module
