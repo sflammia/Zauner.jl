@@ -109,7 +109,7 @@ function pell(D)
     K, a = quadratic_field(Δ)
     ω = (D % 4 + f * a) // 2
     # generate the quadratic order from the standard basis
-    Zω = Order([one(ω), ω])
+    Zω = order([one(ω), ω])
     pell(Zω)
 end
 function pell(Zω::AbsSimpleNumFieldOrder)
@@ -149,7 +149,7 @@ function pellreg(D)
     K, a = quadratic_field(Δ)
     ω = (D % 4 + f * a) // 2
     # generate the quadratic order from the standard basis
-    Zω = Order([one(ω), ω])
+    Zω = order([one(ω), ω])
     pellreg(Zω)
 end
 function pellreg(Zω::AbsSimpleNumFieldOrder)
@@ -180,7 +180,7 @@ Given an `AdmissibleTuple` `F` it initializes the field `F.H` to be this ring cl
 """
 function ghostclassfield(K::AbsSimpleNumField, q::Integer)
     # @assert degree(K) == 2
-    rcf = Hecke.ring_class_field(Order(K, q * basis(maximal_order(K))))
+    rcf = Hecke.ring_class_field(order(K, q * basis(maximal_order(K))))
     simplify(absolute_simple_field(number_field(rcf))[1])[1]
 end
 
@@ -226,7 +226,7 @@ function quadclassunit(D)
     K, a = quadratic_field(Δ)
     ω = (D % 4 + f * a) // 2
     # generate the quadratic order from the standard basis
-    Zω = Order([one(ω), ω])
+    Zω = order([one(ω), ω])
     # fundamental totally positive unit of norm 1
     u = pell(Zω)
 
