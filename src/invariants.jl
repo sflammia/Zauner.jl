@@ -182,7 +182,7 @@ function necromancy(F::AdmissibleTuple;
             # otherwise break and try again
             for ol in L[j]
                 # complex_phases &= all(abs.(abs.(L[j]) - 1) < 10^(-10))
-                complex_phases &= abs.(abs.ol - 1) < 10^(-10)
+                complex_phases &= abs(abs(ol) - 1) < 10^(-10)
             end
             !complex_phases && break
         end
