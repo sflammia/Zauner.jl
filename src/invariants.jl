@@ -180,11 +180,14 @@ function necromancy(F::AdmissibleTuple;
             L[j] = L[j] / sqrt(BigFloat(d + 1))
             # These should all be approximate phases,
             # otherwise break and try again
-            complex_phases &= all(abs.(abs.(L[j]) - 1) < 10^(-10))
+            for ol in L[j]
+                # complex_phases &= all(abs.(abs.(L[j]) - 1) < 10^(-10))
+                complex_phases &= abs.(abs.ol - 1) < 10^(-10)
+            end
             !complex_phases && break
         end
         if !complex_phases
-            # verbose && println("Computed overlaps were ", L)
+            verbose && println("Computed overlaps were ", L)
             verbose && println("Some SIC overlaps were not complex phases.\n    ...Doubling precision.")
             continue
         end
