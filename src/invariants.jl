@@ -61,7 +61,7 @@ The maximum number of bits used in integer relation finding is set to `max_prec`
 
 # Examples
 
-Check that the principle SIC in ``d=7`` satisfies the equiangularity conditions.
+Check that the principal SIC in ``d=7`` satisfies the equiangularity conditions.
 
 ```
 julia> d = 7; F = AdmissibleTuple(d)
@@ -180,10 +180,11 @@ function necromancy(F::AdmissibleTuple;
             L[j] = L[j] / sqrt(BigFloat(d + 1))
             # These should all be approximate phases,
             # otherwise break and try again
-            complex_phases &= all(abs.(L[j]) .≈ 1)
+            complex_phases &= all(abs.(abs.(L[j]) - 1) < 10^(-10))
             !complex_phases && break
         end
         if !complex_phases
+            verbose && println("Computed overlaps were ", L)
             verbose && println("Some SIC overlaps were not complex phases.\n    ...Doubling precision.")
             continue
         end
