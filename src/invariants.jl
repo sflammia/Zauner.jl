@@ -184,7 +184,7 @@ function necromancy(F::AdmissibleTuple;
             !complex_phases && break
         end
         if !complex_phases
-            verbose && println("Computed overlaps were ", L)
+            # verbose && println("Computed overlaps were ", L)
             verbose && println("Some SIC overlaps were not complex phases.\n    ...Doubling precision.")
             continue
         end
