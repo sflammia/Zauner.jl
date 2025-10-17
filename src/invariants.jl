@@ -149,7 +149,7 @@ function necromancy(F::AdmissibleTuple;
             !finite_invariants && break
         end
 
-        setprecision(BigFloat, 320; base=2)
+        # setprecision(BigFloat, 320; base=2)
 
         if !finite_invariants
             verbose && println("Some SIC invariants were not finite.\n    ...Doubling precision.")
