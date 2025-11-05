@@ -338,6 +338,62 @@ end # end ghost testset
 end # end precision_bump tests
 
 
+@testset "_approx_complex_intersection" begin
+
+    # Basic tolerance-based intersection on Float64 inputs.
+    let A = ComplexF64[0.1+0.2im, 0.30000000000000004+0.4im, 2+3im],
+        B = ComplexF64[0.1+0.2im, 0.3+0.4000000000000001im, -1-2im]
+
+        atol = 1e-12
+        X = Zauner._approx_complex_intersection(A, B; atol=atol)
+
+        @test length(X) == 2
+
+        # Expect representatives from A (converted to BigFloat), so compare to A's exact values.
+        a1 = Complex{BigFloat}(BigFloat(real(A[1])), BigFloat(imag(A[1])))
+        a2 = Complex{BigFloat}(BigFloat(real(A[2])), BigFloat(imag(A[2])))
+
+        @test any(isapprox.(X, a1; atol=atol))
+        @test any(isapprox.(X, a2; atol=atol))
+    end
+
+    # Bits-based grid (prec ≈ 40 bits ~ 1e-12 absolute grid).
+    let A = ComplexF64[0.1+0.2im, 0.30000000000000004+0.4im, 2+3im],
+        B = ComplexF64[0.1+0.2im, 0.3+0.4000000000000001im, -1-2im]
+
+        Y = Zauner._approx_complex_intersection(A, B; prec=40, base=2)
+        @test length(Y) == 2
+    end
+
+    # Robustness: NaN/Inf should be ignored (not crash, not included).
+    let A = ComplexF64[0.1+0.2im, 0.30000000000000004+0.4im, NaN+0im, Inf+0im],
+        B = ComplexF64[0.1+0.2im, 0.3+0.4000000000000001im, -1-2im, 0+Inf*im]
+
+        atol = 1e-12
+        X = Zauner._approx_complex_intersection(A, B; atol=atol)
+
+        @test length(X) == 2
+        a1 = Complex{BigFloat}(BigFloat(0.1), BigFloat(0.2))
+        a2 = Complex{BigFloat}(BigFloat(real(0.30000000000000004)), BigFloat(0.4))
+        @test any(isapprox.(X, a1; atol=atol))
+        @test any(isapprox.(X, a2; atol=atol))
+    end
+
+    # Determinism: repeated calls give identical results (order-insensitive check).
+    let A = ComplexF64[0.1+0.2im, 0.30000000000000004+0.4im, 2+3im],
+        B = ComplexF64[0.1+0.2im, 0.3+0.4000000000000001im, -1-2im]
+
+        atol = 1e-12
+        X1 = Zauner._approx_complex_intersection(A, B; atol=atol)
+        X2 = Zauner._approx_complex_intersection(A, B; atol=atol)
+
+        @test length(X1) == length(X2) == 2
+        @test Set(X1) == Set(X2)
+    end
+
+end # end Zauner._approx_complex_intersection tests
+
+
 @testset "galois" begin
     # check the first 25 ghosts
     # This test set tests that the galois normal form and centralizer elements are compatible.

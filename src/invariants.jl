@@ -255,37 +255,67 @@ function _dualize(primal::Vector{T}, dual::Vector{T}, x::T) where {T<:AbstractFl
 end
 
 
-@doc """
-    _approx_complex_intersection(A::AbstractVector, B::AbstractVector; prec::Integer = 256, base::Integer = 2)
+@doc"""
+    _approx_complex_intersection(A, B; prec=256, base=2, atol=nothing)
 
-Internal function to compute the intersection of two complex lists using a default tolerance of 256 bit precision.
+Internal function to return the approximate intersection of two complex
+sets `A` and `B` by snapping points to a grid and matching integer keys.
+
+You can specify the grid either by:
+- `prec` + `base` (grid spacing ≈ base^(-prec)), or
+- `atol` (absolute tolerance; grid spacing = atol), which overrides `prec/base`.
+
+Points are keyed with tuple integers (re, im) using RoundNearest,
+and the representative returned for each match is taken from `A` (deterministic).
+
+Returns a `Vector{Complex{BigFloat}}`.
 """
-function _approx_complex_intersection(A::AbstractVector, B::AbstractVector; prec::Integer=256, base::Integer=2)
+function _approx_complex_intersection(
+    A::AbstractVector{<:Complex{<:Real}},
+    B::AbstractVector{<:Complex{<:Real}};
+    prec::Integer = 256,
+    base::Integer = 2,
+    atol::Union{Nothing, Real} = nothing,
+)
+    # Fast exits
+    isempty(A) && return Complex{BigFloat}[]
+    isempty(B) && return Complex{BigFloat}[]
 
-    scale = BigInt(base)^prec
-
-    # helper function to scale and round a Complex{BigFloat} to Complex{BigInt}
-    function scale_round(z)
-        re = round(BigInt, real(z) * scale)
-        im = round(BigInt, imag(z) * scale)
-        return complex(re, im)
+    # Choose scale: key = round( re(z)*scale ), likewise for imag.
+    # If `atol` is given, use it directly; otherwise use base^prec.
+    scale = if atol !== nothing
+        inv(BigFloat(atol))
+    else
+        base == 2 ? exp2(BigFloat(prec)) : BigFloat(big(base)^prec)
     end
 
-    # scale and round both lists
-    rounded_A = Set{Complex{BigInt}}(scale_round.(A))
-    rounded_B = Set{Complex{BigInt}}(scale_round.(B))
-
-    # intersection of rounded lists
-    intersection_rounded = intersect(rounded_A, rounded_B)
-
-    # convert back to original scale
-    intersection = Set{Complex{BigFloat}}()
-    for z in intersection_rounded
-        # scale back
-        original = complex(real(z) / scale, imag(z) / scale)
-        push!(intersection, original)
+    # Tuple key. `round` ties-to-even by default for determinism
+    @inline function _key(z::Complex)
+        kr = round(BigInt, BigFloat(real(z)) * scale)
+        ki = round(BigInt, BigFloat(imag(z)) * scale)
+        return (kr, ki)
     end
 
-    # convert back to an array before returning
-    return collect(intersection)
+    # Build dictionary of A's keys → canonical representative from A
+    dict = Dict{Tuple{BigInt, BigInt}, Complex{BigFloat}}()
+    for z in A
+        # Skip non-finite points to avoid poisoning the intersection
+        (isfinite(real(z)) && isfinite(imag(z))) || continue
+        k = _key(z)
+        # Overwrite makes it deterministic but deduped; representative is from A
+        @inbounds dict[k] = Complex{BigFloat}(BigFloat(real(z)), BigFloat(imag(z)))
+    end
+    isempty(dict) && return Complex{BigFloat}[]
+
+    # Probe with B
+    out = Vector{Complex{BigFloat}}()
+    sizehint!(out, min(length(A), length(B)))
+    for z in B
+        (isfinite(real(z)) && isfinite(imag(z))) || continue
+        k = _key(z)
+        if @inbounds haskey(dict, k)
+            push!(out, dict[k])  # deterministic representative from A
+        end
+    end
+    return out
 end
