@@ -57,6 +57,7 @@ ghost
 ghostbasis
 ghostclassfield
 ghostelements
+ghost_overlaps
 ```
 
 ## Necromancy
@@ -66,6 +67,7 @@ guess_int_null_vec
 matrix_completion
 necromancy
 pow_to_elem_sym_poly
+sic_overlaps
 ```
 
 ## Newton's method

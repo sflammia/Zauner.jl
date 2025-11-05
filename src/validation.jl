@@ -1,4 +1,43 @@
-export sic_overlap_test, ghost_overlap_test, sic_frame_test, ghost_frame_test
+export ghost_overlaps, sic_overlaps, sic_overlap_test, ghost_overlap_test, sic_frame_test, ghost_frame_test
+
+
+@doc raw"""
+    ghost_overlaps(ψ::AbstractVector)
+    ghost_overlaps(t::AdmissibleTuple)
+
+Compute the scaled ghost overlaps.
+If ``G = |Ψ⟩⟨Φ| / ⟨Φ|Ψ⟩'' is a ghost fiducial projector,
+given ``Ψ'' output the array ``\sqrt{d+1}\mathrm{Tr}(D_p G)'' where ``d'' is the length of ``Ψ''.
+"""
+function ghost_overlaps(ψ::AbstractVector)
+    ϕ = circshift(reverse(ψ), 1)
+    d = length(ψ)
+    scale = sqrt(eltype(ψ)(d + 1)) / (ϕ'ψ)
+    return real.(scale .* [ϕ' * wh(p, q, ψ) for p = 0:d-1, q = 0:d-1])
+end
+function ghost_overlaps(t::AdmissibleTuple)
+    g = ghost(t)
+    return ghost_overlaps(g)
+end
+
+
+@doc raw"""
+    sic_overlaps(ψ::AbstractVector)
+    sic_overlaps(t::AdmissibleTuple)
+
+Compute the scaled sic overlaps.
+If ``Π = |Ψ⟩⟨Ψ|'' is a sic fiducial projector,
+given ``Ψ'' output the array ``\sqrt{d+1}\mathrm{Tr}(D_p Π)/\mathrm{Tr}(Π)'' where ``d'' is the length of ``Ψ''.
+"""
+function sic_overlaps(ψ::AbstractVector)
+    d = length(ψ)
+    scale = sqrt(eltype(ψ)(d + 1)) / (ψ'ψ)
+    return real.(scale .* [ψ' * wh(p, q, ψ) for p = 0:d-1, q = 0:d-1])
+end
+function sic_overlaps(t::AdmissibleTuple)
+    v = necromancy(t)
+    return sic_overlaps(v)
+end
 
 @doc raw"""
     sic_overlap_test(ψ::AbstractVector)
