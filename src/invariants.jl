@@ -149,6 +149,7 @@ function necromancy(F::AdmissibleTuple;
             !finite_invariants && break
         end
 
+        # Removed this precision change for testing purposes. Currently doing root-finding at full loop-precision.
         # setprecision(BigFloat, 320; base=2)
 
         if !finite_invariants
