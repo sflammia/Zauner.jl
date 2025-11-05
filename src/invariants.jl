@@ -255,27 +255,27 @@ function _dualize(primal::Vector{T}, dual::Vector{T}, x::T) where {T<:AbstractFl
 end
 
 
-@doc"""
-    _approx_complex_intersection(A, B; prec=256, base=2, atol=nothing)
+@doc """
+     _approx_complex_intersection(A, B; prec=256, base=2, atol=nothing)
 
-Internal function to return the approximate intersection of two complex
-sets `A` and `B` by snapping points to a grid and matching integer keys.
+ Internal function to return the approximate intersection of two complex
+ sets `A` and `B` by snapping points to a grid and matching integer keys.
 
-You can specify the grid either by:
-- `prec` + `base` (grid spacing ≈ base^(-prec)), or
-- `atol` (absolute tolerance; grid spacing = atol), which overrides `prec/base`.
+ You can specify the grid either by:
+ - `prec` + `base` (grid spacing ≈ base^(-prec)), or
+ - `atol` (absolute tolerance; grid spacing = atol), which overrides `prec/base`.
 
-Points are keyed with tuple integers (re, im) using RoundNearest,
-and the representative returned for each match is taken from `A` (deterministic).
+ Points are keyed with tuple integers (re, im) using RoundNearest,
+ and the representative returned for each match is taken from `A` (deterministic).
 
-Returns a `Vector{Complex{BigFloat}}`.
-"""
+ Returns a `Vector{Complex{BigFloat}}`.
+ """
 function _approx_complex_intersection(
     A::AbstractVector{<:Complex{<:Real}},
     B::AbstractVector{<:Complex{<:Real}};
-    prec::Integer = 256,
-    base::Integer = 2,
-    atol::Union{Nothing, Real} = nothing,
+    prec::Integer=256,
+    base::Integer=2,
+    atol::Union{Nothing,Real}=nothing,
 )
     # Fast exits
     isempty(A) && return Complex{BigFloat}[]
@@ -297,7 +297,7 @@ function _approx_complex_intersection(
     end
 
     # Build dictionary of A's keys → canonical representative from A
-    dict = Dict{Tuple{BigInt, BigInt}, Complex{BigFloat}}()
+    dict = Dict{Tuple{BigInt,BigInt},Complex{BigFloat}}()
     for z in A
         # Skip non-finite points to avoid poisoning the intersection
         (isfinite(real(z)) && isfinite(imag(z))) || continue
