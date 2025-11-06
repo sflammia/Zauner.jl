@@ -102,8 +102,9 @@ function _principle_ghost(F::AdmissibleTuple)
     # This uses a "projective" normalization instead of 2-norm
 end
 
+# OLD VERSION
 # use special features of the rank-1 case to avoid calculating all nu.
-function _generic_rank_1_ghost(F::AdmissibleTuple)
+function _generic_rank_1_ghost_old(F::AdmissibleTuple)
     d = Int(F.d)
     ζ = -cispi(BigFloat(1) / d)
     QQ = binary_quadratic_form(F.A[2, 1], F.A[2, 2] - F.A[1, 1], -F.A[1, 2])
@@ -136,6 +137,32 @@ function _generic_rank_1_ghost(F::AdmissibleTuple)
     # G = ψ*ϕ'/ϕ'ψ
 end
 
+# NEW VERSION
+# use special features of the rank-1 case to avoid calculating all nu.
+function _generic_rank_1_ghost(F::AdmissibleTuple)
+    d = Int(F.d)
+    ζ = -cispi(BigFloat(1) / d)
+    QQ = binary_quadratic_form(F.A[2, 1], F.A[2, 2] - F.A[1, 1], -F.A[1, 2])
+    c = e(-BigFloat(rademacher(F.A)) / 24) / sqrt(BigFloat(d + 1))
+
+    χ = zeros(Complex{BigFloat}, d, 2)
+    χ[1, 1] = 1
+    for j = 1:2*d-1
+        p = radix(j, [d, d])
+
+        QA = BigFloat(-QQ(p...) / (d * (d - 2)))
+        s = (isodd(d) ? 1 : (1 + p[1]) * (1 + p[2]))
+        nu = ζ^QA * (-1)^s * c * shin_of_tuple(F,p)
+
+        χ[p[2]+1, p[1]+1] = ζ^(p[2] * p[1]) * real(nu)
+    end
+    χ = ifft(χ, 1)
+    sqrt(abs(χ[1, 1])) * circshift(cumprod(χ[:, 2] ./ χ[:, 1]), 1)
+    # to obtain Ghost projector, replace last line with:
+    # ψ = sqrt(abs(χ[1,1]))*circshift(cumprod(χ[:,2]./χ[:,1]), 1)
+    # ϕ = circshift(reverse(ψ),1)
+    # G = ψ*ϕ'/ϕ'ψ
+end
 
 function _get_periods(A, β)
     W = psl2word(A)

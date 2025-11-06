@@ -149,9 +149,6 @@ function necromancy(F::AdmissibleTuple;
             !finite_invariants && break
         end
 
-        # Removed this precision change for testing purposes. Currently doing root-finding at full loop-precision.
-        # setprecision(BigFloat, 320; base=2)
-
         if !finite_invariants
             verbose && println("Some SIC invariants were not finite.\n    ...Doubling precision.")
             continue
@@ -163,7 +160,7 @@ function necromancy(F::AdmissibleTuple;
         # NOTE: This line forces a lot of recomputation with ghosts.
         # Basically, we need to precision bump from this baseline each time instead of the previous level of precision.
         # However, if we keep the high precision then it is very slow to compute roots.
-        # setprecision(BigFloat, 320; base=2)
+        setprecision(BigFloat, 320; base=2)
 
         # Compute c', map to elementary symmetric polynomials
         # then find roots to get K'
@@ -174,6 +171,12 @@ function necromancy(F::AdmissibleTuple;
             for k = 2:ords[j]
                 push!(θprime, dot(b[j], [θprime[k-1]^n for n = 0:(ords[j]-1)]))
             end
+	    verbose && println("θ is...\n") 
+	    verbose && display(θ)
+	    verbose && println("θprime is...\n") 
+	    verbose && display(θprime)
+	    verbose && println("Vandermonde is...\n") 
+	    verbose && display(Vandermonde(θprime))
             push!(L, Vandermonde(θprime) * a[j])
             for t = 1:ords[j]
                 L[j][t, :] = -roots(reverse(pow_to_elem_sym_poly(L[j][t, :])))
@@ -187,7 +190,7 @@ function necromancy(F::AdmissibleTuple;
             !complex_phases && break
         end
         if !complex_phases
-            verbose && println("Computed overlaps were ", L)
+            # verbose && println("Computed overlaps were ", L)
             verbose && println("Some SIC overlaps were not complex phases.\n    ...Doubling precision.")
             continue
         end

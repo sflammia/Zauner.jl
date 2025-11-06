@@ -106,8 +106,8 @@ end # end quadform testset
 
 
 @testset "SL(2,ℤ)" begin
-    S = matrix_S
-    T = matrix_T
+    S = sl2z_S
+    T = sl2z_T
     U = [1 0; 1 1]
 
     # Test is_sl2z function
@@ -313,7 +313,7 @@ end # utils testset
 
     # check the first 15 ghosts for all overlaps.
     setprecision(BigFloat, 64) do
-        for k = 1:15
+        for k = 1:25
             d, q = dq(k)
             F = AdmissibleTuple(d, q)
             ψ = ghost(F)
@@ -377,6 +377,7 @@ end # end galois tests
         t = AdmissibleTuple(dq(k))
         # can't handle F_a symmetry yet
         has_fa_symmetry(t) && continue
+	println("Testing necromancy on ", t)
         ψ = necromancy(t; max_prec=2^15)
         @test sic_frame_test(ψ) < 1e-70
     end
