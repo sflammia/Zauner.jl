@@ -400,3 +400,21 @@ Test for ``F_a`` symmetry as opposed to Zauner (``F_z``) symmetry.
 function has_fa_symmetry(F::AdmissibleTuple)
     rem(F.d, 9) == 3 && rem(F.f ÷ F.q, 3) == 0
 end
+
+
+@doc """
+    _base_name(b::Integer)
+
+Helper function for printing integers in base `b`.
+"""
+function _base_name(base::Integer)
+    @assert base > 1 "base must be an integer ≥ 2"
+    if base == 2
+        basename = "bits"
+    elseif base == 10
+        basename = "digits"
+    else
+        basename = "base-$base digits"
+    end
+    return basename
+end
