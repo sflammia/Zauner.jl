@@ -68,11 +68,41 @@ function _ghost_invariants(K::AbstractArray{BigFloat})
             x = dropdims(sum(K .^ l; dims=notj); dims=notj)
             a[j][:, l] = V \ x
         end
+
+@doc raw"""
+    _multiplication_matrix(
+        x::Vector{Vector{BigFloat}},
+        p::Vector{Vector{Complex{BigFloat}}},
+        y::Vector{Vector{BigFloat}}
+    )
+
+Internal function to compute the multiplication matrix for the normal basis `x`.
+If the dual basis `y` is not provided, it is computed using the inverse Fourier transform of the reciprocal of the Fourier transform of `x`.
+"""
+function _multiplication_matrix(
+    x::Vector{Vector{T}},
+    p::Vector{Vector{Complex{T}}},
+    y::Vector{Vector{T}}
+) where {T<:Number}
+    r = length(x)
+    @assert length(p) == r && length(y) == r "The dimensions of x, p, and y must match."
+    A = Vector{Matrix{T}}(undef, r)
+    for j = 1:r
+        Ty = hcat([circshift(y[j], -k) for k = 0:length(y[j])-1]...)
+        A[j] = real.(fft(p[j] .* fft(x[j] .* Ty, 1), 1))
     end
 
-    return a, b, s
+    return A
 end
 
+function _multiplication_matrix(x::Vector{<:Number})
+    n = length(x)
+    p = ifft(x)
+    y = real.(ifft(1 ./ (n .* p)))
+    Ty = hcat([circshift(y, -k) for k = 0:n-1]...)
+    A = real.(fft(p .* fft(x .* Ty, 1), 1))
+    return A
+end
 
 
 
