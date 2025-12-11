@@ -1,5 +1,17 @@
-export necromancy
 export necromancy, pseudonecromancy, ghost_basis, ghost_orbit, class_field_bases
+
+# struct ApproximateNormalBasis
+#     x::Vector{T}          # normal basis
+#     p::Vector{Complex{T}} # fourier basis
+#     y::Vector{T}          # dual basis
+# end
+
+# function ApproximateNormalBasis(x::Vector{T})
+#     p = ifft(x)
+#     y = real.(ifft(1 ./ p))/length(x)
+#     ApproximateNormalBasis(x, p, y)
+# end
+
 
 function ghost_orbit(F::AdmissibleTuple, prec::Integer;
     base::Integer=10,
