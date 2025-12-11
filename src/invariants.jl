@@ -81,6 +81,25 @@ Internal function to test if the elements in a real vector `v` are distinct and 
 """
 function _distinct_nonzero(v::Vector{<:T}, prec::T) where {T<:Real}
     all(abs.([diff(sort(v)); v]) .> prec)
+
+function class_field_bases(F::AdmissibleTuple, prec::Int)
+    # Make sure that the class field and sign-switching automorphism are initialized
+    ghostclassfield(F)
+    signswitch(F)
+    hb = lll_basis(maximal_order(F.H)) # LLL-reduced basis for H
+    gb = F.g.(hb) # the Galois-conjugate basis
+
+    eH = real_embeddings(F.H)[1] # fix a real embedding
+
+    # Evaluate at the embedding eH.
+    _fH(x) = BigFloat.(real.(evaluation_function(eH, prec).(x)))
+    primalbasis = _fH.(hb)
+    dualbasis = _fH.(gb)
+
+    # return numerical bases to precision prec.
+    return primalbasis, dualbasis
+end
+
 end
 
 
