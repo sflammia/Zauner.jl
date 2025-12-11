@@ -1,5 +1,36 @@
 export necromancy
 
+function ghost_orbit(F::AdmissibleTuple, prec::Integer;
+    base::Integer=10,
+    verbose::Bool=false)
+
+    verbose && println(F)
+
+    # the normal form orders of the Galois group and a maximal p-orbit
+    ords, porb = galois_order_orbit(F)
+    verbose && println("Galois group with orders ", ords)
+
+    # get a low-precision ghost
+    INIT_PREC = 64
+    verbose && println("Computing the initial ghost to low $(INIT_PREC) bits.")
+    setprecision(BigFloat, INIT_PREC; base=2)
+    verbose ? (@time ψ = ghost(F)) : ψ = ghost(F)
+
+    verbose && println("Precision of initial ghost is ", precision(real(ψ[1])), " bits")
+
+    ψ = precision_bump(ψ, prec; base=base, verbose=verbose)
+    ϕ = circshift(reverse(ψ), 1)
+    ϕ .*= (BigFloat(F.d + 1)) / ϕ'ψ # include normalization factors
+    verbose && println("Ghost precision is now ", precision(real(ψ[1])), " bits")
+
+    # compute the ghost overlaps
+    verbose && println("Computing the high-precision ghost overlaps.")
+    (verbose ? (@time K = [real(ϕ'wh(p, ψ)) for p in porb]) : K = [real(ϕ'wh(p, ψ)) for p in porb])
+
+    return K
+end
+
+
 @doc raw"""
     _ghost_invariants(K::AbstractArray{BigFloat})
 
