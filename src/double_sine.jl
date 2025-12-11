@@ -54,9 +54,9 @@ end
 
 
 # some helper functions for the double sine integral
-_g0(w, b1, b2, t) = sinh.(((b1 + b2) / 2 - w) * t) ./ (2t .* sinh.(b1 * t / 2) .* sinh.(b2 * t / 2)) .- (b1 + b2 - 2w) ./ (b1 * b2 * t .^ 2)
-_g1(w, b1, b2, t) = exp.(-w) ./ (expm1.(-b1 .* (t ./ w .+ 1)) .* expm1.(-b2 .* (t ./ w .+ 1)) .* (t .+ w))
-_g(w, b1, b2, t) = _g1(w, b1, b2, t) .- _g1(b1 + b2 - w, b1, b2, t)
+_g0(w, b1, b2, t) = sinh(((b1 + b2) / 2 - w) * t) / (2t * sinh(b1 * t / 2) * sinh(b2 * t / 2)) - (b1 + b2 - 2w) / (b1 * b2 * t ^ 2)
+_g1(w, b1, b2, t) = exp(-w) / (expm1(-b1 * (t / w + 1)) * expm1(-b2 * (t / w + 1)) * (t + w))
+_g(w, b1, b2, t) = _g1(w, b1, b2, t) - _g1(b1 + b2 - w, b1, b2, t)
 
 
 
@@ -67,13 +67,13 @@ function _ds_int_qgk(w, b1, b2, pts)
     end
 
     # integrate from [0,1]
-    a = quadgk(t -> _g0(w, b1, b2, t), BigFloat(0), BigFloat(1), order=pts)[1]
+    a = quadgk(t -> _g0(w, b1, b2, t), zero(BigFloat), one(BigFloat), order=pts)[1]
 
     # boundary term
     b = -(b1 + b2 - 2w) / (b1 * b2)
 
     # integrate the rest, the change of variables makes it from [0,∞).
-    c = quadgk(t -> exp(-t) .* _g(w, b1, b2, t), BigFloat(0), BigFloat(Inf), order=pts)[1]
+    c = quadgk(t -> exp(-t) * _g(w, b1, b2, t), zero(BigFloat), Inf, order=pts)[1]
 
     exp(a + b + c)
 end
