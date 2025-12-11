@@ -100,6 +100,93 @@ function class_field_bases(F::AdmissibleTuple, prec::Int)
     return primalbasis, dualbasis
 end
 
+
+
+function pseudonecromancy(F::AdmissibleTuple, prec::Int; verbose=false, base=10)
+    u = ghost_orbit(F, prec; verbose=verbose, base=base)
+    x, p, y = ghost_basis(u; verbose=verbose)
+    A = Zauner._multiplication_matrix(x, p, y)
+    szu = size(u)
+
+    # sign-switch A and construct z
+    Hprimal, Hdual = class_field_bases(F, prec)
+
+    z = similar.(p)
+    for i = 1:length(z)
+        B = Matrix{Float64}(undef, size(A[i])...)
+        for t in CartesianIndices(A[i])
+            # println("t = $t")
+            R = guess_int_null_vec([Hprimal; A[i][t]], 3 * prec ÷ 4)
+            # println(R)
+            R2 = guess_int_null_vec([Hprimal; A[i][t]], prec)
+            # println(R2)
+            if R == R2 || R == -R2
+                B[t] = Float64(-dot(Hdual, R[1:end-1]) / R[end])
+            else
+                error("Unreliable sign-switch of A matrix.")
+            end
+        end
+        vals, vecs = eigen(B)
+        z[i] = (vals[1] / vecs[1, 1]) .* vecs[:, 1]
+    end
+
+    Y = (length(y) == 1 ? y[1] : kron(reverse(y)...))
+    s = zeros(Float64, szu)
+
+    for t = 0:prod(szu)-1
+        shift = radix(t, szu)
+        c = dot(circshift(u, shift)[:], Y)
+
+        if log10.(abs.(c)) .< -prec
+            continue
+        end
+        R = guess_int_null_vec([Hprimal; c], 3 * prec ÷ 4)
+        R2 = guess_int_null_vec([Hprimal; c], prec)
+
+        if R == R2 || R == -R2
+            s[(1 .+ shift)...] = Float64((Hdual' * R[1:end-1]) / (-R[end]))
+        else
+            error("Unreliable sign-switch of c vector.")
+        end
+    end
+
+    Z = ComplexF64.(length(z) == 1 ? z[1] : kron(reverse(z)...))
+    uu = zeros(ComplexF64, szu)
+    for t = 0:prod(szu)-1
+        shift = radix(t, szu)
+        uu[(1 .+ shift)...] = dot(circshift(s, shift)[:], Z)
+    end
+
+    @assert all(abs2.(uu) .≈ F.d + 1) "Reconstructed SIC units are not proportional to complex phase units, √(d+1)×exp(iθ)."
+
+    return uu
+end
+
+function pseudonecromancy(
+    F::AdmissibleTuple;
+    init_prec::Integer=2^8,
+    max_prec::Integer=2^14,
+    base=10,
+    verbose=false,
+)
+
+    basename = _base_name(base)
+    if init_prec < log(base, 10) * 2^6
+        verbose && @info "Increasing initial precision from $init_prec $basename to $(2^6) digits."
+    end
+    prec = max(init_prec, round(Integer, log(base, 10) * 2^6, RoundUp))
+
+    verbose && @info "Starting pseudonecromancy computation with initial precision $prec $basename."
+    while prec ≤ max_prec
+        try
+            u = pseudonecromancy(F, prec; verbose=verbose, base=base)
+            return u
+        catch err
+            verbose && @warn "Failed to compute pseudonecromancy for precision $prec, with error:\n$(err)\n Doubling precision and trying again."
+        end
+        prec *= 2
+    end
+
     error("Failed to achieve pseudonecromancy with $max_prec $basename. Try increasing `max_prec`.")
 end
 
