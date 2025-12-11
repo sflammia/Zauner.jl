@@ -251,8 +251,8 @@ function galois_normal_form(F::AdmissibleTuple)
     g = Matrix{ZZRingElem}[]
     n = Int[]
     for k = 1:length(D)
-        f = factor(D[k]).fac
-        pp = Int.(keys(f) .^ values(f))
+        f = factor(D[k]).arr
+        pp = Int.(first.(f) .^ last.(f))
         P = prod(pp)
         for p in pp
             push!(g, mod.(q[k]^Int(P / p), dd))
@@ -322,7 +322,7 @@ function galois_group_structure(t::AdmissibleTuple)
 
     # unit group of the residue ring, U[ O_f / (db * O_f) ].
     I = ideal(Of, db)
-    R, gr = quo(Of, I)
+    R, _ = quo(Of, I)
     UR, ur = unit_group(R)
 
     # find the preimage of the positive unit
