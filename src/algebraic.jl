@@ -1,4 +1,4 @@
-export wh, coredisc, conductor, pell, pellreg, ghostclassfield, signswitch, quadclassunit, class_group_structure, numsics, ghostbasis, ghostelements
+export wh, wh!, coredisc, conductor, pell, pellreg, ghostclassfield, signswitch, quadclassunit, class_group_structure, numsics, ghostbasis, ghostelements
 
 @doc """
     wh( p::Vector{<:Integer}, d::Integer [, T::Type = BigFloat])
@@ -34,20 +34,42 @@ true
 ```
 """
 wh(m::Integer, n::Integer, d::Integer, T::Type=BigFloat) =
-    [(-e(T(1) / (2 * d)))^(m * n) * (rem(j - k - m, d) == 0) * e((k - 1) * T(n) / d) for j = 1:d, k = 1:d]
+    [(-cispi(T(1) / d))^(m * n) * (rem(j - k - m, d) == 0) * e((k - 1) * T(n) / d) for j = 1:d, k = 1:d]
 
 wh(p::Vector{<:Integer}, d::Integer, T::Type=BigFloat) = wh(p[1], p[2], d, T)
 
 wh(p::Tuple{Integer,Integer}, d::Integer, T::Type=BigFloat) = wh(p[1], p[2], d, T)
 
 wh(m::Integer, n::Integer, v::Vector) =
-    [(-e(eltype(v)(1) / (2 * length(v))))^((2k - m) * n) * v[mod(k - m, length(v))+1] for k = 0:length(v)-1]
+    [(-cispi(one(eltype(v)) / length(v)))^((2k - m) * n) * v[mod(k - m, length(v))+1] for k = 0:length(v)-1]
 
 wh(p::Vector{<:Integer}, v::Vector) = wh(p[1], p[2], v)
 
 wh(p::Tuple{Integer,Integer}, v::Vector) = wh(p[1], p[2], v)
 
+# we might want to remove this next one since d vs. 2d could cause errors.
 wh(n::Integer, v::Vector) = wh(divrem(n, length(v)), v)
+
+
+"""
+    wh!(out, m, n, v)
+
+Compute `D_{(m,n)} * v` and store result in `out` without allocating a new array.
+"""
+function wh!(out::AbstractVector, m::Int, n::Int, v::AbstractVector)
+    d = length(v)
+    #    @assert length(out) == d "Output vector length must match input vector length"
+    ω = -cispi(one(eltype(v)) / d)
+
+    @inbounds for k in 1:d
+        k0 = k - 1
+        idx = mod(k0 - m, d) + 1 # v[mod(k - m, d) + 1] with k0 = k-1
+        power = (2 * k0 - m) * n
+        out[k] = (ω^power) * v[idx]
+    end
+
+    return out
+end
 
 
 @doc """
