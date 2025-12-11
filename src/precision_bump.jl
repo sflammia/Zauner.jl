@@ -181,14 +181,7 @@ where `z` is the real projective representation of `ψ`.
 In the second version, the function `f` is used for root finding.
 """
 function precision_bump!(z::Vector{BigFloat}, prec::Integer; base::Integer=2, verbose::Bool=true)
-    @assert base > 1 "base must be an integer ≥ 2"
-    if base == 2
-        basename = "bits"
-    elseif base == 10
-        basename = "digits"
-    else
-        basename = "digits base $base"
-    end
+    basename = _base_name(base)
     verbose && println("Increase ghost precision...")
     # digits = floor( Int, -log( base, maximum(abs.(_ghost_olp_func(z)))) )
     digits = precision(z[1]; base=base)
@@ -212,14 +205,7 @@ end
 # Here is a version that allows for a function input.
 # This can be used with _sic_olp_func to improve the precision of a SIC
 function precision_bump!(z::Vector{BigFloat}, f::Function, prec::Integer; base::Integer=2, verbose::Bool=true)
-    @assert base > 1 "base must be an integer ≥ 2"
-    if base == 2
-        basename = "bits"
-    elseif base == 10
-        basename = "digits"
-    else
-        basename = "digits base $base"
-    end
+    basename = _base_name(base)
     verbose && println("Increase precision...")
     # digits = floor( Int, -log( base, maximum(abs.(f(z)))) )
     digits = precision(z[1]; base=base)
