@@ -6,11 +6,11 @@ export q_pochhammer, q_pochhammer_exp, e, ghost, shin
 Finite q-Pochhammer symbol, ``\\prod_{k=0}^{n-1} \\bigl(1-a q^k\\bigr)``.
 """
 function q_pochhammer(a, q, n)
-#   prod(one(a) - a * q^k for k = 0:n-1; init=one(a))
+    #   prod(one(a) - a * q^k for k = 0:n-1; init=one(a))
     res = one(a)
     power_q = one(q)
-    for k = 0:n-1
-        res *= one(a) - a*power_q
+    @inbounds for _ = 0:n-1
+        res *= one(a) - a * power_q
         power_q *= q
     end
     res
@@ -91,11 +91,11 @@ function _principal_ghost(F::AdmissibleTuple)
     dsp = zeros(BigFloat, 2, d)
     dsp[1, 1] = sqrt(d + one(BigFloat))
     k = div(d, 2)
-    for p2 = 1:k
+    @inbounds for p2 = 1:k
         dsp[0+1, p2+1] = _triple_double_sine(0, p2, F)
         dsp[0+1, d-p2+1] = one(BigFloat) / dsp[0+1, p2+1]
     end
-    for p2 = 0:d-3
+    @inbounds for p2 = 0:d-3
         dsp[1+1, p2+1] = _triple_double_sine(1, p2, F)
     end
     dsp[1+1, end-1] = dsp[1+1, 1+1]
@@ -129,7 +129,7 @@ function _generic_rank_1_ghost(F::AdmissibleTuple)
         QA = BigFloat(-QQ(p...) / (d * (d - 2)))
         s = (isodd(d) ? 1 : (1 + p[1]) * (1 + p[2]))
         nu = ζ^QA * (-1)^s * c / q_pochhammer_exp((p[2] * F.x - p[1]) / d, F.x, m)
-        for i = 1:(length(ω)-2)
+        @inbounds for i = 1:(length(ω)-2)
             nu *= _sigma_s(z / ω[i+2], r[i+1])
         end
 
@@ -150,7 +150,7 @@ function _get_periods(A, β)
 
     B = zeros(eltype(A), n + 2, 2)
     B[1:2, 1:2] = A
-    for j = 1:n
+    @inbounds for j = 1:n
         B[j+2, :] = [-1 W[j]] * B[j:j+1, :]
     end
     BigFloat.(B) * [β; BigFloat(1)]
