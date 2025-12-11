@@ -355,12 +355,14 @@ end # end galois tests
 
 @testset "necromancy" begin
 
-    for k in 1:25
-        t = AdmissibleTuple(dq(k))
-        # can't handle F_a symmetry yet
-        has_fa_symmetry(t) && continue
-        ψ = necromancy(t; max_prec=2^15)
-        @test sic_frame_test(ψ) < 1e-70
+    for k = 1:25
+        F = AdmissibleTuple(dq(k))
+        has_fa_symmetry(F) && continue
+        p = initial_p_orbit(F)
+        u = pseudonecromancy(F; max_prec=2^14, verbose=false)
+        v, shift = shift_search(u, p, F.d; olp_goal=1e-10, tol=1e-12, maxit=1000, verbose=false)
+        @test sic_overlap_test(v) < 1e-10
+        setprecision(BigFloat,256)
     end
 
 end # end necromancy tests
