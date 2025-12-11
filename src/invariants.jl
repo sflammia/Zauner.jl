@@ -74,13 +74,7 @@ function _ghost_invariants(K::AbstractArray{BigFloat})
 end
 
 
-@doc """
-    _distinct_nonzero(v::Vector{<:T},prec::T) where T<:Real
 
-Internal function to test if the elements in a real vector `v` are distinct and nonzero to precision `prec`.
-"""
-function _distinct_nonzero(v::Vector{<:T}, prec::T) where {T<:Real}
-    all(abs.([diff(sort(v)); v]) .> prec)
 
 function class_field_bases(F::AdmissibleTuple, prec::Int)
     # Make sure that the class field and sign-switching automorphism are initialized
