@@ -1,9 +1,9 @@
 export guess_int_null_vec
 
 @doc """
-    guess_int_null_vec( x::Vector{BigFloat})
+    guess_int_null_vec( x::Vector{BigFloat} (, prec::Int))
 
-Use LLL to find an integer relation among the elements of `x`.
+Use LLL to find an integer relation among the elements of `x` using precision `prec`, which defaults to the precision of the first element of `x`.
 
 # Examples
 
@@ -16,12 +16,15 @@ julia> guess_int_null_vec(BigFloat.([1; sin(big(pi)/8)^2; sin(big(pi)/4)]))
 ```
 """
 function guess_int_null_vec(x::Vector{BigFloat})
-    prec = precision(x[1])
+    return guess_int_null_vec(x, precision(x[1]))
+end
+
+function guess_int_null_vec(x::Vector{BigFloat}, prec::Int)
     t = ZZ(2)^prec
     n = length(x)
     v = ZZ.(round.(t .* x))
     L = matrix_space(ZZ, n, n + 1)
     T = L([ZZ(j == k) + (k == n + 1) * v[j] for j = 1:n, k = 1:n+1])
 
-    return BigInt.(lll(T)[1, :])[1:n]
+    return BigInt.(lll!(T)[1, :])[1:n]
 end
