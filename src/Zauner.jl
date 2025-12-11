@@ -1,17 +1,15 @@
 module Zauner
 
 using Reexport
+ENV["HECKE_PRINT_BANNER"] = false
 @reexport using Hecke
-using AMRVW: roots
 using ForwardDiff: jacobian
-using GenericFFT: ifft, fft
-using QuadGK: quadgk
-using SpecialMatrices: Vandermonde
+using GenericFFT: fft, ifft
 using LazilyInitializedFields
-using Convex
-using SCS
+using LinearAlgebra
+using QuadGK: quadgk
 
-import Hecke.conductor, Hecke.cycle, Hecke.reduction, Hecke.stabilizer
+import Hecke.conductor, Hecke.cycle, Hecke.reduction, Hecke.stabilizer, Hecke.QuadBin
 export conductor, cycle, reduction, stabilizer
 
 include("dQ.jl")
