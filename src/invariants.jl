@@ -1,4 +1,5 @@
 export necromancy
+export necromancy, pseudonecromancy, ghost_basis, ghost_orbit, class_field_bases
 
 function ghost_orbit(F::AdmissibleTuple, prec::Integer;
     base::Integer=10,
@@ -32,42 +33,141 @@ end
 
 
 @doc raw"""
-    _ghost_invariants(K::AbstractArray{BigFloat})
+    ghost_basis(K::AbstractArray{BigFloat})
 
-Internal function to compute numerical approximations to the ghost invariants starting from the array `K` of ghost overlaps.
+Internal function to compute a normal basis and dual basis from the array `K` of ghost overlaps.
+
+`K` is assumed to be an `r`-dimensional array with size `ords = size(K)`.
+The return value is `(x, p, y)` where
+
+- `x[j]::Vector{BigFloat}` is a length-`ords[j]` vector defining a normal basis
+  along axis `j`;
+
+- `p[j]::Vector{Complex{BigFloat}}` is a length-`ords[j]` vector defining a Fourier basis
+  along axis `j`;
+
+- `y[j]::Vector{BigFloat}` is the corresponding dual basis vector, obtained via
+  Fourier inversion of `1 ./ fft(x[j])`.
 """
-function _ghost_invariants(K::AbstractArray{BigFloat})
+function ghost_basis(K::AbstractArray{BigFloat}; verbose=false)
     ords = size(K)
-    r, n = length(ords), prod(ords)
-    prec = precision(K[1])
-    THRESHOLD = BigFloat(2)^(10 - prec / 2)
+    r = length(ords)
+    N = prod(ords)
+    prec = precision(first(K))
+    THRESHOLD = BigFloat(2)^(10 - prec ÷ 2)
 
-    V = Vandermonde{BigFloat}
-    a = Matrix{BigFloat}[]
-    b = Vector{BigFloat}[]
-    s = Vector{BigFloat}[]
+    x = Vector{Vector{BigFloat}}(undef, r) # normal basis
+    y = similar(x) # dual basis
+    p = Vector{Vector{Complex{BigFloat}}}(undef, r) # fourier basis
+
     for j = 1:r
-        notj = NTuple{r - 1,Int}(setdiff(1:r, j))
-        # first compute "l_j".
-        for l = 1:n÷ords[j]
-            c = dropdims(sum(K .^ l; dims=notj); dims=notj)
-            # If these are distinct and nonzero then we've found l_j.
-            # We test this with at least 10 bits above 1/2 of our base precision.
-            if _distinct_nonzero(c, THRESHOLD)
-                V = Vandermonde(c)
-                push!(b, V \ circshift(c, -1))
-                # note: s is called "e" in the draft, but that conflicts with e(z).
-                # These are the power sums in the c_{j,t,l_j} over each t.
-                push!(s, [sum(c .^ k) for k = 1:ords[j]])
+        notj = Tuple(k for k in 1:r if k != j)
+
+        # ----------------------------
+        # First try the candidate from K
+        # ----------------------------
+        verbose && println("----------")
+        verbose && println("Axis $j:")
+        verbose && println("----------")
+        verbose && println("Trying linear basis.")
+        xj = dropdims(sum(K; dims=notj); dims=notj)
+        pj = ifft(xj)
+
+        min_p = minimum(abs.(pj))
+        ind_p = argmin(abs.(pj))
+
+        verbose && println("\tmin p[$j] = " * Base.MPFR._string(min_p, 5), " at index ", ind_p)
+
+        if min_p .> THRESHOLD
+            verbose && println("Fixing linear basis for axis $j.\n")
+            x[j] = xj
+            p[j] = pj
+            y[j] = real.(ifft(1 ./ (ords[j] .* pj)))
+            continue
+        end
+
+        # verbose && println("Linear basis fails for axis $j; trying K + m*K^2")
+
+        verbose && println("Linear basis fails for axis $j.")
+        verbose && println("\nTrying shifted quadratic bases K + τ(K).*K.")
+
+        # -----------------------------------
+        # Now try candidates of the form K + m*K^2
+        # for various m > 0.
+        # -----------------------------------
+        found = false
+        # K2 = K .^ 2
+        # xj2 = dropdims(sum(K2; dims=notj); dims=notj)
+        # pj2 = ifft(xj2)
+
+        # mxj = xj;
+        # mpj = pj;
+
+        for m in 0:N-1
+            t = radix(m, ords)
+            verbose && println("\tτ = $(t):")
+
+            xj = dropdims(sum(K .+ K .* circshift(K, t); dims=notj); dims=notj)
+            pj = ifft(xj)
+
+            min_p = minimum(abs.(pj))
+            ind_p = argmin(abs.(pj))
+
+            verbose && println("\tmin p[$(j)] = " * Base.MPFR._string(min_p, 5), " at index ", ind_p)
+
+            if min_p .> THRESHOLD
+                verbose && println("Fixing basis $j using shift $(t).\n")
+                x[j] = xj
+                p[j] = pj
+                y[j] = real.(ifft(1 ./ (ords[j] .* pj)))
+                found = true
                 break
             end
         end
-        # now compute a
-        push!(a, zeros(BigFloat, (ords[j], n ÷ ords[j])))
-        for l = 1:n÷ords[j]
-            x = dropdims(sum(K .^ l; dims=notj); dims=notj)
-            a[j][:, l] = V \ x
+
+        if found
+            continue
+        else
+            verbose && println("Shifted quadratic basis fails for axis $j.")
         end
+
+        verbose && println("\nTrying (K + τ(K).*K).^2")
+
+        # -----------------------------------
+        # Now try candidates of the form (K .+ τ(K).*K).^2
+        # for various τ.
+        # -----------------------------------
+        found = false
+        for m in 0:N-1
+            t = radix(m, ords)
+            verbose && println("\tτ = $(t) and squaring:")
+
+            xj = dropdims(sum(((K .+ K .* circshift(K, t)) .^ 2); dims=notj); dims=notj)
+            pj = ifft(xj)
+
+            min_p = minimum(abs.(pj))
+            ind_p = argmin(abs.(pj))
+
+            verbose && println("\tmin p[$j] = " * Base.MPFR._string(min_p, 5), " at index ", ind_p)
+
+            if min_p .> THRESHOLD
+                verbose && println("Fixing basis $j using shift $(t) and squaring\n")
+                x[j] = xj
+                p[j] = pj
+                y[j] = real.(ifft(1 ./ (ords[j] .* pj)))
+                found = true
+                break
+            end
+        end
+
+        if !found
+            error("Failed to find a good basis for axis $j using (K +  τ(K) .* K)^n for any translation τ and n=1,2.")
+        end
+
+    end
+    return x, p, y
+end
+
 
 @doc raw"""
     _multiplication_matrix(
