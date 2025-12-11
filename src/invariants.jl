@@ -100,6 +100,7 @@ function class_field_bases(F::AdmissibleTuple, prec::Int)
     return primalbasis, dualbasis
 end
 
+    error("Failed to achieve pseudonecromancy with $max_prec $basename. Try increasing `max_prec`.")
 end
 
 
@@ -129,143 +130,9 @@ function necromancy(F::AdmissibleTuple;
     overlap_prec::Integer=256,
     base::Integer=2,
     verbose::Bool=false)
-    # Ensure that we have initialized the class field for F
-    verbose && println(F)
-    d = Int(F.d)
-    ghostclassfield(F)
-    signswitch(F)
-    hb = lll(maximal_order(F.H)).basis_nf # find an LLL-reduced basis for H
-    gb = F.g.(hb) # the Galois-conjugate basis
-    eH = real_embeddings(F.H)[1] # fix a real embedding
 
-    # the normal form orders of the Galois group and a maximal p-orbit
-    ords, porb = galois_order_orbit(F)
-    verbose && println("Galois group with orders ", ords)
-    r, n = length(ords), prod(ords)
-
-    # get a low-precision ghost
-    prec = 64
-    setprecision(BigFloat, prec; base=2)
-    verbose && println("Computing the ghost.")
-    ψ = (verbose ? (@time ghost(F)) : ghost(F))
-    # initialize for the (potentially shifted) sic overlaps
-    x = Array{Complex{BigFloat}}(undef, Tuple(ords)...)
-
-    while prec ≤ max_prec
-        prec *= 2
-        # define some test flags
-        finite_invariants = true
-        complex_phases = true
-        unique_intersections = true
-
-        verbose && println("\n$prec bit target precision.")
-
-        # bump up the precision
-        verbose && println("Current working precision = ", precision(real(ψ[1])), " bits.")
-        ψ = precision_bump(ψ, prec; base=2, verbose=verbose)
-        ϕ = circshift(reverse(ψ), 1)
-        ϕ .*= (BigFloat(d + 1)) / ϕ'ψ # include normalization factors
-        verbose && println("new precision = ", precision(real(ψ[1])), " bits")
-
-        # compute the ghost overlaps
-        verbose && println("Computing the high-precision ghost overlaps.")
-        (verbose ? (@time K = [real(ϕ'wh(p, ψ)) for p in porb])
-         : K = [real(ϕ'wh(p, ψ)) for p in porb])
-
-        # compute the ghost invariants
-        verbose && println("Computing the ghost invariants.")
-        a, b, s = _ghost_invariants(K)
-
-        # sign-switch to the SIC invariants.
-        verbose && println("Sign-switching to the SIC invariants.")
-        # create a high precision embedding map and sign-switching automorphism
-        _fH(x) = BigFloat.(real.(evaluation_function(eH, prec).(x)))
-        primalbasis = _fH.(hb)
-        dualbasis = _fH.(gb)
-        _dual(x) = _dualize(primalbasis, dualbasis, x)
-        # sign-switch and test for finiteness
-        for j = 1:r
-            a[j] = _dual.(a[j])
-            finite_invariants &= all(isfinite.(a[j]))
-            !finite_invariants && break
-
-            b[j] = _dual.(b[j])
-            finite_invariants &= all(isfinite.(b[j]))
-            !finite_invariants && break
-
-            s[j] = _dual.(s[j])
-            s[j] = reverse(pow_to_elem_sym_poly(s[j]))
-            finite_invariants &= all(isfinite.(s[j]))
-            !finite_invariants && break
-        end
-
-        setprecision(BigFloat, 320; base=2)
-
-        if !finite_invariants
-            verbose && println("Some SIC invariants were not finite.\n    ...Doubling precision.")
-            continue
-        end
-        verbose && finite_invariants && println("All SIC invariants are finite.")
-        # From this point on we are in SIC world.
-
-        # Lower the precision back to standard BigFloat plus a 64-bit buffer.
-        # NOTE: This line forces a lot of recomputation with ghosts.
-        # Basically, we need to precision bump from this baseline each time instead of the previous level of precision.
-        # However, if we keep the high precision then it is very slow to compute roots.
-        # setprecision(BigFloat, 320; base=2)
-
-        # Compute c', map to elementary symmetric polynomials
-        # then find roots to get K'
-        θ = map(x -> -roots(BigFloat.(x)), s)
-        L = Matrix{Complex{BigFloat}}[]
-        for j = 1:r
-            θprime = [θ[j][1]]
-            for k = 2:ords[j]
-                push!(θprime, dot(b[j], [θprime[k-1]^n for n = 0:(ords[j]-1)]))
-            end
-            push!(L, Vandermonde(θprime) * a[j])
-            for t = 1:ords[j]
-                L[j][t, :] = -roots(reverse(pow_to_elem_sym_poly(L[j][t, :])))
-            end
-            L[j] = L[j] / sqrt(BigFloat(d + 1))
-            # These should all be approximate phases,
-            # otherwise break and try again
-            complex_phases &= all(abs.(L[j]) .≈ 1)
-            !complex_phases && break
-        end
-        if !complex_phases
-            verbose && println("Some SIC overlaps were not complex phases.\n    ...Doubling precision.")
-            continue
-        end
-        verbose && println("All SIC overlaps are complex phases.")
-
-        # now intersect to get x, which is nu up to an unknown Galois action.
-        for k = 0:n-1
-            t = radix(k, ords) .+ 1
-            Kt = Tuple([L[j][t[j], :] for j = 1:r])
-            # intersect at 128-bit precision by default
-            a = reduce((x, y) -> _approx_complex_intersection(x, y; prec=128), Kt)
-            unique_intersections &= (length(a) == 1)
-            if unique_intersections
-                x[t...] = a[1]
-            else
-                verbose && println("Intersection error...\n    Doubling precision.")
-                break
-            end
-        end
-        !unique_intersections && continue
-        verbose && println("All intersections are unique.\n")
-        # the only way we can get to here is if
-        # finite_invariants && complex_phases && unique_intersections
-        break
-    end # while
-
-    # Return to standard BigFloat precision
-    setprecision(BigFloat, 256; base=2)
-    (prec > max_prec) && error("max_prec exceeded without convergence.")
-    x = complex.(BigFloat.(real.(x)), BigFloat.(imag.(x)))
-
-    # if we ran out of precision, return to standard BigFloat precision and err.
+    @warn "This function is being updated and is presently nonfunctional."
+    return nothing
 
     # Now try every shift in the Galois group until one of them gives a SIC
     verbose && println("Now searching through Galois shifts and using matrix completion.")
