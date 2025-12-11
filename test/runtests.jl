@@ -347,6 +347,7 @@ end # end precision_bump tests
         if isodd(d)
             F = AdmissibleTuple(d, q)
             g, n = galois_normal_form(F)
+            c = length(centralizer_elements(F))
             @test c == prod(n) * 2^is_antiunitary(F) * F.k
         end
     end
