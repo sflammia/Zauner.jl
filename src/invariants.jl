@@ -269,6 +269,7 @@ function pseudonecromancy(F::AdmissibleTuple, prec::Int; verbose=false, base=10)
     Y = (length(y) == 1 ? y[1] : kron(reverse(y)...))
     s = zeros(Float64, szu)
 
+    # This is a convolution and could be optimized by using FFTs
     for t = 0:length(u)-1
         shift = radix(t, szu)
         c = dot(circshift(u, shift)[:], Y)
