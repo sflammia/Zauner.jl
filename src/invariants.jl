@@ -59,14 +59,14 @@ The return value is `(x, p, y)` where
   along axis `j`;
 
 - `y[j]::Vector{BigFloat}` is the corresponding dual basis vector, obtained via
-  Fourier inversion of `1 ./ fft(x[j])`.
+  Fourier inversion of `1 ./ ifft(x[j])`.
 """
 function ghost_basis(K::AbstractArray{BigFloat}; verbose=false)
     ords = size(K)
     r = length(ords)
     N = prod(ords)
     prec = precision(first(K))
-    THRESHOLD = BigFloat(2)^(10 - prec ÷ 2)
+    THRESHOLD = 16 # Float64 is 53 bits, about 10^16
 
     x = Vector{Vector{BigFloat}}(undef, r) # normal basis
     y = similar(x) # dual basis
@@ -90,7 +90,7 @@ function ghost_basis(K::AbstractArray{BigFloat}; verbose=false)
 
         verbose && println("\tmin p[$j] = " * Base.MPFR._string(min_p, 5), " at index ", ind_p)
 
-        if min_p .> THRESHOLD
+        if -log(10,min_p) < THRESHOLD
             verbose && println("Fixing linear basis for axis $j.\n")
             x[j] = xj
             p[j] = pj
@@ -127,7 +127,7 @@ function ghost_basis(K::AbstractArray{BigFloat}; verbose=false)
 
             verbose && println("\tmin p[$(j)] = " * Base.MPFR._string(min_p, 5), " at index ", ind_p)
 
-            if min_p .> THRESHOLD
+            if -log(10,min_p) < THRESHOLD
                 verbose && println("Fixing basis $j using shift $(t).\n")
                 x[j] = xj
                 p[j] = pj
@@ -162,7 +162,7 @@ function ghost_basis(K::AbstractArray{BigFloat}; verbose=false)
 
             verbose && println("\tmin p[$j] = " * Base.MPFR._string(min_p, 5), " at index ", ind_p)
 
-            if min_p .> THRESHOLD
+            if -log(10,min_p) < THRESHOLD
                 verbose && println("Fixing basis $j using shift $(t) and squaring\n")
                 x[j] = xj
                 p[j] = pj
