@@ -63,8 +63,8 @@ The return value is `(x, p, y)` where
 """
 function ghost_basis(K::AbstractArray{BigFloat}; verbose=false)
     ords = size(K)
-    r = length(ords)
-    N = prod(ords)
+    r = ndims(K)
+    N = length(K)
     prec = precision(first(K))
     THRESHOLD = 16 # Float64 is 53 bits, about 10^16
 
@@ -269,7 +269,7 @@ function pseudonecromancy(F::AdmissibleTuple, prec::Int; verbose=false, base=10)
     Y = (length(y) == 1 ? y[1] : kron(reverse(y)...))
     s = zeros(Float64, szu)
 
-    for t = 0:prod(szu)-1
+    for t = 0:length(u)-1
         shift = radix(t, szu)
         c = dot(circshift(u, shift)[:], Y)
 
@@ -286,9 +286,10 @@ function pseudonecromancy(F::AdmissibleTuple, prec::Int; verbose=false, base=10)
         end
     end
 
+    # This could be optimized by using FFTs
     Z = ComplexF64.(length(z) == 1 ? z[1] : kron(reverse(z)...))
     uu = zeros(ComplexF64, szu)
-    for t = 0:prod(szu)-1
+    for t = 0:length(u)-1
         shift = radix(t, szu)
         uu[(1 .+ shift)...] = dot(circshift(s, shift)[:], Z)
     end
