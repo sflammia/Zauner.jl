@@ -18,12 +18,16 @@ each dimension is permuted to the front, reshaped into a matrix,
 transformed with a 1D FFT along the first axis, and then reshaped back.
 After all dimensions are processed, the original dimension order is restored.
 """
-function fft_nd(A::AbstractArray; dims=dims)
+function fft_nd(A::AbstractArray;
+    dims=nothing)
     D = ndims(A)
     s = size(A)
     N = length(A)
 
     # validate dims
+    if dims === nothing
+        dims = ntuple(identity, D)
+    end
     dims_set = Set(dims)
     @assert all(d -> 1 ≤ d ≤ D, dims_set)
 
@@ -45,10 +49,6 @@ function fft_nd(A::AbstractArray; dims=dims)
     return A
 end
 
-function fft_nd(A::AbstractArray)
-    return fft_nd(A; dims=ntuple(identity, ndims(A)))
-end
-
 
 @doc """
     ifft_nd(A::AbstractArray)
@@ -68,12 +68,16 @@ each dimension is permuted to the front, reshaped into a matrix,
 transformed with a 1D inverse FFT along the first axis, and then reshaped back.
 After all dimensions are processed, the original dimension order is restored.
 """
-function ifft_nd(A::AbstractArray; dims=dims)
+function ifft_nd(A::AbstractArray;
+    dims=nothing)
     D = ndims(A)
     s = size(A)
     N = length(A)
 
     # validate dims
+    if dims === nothing
+        dims = ntuple(identity, D)
+    end
     dims_set = Set(dims)
     @assert all(d -> 1 ≤ d ≤ D, dims_set)
 
@@ -93,8 +97,4 @@ function ifft_nd(A::AbstractArray; dims=dims)
 
     A = permutedims(A, invperm(p))
     return A
-end
-
-function ifft_nd(A::AbstractArray)
-    return ifft_nd(A; dims=ntuple(identity, ndims(A)))
 end
