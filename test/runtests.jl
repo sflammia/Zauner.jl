@@ -333,8 +333,6 @@ end # end ghost testset
     @test precision(z[1]; base=10) ≥ prec
     @test all(isapprox.(Zauner._ghost_olp_func(z), BigFloat(0); atol=BigFloat(10)^(-prec)))
 
-    @test all(pow_to_elem_sym_poly([1.0; 1.0; 1.0]) .≈ [1.0; 1.0; 0.0; 0.0])
-
 end # end precision_bump tests
 
 
@@ -362,7 +360,7 @@ end # end galois tests
         u = pseudonecromancy(F; max_prec=2^14, verbose=false)
         v, shift = shift_search(u, p, F.d; olp_goal=1e-10, tol=1e-12, maxit=1000, verbose=false)
         @test sic_overlap_test(v) < 1e-10
-        setprecision(BigFloat,256)
+        setprecision(BigFloat, 256)
     end
 
 end # end necromancy tests

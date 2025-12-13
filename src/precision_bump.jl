@@ -226,22 +226,3 @@ function precision_bump!(z::Vector{BigFloat}, f::Function, prec::Integer; base::
     verbose && println("Final precision is $digits $basename.")
     return z
 end
-
-
-@doc raw"""
-    pow_to_elem_sym_poly( p::AbstractVector)
-
-Convert a vector of power sums to elementary symmetric polynomials.
-Assumes that that `p[k]` is the power sum of degree `k`.
-No check is done to ensure that the input is a valid collection of power sums, it simply applies the relevant recursion relation.
-Output `e` is indexed so that `e[1] == 1` is the zeroth elementary symmetric polynomial and `length(e) == length(p)+1`.
-"""
-function pow_to_elem_sym_poly(p::AbstractVector)
-    L = length(p)
-    esp = copy(p)
-    pushfirst!(esp, one(eltype(p))) # e0 = 1
-    for k = 1:L
-        esp[k+1] = sum((-1)^(j - 1) * esp[k-j+1] * p[j] / k for j = 1:k; init=zero(eltype(p)))
-    end
-    esp
-end
