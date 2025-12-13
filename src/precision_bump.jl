@@ -1,4 +1,4 @@
-export re_im_proj, precision_bump, precision_bump!, pow_to_elem_sym_poly
+export re_im_proj, precision_bump, precision_bump!
 
 @doc """
     re_im_proj(ψ::Vector{Complex{BigFloat}})
