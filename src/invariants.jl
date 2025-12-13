@@ -1,4 +1,4 @@
-export necromancy, pseudonecromancy, ghost_basis, ghost_orbit, class_field_bases
+export necromancy, pseudonecromancy, ghost_orbit, class_field_bases
 
 # struct ApproximateNormalBasis
 #     x::Vector{T}          # normal basis
@@ -41,143 +41,6 @@ function ghost_orbit(F::AdmissibleTuple, prec::Integer;
     (verbose ? (@time K = [real(ϕ'wh(p, ψ)) for p in porb]) : K = [real(ϕ'wh(p, ψ)) for p in porb])
 
     return K
-end
-
-
-@doc raw"""
-    ghost_basis(K::AbstractArray{BigFloat})
-
-Internal function to compute a normal basis and dual basis from the array `K` of ghost overlaps.
-
-`K` is assumed to be an `r`-dimensional array with size `ords = size(K)`.
-The return value is `(x, p, y)` where
-
-- `x[j]::Vector{BigFloat}` is a length-`ords[j]` vector defining a normal basis
-  along axis `j`;
-
-- `p[j]::Vector{Complex{BigFloat}}` is a length-`ords[j]` vector defining a Fourier basis
-  along axis `j`;
-
-- `y[j]::Vector{BigFloat}` is the corresponding dual basis vector, obtained via
-  Fourier inversion of `1 ./ ifft(x[j])`.
-"""
-function ghost_basis(K::AbstractArray{BigFloat}; verbose=false)
-    ords = size(K)
-    r = ndims(K)
-    N = length(K)
-    prec = precision(first(K))
-    THRESHOLD = 16 # Float64 is 53 bits, about 10^16
-
-    x = Vector{Vector{BigFloat}}(undef, r) # normal basis
-    y = similar(x) # dual basis
-    p = Vector{Vector{Complex{BigFloat}}}(undef, r) # fourier basis
-
-    for j = 1:r
-        notj = Tuple(k for k in 1:r if k != j)
-
-        # ----------------------------
-        # First try the candidate from K
-        # ----------------------------
-        verbose && println("----------")
-        verbose && println("Axis $j:")
-        verbose && println("----------")
-        verbose && println("Trying linear basis.")
-        xj = dropdims(sum(K; dims=notj); dims=notj)
-        pj = ifft(xj)
-
-        min_p = minimum(abs.(pj))
-        ind_p = argmin(abs.(pj))
-
-        verbose && println("\tmin p[$j] = " * Base.MPFR._string(min_p, 5), " at index ", ind_p)
-
-        if -log(10,min_p) < THRESHOLD
-            verbose && println("Fixing linear basis for axis $j.\n")
-            x[j] = xj
-            p[j] = pj
-            y[j] = real.(ifft(1 ./ (ords[j] .* pj)))
-            continue
-        end
-
-        # verbose && println("Linear basis fails for axis $j; trying K + m*K^2")
-
-        verbose && println("Linear basis fails for axis $j.")
-        verbose && println("\nTrying shifted quadratic bases K + τ(K).*K.")
-
-        # -----------------------------------
-        # Now try candidates of the form K + m*K^2
-        # for various m > 0.
-        # -----------------------------------
-        found = false
-        # K2 = K .^ 2
-        # xj2 = dropdims(sum(K2; dims=notj); dims=notj)
-        # pj2 = ifft(xj2)
-
-        # mxj = xj;
-        # mpj = pj;
-
-        for m in 0:N-1
-            t = radix(m, ords)
-            verbose && println("\tτ = $(t):")
-
-            xj = dropdims(sum(K .+ K .* circshift(K, t); dims=notj); dims=notj)
-            pj = ifft(xj)
-
-            min_p = minimum(abs.(pj))
-            ind_p = argmin(abs.(pj))
-
-            verbose && println("\tmin p[$(j)] = " * Base.MPFR._string(min_p, 5), " at index ", ind_p)
-
-            if -log(10,min_p) < THRESHOLD
-                verbose && println("Fixing basis $j using shift $(t).\n")
-                x[j] = xj
-                p[j] = pj
-                y[j] = real.(ifft(1 ./ (ords[j] .* pj)))
-                found = true
-                break
-            end
-        end
-
-        if found
-            continue
-        else
-            verbose && println("Shifted quadratic basis fails for axis $j.")
-        end
-
-        verbose && println("\nTrying (K + τ(K).*K).^2")
-
-        # -----------------------------------
-        # Now try candidates of the form (K .+ τ(K).*K).^2
-        # for various τ.
-        # -----------------------------------
-        found = false
-        for m in 0:N-1
-            t = radix(m, ords)
-            verbose && println("\tτ = $(t) and squaring:")
-
-            xj = dropdims(sum(((K .+ K .* circshift(K, t)) .^ 2); dims=notj); dims=notj)
-            pj = ifft(xj)
-
-            min_p = minimum(abs.(pj))
-            ind_p = argmin(abs.(pj))
-
-            verbose && println("\tmin p[$j] = " * Base.MPFR._string(min_p, 5), " at index ", ind_p)
-
-            if -log(10,min_p) < THRESHOLD
-                verbose && println("Fixing basis $j using shift $(t) and squaring\n")
-                x[j] = xj
-                p[j] = pj
-                y[j] = real.(ifft(1 ./ (ords[j] .* pj)))
-                found = true
-                break
-            end
-        end
-
-        if !found
-            error("Failed to find a good basis for axis $j using (K +  τ(K) .* K)^n for any translation τ and n=1,2.")
-        end
-
-    end
-    return x, p, y
 end
 
 
@@ -238,9 +101,14 @@ end
 
 
 
-function pseudonecromancy(F::AdmissibleTuple, prec::Int; verbose=false, base=10)
+function pseudonecromancy(F::AdmissibleTuple, prec::Int; recipes::Union{Nothing,Vector{NormalBasisRecipe}}=nothing, verbose=false, base=10)
     u = ghost_orbit(F, prec; verbose=verbose, base=base)
-    x, p, y = ghost_basis(u; verbose=verbose)
+    if recipes === nothing
+        x, p, y, recipes = ghost_basis(u; verbose=verbose)
+    else
+        x, p, y, _ = ghost_basis(u; recipes=recipes, verbose=verbose)
+    end
+
     A = Zauner._multiplication_matrix(x, p, y)
     szu = size(u)
 
@@ -297,7 +165,7 @@ function pseudonecromancy(F::AdmissibleTuple, prec::Int; verbose=false, base=10)
 
     @assert all(abs2.(uu) .≈ F.d + 1) "Reconstructed SIC units are not proportional to complex phase units, √(d+1)×exp(iθ)."
 
-    return uu
+    return uu, recipes
 end
 
 function pseudonecromancy(
@@ -314,10 +182,12 @@ function pseudonecromancy(
     end
     prec = max(init_prec, round(Integer, log(base, 10) * 2^6, RoundUp))
 
+    recipes = nothing
+
     verbose && @info "Starting pseudonecromancy computation with initial precision $prec $basename."
     while prec ≤ max_prec
         try
-            u = pseudonecromancy(F, prec; verbose=verbose, base=base)
+            u, recipes = pseudonecromancy(F, prec; recipes=recipes, verbose=verbose, base=base)
             return u
         catch err
             verbose && @warn "Failed to compute pseudonecromancy for precision $prec, with error:\n$(err)\n Doubling precision and trying again."

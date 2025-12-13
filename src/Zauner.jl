@@ -25,6 +25,7 @@ include("integer_relations.jl")
 include("galois.jl")
 include("matrix_completion.jl")
 include("fourier.jl")
+include("basis.jl")
 include("invariants.jl")
 include("validation.jl")
 
