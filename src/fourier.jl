@@ -24,12 +24,18 @@ function fft_nd(A::AbstractArray;
     s = size(A)
     N = length(A)
 
-    # validate dims
+    # Normalize dims to a tuple of integers
     if dims === nothing
-        dims = ntuple(identity, D)
+        dims_tuple = ntuple(identity, D)
+    elseif dims isa Integer
+        dims_tuple = (Int(dims),)
+    else # Handle any iterable
+        dims_tuple = Tuple(Int(d) for d in dims)
     end
-    dims_set = Set(dims)
-    @assert all(d -> 1 ≤ d ≤ D, dims_set)
+
+    # Validate
+    @assert all(d -> 1 ≤ d ≤ D, dims_tuple) "All dimensions must be in range 1:$D"
+    dims_set = Set(dims_tuple)
 
     # p tracks the net permutation of dimensions
     p = ntuple(identity, D)
@@ -74,12 +80,18 @@ function ifft_nd(A::AbstractArray;
     s = size(A)
     N = length(A)
 
-    # validate dims
+    # Normalize dims to a tuple of integers
     if dims === nothing
-        dims = ntuple(identity, D)
+        dims_tuple = ntuple(identity, D)
+    elseif dims isa Integer
+        dims_tuple = (Int(dims),)
+    else # Handle any iterable
+        dims_tuple = Tuple(Int(d) for d in dims)
     end
-    dims_set = Set(dims)
-    @assert all(d -> 1 ≤ d ≤ D, dims_set)
+
+    # Validate
+    @assert all(d -> 1 ≤ d ≤ D, dims_tuple) "All dimensions must be in range 1:$D"
+    dims_set = Set(dims_tuple)
 
     # p tracks the net permutation of dimensions
     p = ntuple(identity, D)
