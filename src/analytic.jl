@@ -166,6 +166,28 @@ function _sigma_s(z, β)
 end
 
 
+function _ensure_ghost!(
+    ψ::Union{Nothing,Vector{Complex{BigFloat}}},
+    current_prec::Int,
+    target_prec::Int;
+    base=10,
+    verbose=false
+)
+    if ψ === nothing
+        verbose && println("Computing initial ghost.")
+        ψ = ghost(F)
+        current_prec = precision(real(ψ[1]); base=base)
+    end
+
+    if current_prec < target_prec
+        verbose && println("Bumping ghost precision from $current_prec to $target_prec $(_base_name(base)).")
+        ψ = precision_bump(ψ, target_prec; base=base, verbose=verbose)
+        current_prec = target_prec
+    end
+
+    return ψ, current_prec
+end
+
 
 @doc """
      shin()
