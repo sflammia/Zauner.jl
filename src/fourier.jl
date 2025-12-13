@@ -29,7 +29,7 @@ function fft_nd(A::AbstractArray; dims=dims)
 
     # p tracks the net permutation of dimensions
     p = ntuple(identity, D)
-    for d in 1:dims_set
+    for d in dims_set
         k = findfirst(==(d), p)
         q = (k, setdiff(1:D, k)...)
         A = permutedims(A, q)
@@ -79,7 +79,7 @@ function ifft_nd(A::AbstractArray; dims=dims)
 
     # p tracks the net permutation of dimensions
     p = ntuple(identity, D)
-    for d in 1:dims_set
+    for d in dims_set
         k = findfirst(==(d), p)
         q = (k, setdiff(1:D, k)...)
         A = permutedims(A, q)
