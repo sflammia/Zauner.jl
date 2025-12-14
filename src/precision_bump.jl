@@ -180,49 +180,58 @@ Attempt to use Newton's method to improve the precision of `z` to at least `prec
 where `z` is the real projective representation of `ψ`.
 In the second version, the function `f` is used for root finding.
 """
-function precision_bump!(z::Vector{BigFloat}, prec::Integer; base::Integer=2, verbose::Bool=true)
+function precision_bump!(
+    z::Vector{BigFloat},
+    prec::Integer;
+    f::Function=_ghost_olp_func,
+    base::Integer=10,
+    verbose::Bool=false
+)
     basename = _base_name(base)
-    verbose && println("Increase ghost precision...")
-    # digits = floor( Int, -log( base, maximum(abs.(_ghost_olp_func(z)))) )
-    digits = precision(z[1]; base=base)
-    while digits < prec
-        setprecision(BigFloat, 2 * digits; base=base)
-        verbose && println("Current ghost precision is $digits $basename.")
-        # Run an iteration of Newton's method
-        if verbose
-            @time z .-= jacobian(_ghost_olp_func, z) \ _ghost_olp_func(z)
-        else
-            z .-= jacobian(_ghost_olp_func, z) \ _ghost_olp_func(z)
-        end
-        digits = floor(Int, -log(base, maximum(abs.(_ghost_olp_func(z)))))
-    end
-    verbose && println("Precision of BigFloat is now ", precision(BigFloat; base=base), " $basename.")
-    verbose && println("Final ghost precision is $digits $basename.")
-    return z
-end
+    verbose && println("Increasing precision using Newton's method.")
 
+    # Save global precision
+    old_bits = precision(BigFloat)
+    min_digits = ceil(Int, 53 / log2(base))
 
-# Here is a version that allows for a function input.
-# This can be used with _sic_olp_func to improve the precision of a SIC
-function precision_bump!(z::Vector{BigFloat}, f::Function, prec::Integer; base::Integer=2, verbose::Bool=true)
-    basename = _base_name(base)
-    verbose && println("Increase precision...")
-    # digits = floor( Int, -log( base, maximum(abs.(f(z)))) )
-    digits = precision(z[1]; base=base)
-    digits = maximum([digits; 53]) # minimum precision is  hard-coded
-    while digits < prec
-        setprecision(BigFloat, 2 * digits; base=base)
-        verbose && println("Current precision is $digits $basename.")
-        # Run an iteration of Newton's method
-        if verbose
-            @time z .-= jacobian(f, z) \ f(z)
-        else
+    try
+        # Estimate current accuracy
+        resid = maximum(abs.(f(z)))
+        digits = floor(Int, -log(base, resid))
+        digits = max(digits, min_digits)  # floor at ~Float64 accuracy
+
+        while digits < prec
+            # Increase global precision (in bits)
+            new_bits = ceil(Int, 2 * digits * log2(base))
+            setprecision(BigFloat, new_bits)
+
+            verbose && println(
+                "  Newton step at ~$digits $basename accuracy ",
+                "(global precision = $(precision(BigFloat)) bits)"
+            )
             z .-= jacobian(f, z) \ f(z)
+
+            # Recompute accuracy
+            resid = maximum(abs.(f(z)))
+            digits = floor(Int, -log(base, resid))
+            digits = max(digits, min_digits) # not really needed, but keeps invariants consistent
         end
-        digits = floor(Int, -log(base, maximum(abs.(f(z)))))
-        digits = maximum([digits; 53]) # minimum precision is single-float
+
+        # Final truncation: keep 16 guard bits
+        final_bits = ceil(Int, (digits * log2(base) + 16))
+        setprecision(BigFloat, final_bits)
+        z .= BigFloat.(z)
+
+        verbose && println(
+            "Final accuracy ≈ $digits $basename, ",
+            "stored precision = $(precision(BigFloat)) bits."
+        )
+
+        return z
+
+    finally
+        # Always restore global precision
+        setprecision(BigFloat, old_bits)
+        verbose && println("Restored original global precision.")
     end
-    verbose && println("Precision of BigFloat is now ", precision(BigFloat; base=base), " $basename.")
-    verbose && println("Final precision is $digits $basename.")
-    return z
 end
