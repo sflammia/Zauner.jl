@@ -188,7 +188,6 @@ function precision_bump!(
     verbose::Bool=false
 )
     basename = _base_name(base)
-    verbose && println("Increasing precision using Newton's method.")
 
     # Save global precision
     old_bits = precision(BigFloat)
@@ -200,18 +199,23 @@ function precision_bump!(
         digits = floor(Int, -log(base, resid))
         digits = max(digits, min_digits)  # floor at ~Float64 accuracy
 
+        verbose && println("Increasing precision using Newton's method.")
+        verbose && println("Tracking precision in $(basename).")
+        verbose && println("-"^(27))
+        verbose && println("Step   Accuracy   Precision")
+        verbose && println("-"^(27))
+        step = 0
+        verbose && println("$(lpad(step, 4))    $(lpad(digits, 7))    $(lpad(precision(BigFloat; base = base), 8))")
         while digits < prec
             # Increase global precision (in bits)
             new_bits = ceil(Int, 2 * digits * log2(base))
             setprecision(BigFloat, new_bits)
 
-            verbose && println(
-                "  Newton step at ~$digits $basename accuracy ",
-                "(global precision = $(precision(BigFloat)) bits)"
-            )
             z .-= jacobian(f, z) \ f(z)
 
             # Recompute accuracy
+            step += 1
+            verbose && println("$(lpad(step, 4))    $(lpad(digits, 7))    $(lpad(precision(BigFloat; base = base), 8))")
             resid = maximum(abs.(f(z)))
             digits = floor(Int, -log(base, resid))
             digits = max(digits, min_digits) # not really needed, but keeps invariants consistent
@@ -220,11 +224,12 @@ function precision_bump!(
         # Final truncation: keep 16 guard bits
         final_bits = ceil(Int, (digits * log2(base) + 16))
         setprecision(BigFloat, final_bits)
+        verbose && println("-"^(27))
         z .= BigFloat.(z)
 
         verbose && println(
-            "Final accuracy ≈ $digits $basename, ",
-            "stored precision = $(precision(BigFloat)) bits."
+            "Final accuracy ≈ $digits $basename\n",
+            "Stored precision = $(precision(BigFloat; base = base)) $(basename)."
         )
 
         return z
@@ -232,6 +237,6 @@ function precision_bump!(
     finally
         # Always restore global precision
         setprecision(BigFloat, old_bits)
-        verbose && println("Restored original global precision.")
+        verbose && print("Original BigFloat global precision restored.")
     end
 end
