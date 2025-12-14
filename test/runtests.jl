@@ -331,8 +331,10 @@ end # end ghost testset
     prec = 100
     precision_bump!(z, prec; base=10, verbose=false)
     @test precision(z[1]; base=10) ≥ prec
-    @test all(isapprox.(Zauner._ghost_olp_func(z), BigFloat(0); atol=BigFloat(10)^(-prec)))
-
+    setprecision(BigFloat, ceil(Int, prec * log2(10)) + 32) do
+        @test all(isapprox.(Zauner._ghost_olp_func(z), BigFloat(0);
+            atol=BigFloat(10)^(-prec)))
+    end
 end # end precision_bump tests
 
 
