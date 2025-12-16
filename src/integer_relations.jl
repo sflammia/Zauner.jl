@@ -19,7 +19,7 @@ function guess_int_null_vec(x::Vector{BigFloat})
     return guess_int_null_vec(x, precision(x[1]))
 end
 
-function guess_int_null_vec(x::Vector{BigFloat}, prec::Int)
+function guess_int_null_vec(x::Vector{BigFloat}, prec::Integer)
     t = ZZ(2)^prec
     n = length(x)
     v = ZZ.(round.(t .* x))
