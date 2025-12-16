@@ -32,7 +32,7 @@ given ``Ψ'' output the array ``\sqrt{d+1}\mathrm{Tr}(D_p Π)/\mathrm{Tr}(Π)'' 
 function sic_overlaps(ψ::AbstractVector)
     d = length(ψ)
     scale = sqrt(eltype(ψ)(d + 1)) / (ψ'ψ)
-    return real.(scale .* [ψ' * wh(p, q, ψ) for p = 0:d-1, q = 0:d-1])
+    return scale .* [ψ' * wh(p, q, ψ) for p = 0:d-1, q = 0:d-1]
 end
 function sic_overlaps(t::AdmissibleTuple)
     v = necromancy(t)
