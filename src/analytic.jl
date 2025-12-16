@@ -53,7 +53,8 @@ end
 @doc raw"""
     ghost(F:AdmissibleTuple)
 
-Compute a ghost as a d × d matrix from the admissible tuple `F`.
+Compute a ghost as a `Complex{BigFloat}` vector from the admissible tuple `F`.
+The ghost uses projective normalization, meaning the first coordinate is set to 1.0.
 
 Only rank-1 ghosts are supported at this time.
 """
@@ -163,29 +164,6 @@ function _sigma_s(z, β)
     b = e((6 * (z + n)^2 + 6 * (1 - β) * (z + n) + β^2 - 3 * β + 1) / (24 * β))
     c = _ds_int_qgk(z + n + 1, β, BigFloat(1), 21)
     a * b * c
-end
-
-
-function _ensure_ghost!(
-    ψ::Union{Nothing,Vector{Complex{BigFloat}}},
-    current_prec::Int,
-    target_prec::Int;
-    base=10,
-    verbose=false
-)
-    if ψ === nothing
-        verbose && println("Computing initial ghost.")
-        ψ = ghost(F)
-        current_prec = precision(real(ψ[1]); base=base)
-    end
-
-    if current_prec < target_prec
-        verbose && println("Bumping ghost precision from $current_prec to $target_prec $(_base_name(base)).")
-        ψ = precision_bump(ψ, target_prec; base=base, verbose=verbose)
-        current_prec = target_prec
-    end
-
-    return ψ, current_prec
 end
 
 
