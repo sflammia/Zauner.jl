@@ -29,13 +29,19 @@ re_im_proj(v)
 """
 function re_im_proj(ψ::Vector{Complex{BigFloat}})
     ψ[1] ≈ zero(eltype(ψ)) && error("First entry must be nonzero.")
-    vcat(reim(ψ[2:end] ./ ψ[1])...)
+    setprecision(BigFloat, precision(real(ψ[1]))) do
+        return vcat(reim(ψ[2:end] ./ ψ[1])...)
+    end
 end
+
 
 
 function re_im_proj(z::Vector{BigFloat})
     @assert iseven(length(z))
-    [1; z[1:end÷2]] .+ im * [0; z[(1+end÷2):end]]
+    p = precision(z[1])
+    rev = [BigFloat(1; precision=p); z[1:end÷2]]
+    imv = [BigFloat(0; precision=p); z[(1+end÷2):end]]
+    Complex{BigFloat}.(rev, imv)
 end
 
 
@@ -205,7 +211,7 @@ function precision_bump!(
         verbose && println("Step   Accuracy   Precision")
         verbose && println("-"^(27))
         step = 0
-        verbose && println("$(lpad(step, 4))    $(lpad(digits, 7))    $(lpad(precision(BigFloat; base = base), 8))")
+        verbose && println("$(lpad(step, 4))    $(lpad(digits, 7))    $(lpad(precision(z[1]; base = base), 8))")
         while digits < prec
             # Increase global precision (in bits)
             new_bits = ceil(Int, 2 * digits * log2(base))
@@ -215,7 +221,7 @@ function precision_bump!(
 
             # Recompute accuracy
             step += 1
-            verbose && println("$(lpad(step, 4))    $(lpad(digits, 7))    $(lpad(precision(BigFloat; base = base), 8))")
+            verbose && println("$(lpad(step, 4))    $(lpad(digits, 7))    $(lpad(precision(z[1]; base = base), 8))")
             resid = maximum(abs.(f(z)))
             digits = floor(Int, -log(base, resid))
             digits = max(digits, min_digits) # not really needed, but keeps invariants consistent
@@ -237,6 +243,6 @@ function precision_bump!(
     finally
         # Always restore global precision
         setprecision(BigFloat, old_bits)
-        verbose && print("Original BigFloat global precision restored.")
+        verbose && println("Original BigFloat global precision restored.")
     end
 end
