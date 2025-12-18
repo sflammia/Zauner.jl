@@ -170,9 +170,9 @@ end
 Attempt to use Newton's method to improve the precision of `ψ` to at least `prec` digits in base `base`.
 In the second version, the function `f` is used for root finding.
 """
-function precision_bump(ψ::Vector{Complex{BigFloat}}, prec::Integer; base::Integer=10, verbose::Bool=true)
+function precision_bump(ψ::Vector{Complex{BigFloat}}, prec::Integer; f::Function=_ghost_olp_func, base::Integer=10, verbose::Bool=true)
     z = re_im_proj(ψ)
-    precision_bump!(z, prec; base, verbose)
+    precision_bump!(z, prec; f=f, base=base, verbose=verbose)
     re_im_proj(z)
 end
 
