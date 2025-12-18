@@ -200,10 +200,20 @@ end
 
 
 @doc raw"""
-    necromancy( F::AdmissibleTuple [; max_prec = 2^20, verbose = false])
+    necromancy( F::AdmissibleTuple [;     init_prec::Integer=2^7,
+    max_prec::Integer=2^20,
+    olp_goal::Float64=1e-10,
+    tol::Float64=1e-12,
+    max_iter::Integer=1000,
+    base::Integer=2,
+    verbose::Bool=false,
+)
+
 
 Compute a numerical approximations to a SIC associated to the `AdmissibleTuple` `F`.
 The maximum number of bits used in integer relation finding is set to `max_prec` (default of 1 Mb) and `verbose` can be toggled `true` or `false`.
+
+The output is a `Vector{ComplexF64}` that is normalized in the projective sense, with the first nonzero element normalized to 1.
 
 # Examples
 
@@ -215,31 +225,41 @@ AdmissibleTuple( d = 7, K = ℚ(√8), q = 2, Q = ⟨1,-6,1⟩, h = 1 )
 
 julia> ψ = necromancy(F);
 
-julia> all([ abs2(ψ'wh(p,ψ)) for p=1:d^2-1] .≈ 1/(d+1))
+julia> all([ abs2(ψ'wh(p,ψ)) for p=1:d^2-1] .≈ (ψ'ψ)/(d+1))
 true
 ```
 """
 function necromancy(F::AdmissibleTuple;
+    init_prec::Integer=2^7,
     max_prec::Integer=2^20,
-    overlap_tol::Float64=1e-6,
-    overlap_prec::Integer=256,
+    olp_goal::Float64=1e-10, # only for initial gradient decent, goes to Float64 later anyway
+    tol::Float64=1e-12,
+    max_iter::Integer=1000,
     base::Integer=2,
-    verbose::Bool=false)
+    verbose::Bool=false,
+)
 
-    @warn "This function is being updated and is presently nonfunctional."
-    return nothing
+    p = initial_p_orbit(F; verbose=verbose)
+    u = pseudonecromancy(F;
+        init_prec=init_prec,
+        max_prec=max_prec,
+        base=base,
+        verbose=verbose,
+    )
+    v = shift_search(u, p, F.d;
+        olp_goal=olp_goal,
+        tol=tol,
+        max_iter=max_iter,
+        verbose=verbose,
+    )
 
+    # increase precision enough for Float64 accuracy
+    v = precision_bump(Complex{BigFloat}.(v), 128; base=2, f=_sic_olp_func, verbose=verbose)
 
-    # Finally, improve the precision again to standard BigFloat.
-    z = re_im_proj(Complex{BigFloat}.(ψ))
-    buffer_bits = 10
-    precision_bump!(z, _sic_olp_func, overlap_prec + buffer_bits; base=base, verbose=verbose)
-    ψ = re_im_proj(z)
-    ψ = ψ / sqrt(ψ'ψ)
-    setprecision(BigFloat, overlap_prec)
-    z = reim(ψ)
-    # round down the the desired precision so that the new precision of BigFloat is predictable
-    return BigFloat.(z[1]) + im * BigFloat.(z[2])
+    v ./= v[findfirst(!iszero, v)]
+    verbose && println("Normalized SIC vector precision:", precision(real(v[1])))
+
+    return ComplexF64.(v)
 end
 
 
