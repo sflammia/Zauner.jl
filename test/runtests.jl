@@ -179,7 +179,7 @@ end # SL(2,Z) testset
 
 # Unit tests for the real double sine function
 @testset "double sine" begin
-    # Our convention for double sine is reciprical to K & K.
+    # Our convention for double sine is reciprocal to K & K.
     t0 = sqrt(BigFloat(21))
     sq2 = sqrt(BigFloat(2))
     sq3 = sqrt(BigFloat(3))
@@ -358,11 +358,8 @@ end # end galois tests
     for k = 1:25
         F = AdmissibleTuple(dq(k))
         has_fa_symmetry(F) && continue
-        p = initial_p_orbit(F)
-        u = pseudonecromancy(F; max_prec=2^14, verbose=false)
-        v, shift = shift_search(u, p, F.d; olp_goal=1e-10, tol=1e-12, maxit=1000, verbose=false)
-        @test sic_overlap_test(v) < 1e-10
-        setprecision(BigFloat, 256)
+        v = necromancy(F)
+        @test sic_overlap_test(v ./ norm(v)) < 1e-14
     end
 
 end # end necromancy tests
