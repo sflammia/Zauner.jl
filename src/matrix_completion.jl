@@ -60,7 +60,7 @@ end
 
 
 """
-    rank_one_least_squares(p, B; maxit=1000, η=1e-1, tol=1e-12)
+    rank_one_least_squares(p, B; max_iter=1000, η=1e-1, tol=1e-12)
 
 Solve the least squares problem via gradient descent on the complex unit sphere.
 Here `p` is a list of observed Weyl-Heisenberg displacements which is assumed to be closed under reflection by -1 (to ensure hermitian output).
@@ -69,7 +69,7 @@ The input `B` is a hermitian matrix such that `b[p] = tr(B * wh(-p, d))`.
 function rank_one_least_squares(
     p::AbstractArray{NTuple{2,I},N},
     B::AbstractMatrix;
-    maxit=1000, η=1e-1, tol=1e-12,
+    max_iter=1000, η=1e-1, tol=1e-12,
     verbose=false
 ) where {I<:Integer,N}
 
@@ -94,7 +94,7 @@ function rank_one_least_squares(
 
     By = similar(y)
 
-    for it in 1:maxit
+    for it in 1:max_iter
         # gradient wrt y; simplified since B is hermitian
         LinearAlgebra.mul!(By, B, y)
         y_new = y .- η .* (wh_grad!(y) - 2 * By)
@@ -121,7 +121,8 @@ function shift_search(
     d::Integer;
     olp_goal=1e-10,
     tol=1e-12,
-    maxit=1000,
+    max_iter=1000,
+    return_shift::Bool=false,
     verbose::Bool=false
 ) where {I<:Integer,N}
 
@@ -130,11 +131,11 @@ function shift_search(
     v = zeros(eltype(u), d)
     while shift < prod(size(u))
         B = initial_B_estimate(u, p, d; shift=shift)
-        v = rank_one_least_squares(p, B; tol=tol, maxit=maxit, verbose=verbose)
+        v = rank_one_least_squares(p, B; tol=tol, max_iter=max_iter, verbose=verbose)
         test_val = sic_overlap_test(v)
         # println("shift overlap error = ", round(test_val, sigdigits=5))
         if test_val < olp_goal
-            return v, shift
+            return return_shift ? (v, shift) : v
         end
         shift += 1
     end
