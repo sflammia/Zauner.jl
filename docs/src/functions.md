@@ -64,9 +64,7 @@ ghost_overlaps
 
 ```@docs; canonical=false
 guess_int_null_vec
-matrix_completion
 necromancy
-pow_to_elem_sym_poly
 sic_overlaps
 ```
 
