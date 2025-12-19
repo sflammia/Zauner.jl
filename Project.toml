@@ -1,6 +1,6 @@
 name = "Zauner"
 uuid = "ce1149fb-49fa-4541-ae6c-62019ae07d40"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["Steve Flammia <sflammia@gmail.com>"]
 
 [deps]
