@@ -224,6 +224,25 @@ end # SL(2,Z) testset
 end # double sine testset
 
 
+# Unit tests for the shin_of_tuple function
+@testset "shin" begin
+    t5 = AdmissibleTuple(5)
+    t6 = AdmissibleTuple(6)
+    t7 = AdmissibleTuple(7)
+    t7Q = AdmissibleTuple(7, binary_quadratic_form(2, -4, 1))
+    t8 = AdmissibleTuple(8)
+    t8Q = AdmissibleTuple(8, binary_quadratic_form(1, -3, 1))
+    tol = 1e-10
+    @test abs(shin_of_tuple(t5, [-1, 0]) - (0.308571164315611271 + 1.948241656082732270im)) < tol
+    @test abs(shin_of_tuple(t5, [1, 1]) - (0.4289984007808069358 - 0.2185856029902317735im)) < tol
+    @test abs(shin_of_tuple(t6, [-1, 0]) - (-1.106442644508591303 + 1.916414875949749782im)) < tol
+    @test abs(shin_of_tuple(t6, [1, 1]) - 0.4220824403854534549) < tol
+    @test abs(shin_of_tuple(t7, [-1, 0]) - (-2.293459057176394784 + 0.802516033193775826im)) < tol
+    @test abs(shin_of_tuple(t7Q, [-1, 0]) - (-0.609275880279939336 + 2.669412047410689129im)) < tol
+    @test abs(shin_of_tuple(t8, [-1, 0]) - (-2.428755663366646583 - 1.006023535456928306im)) < tol
+    @test abs(shin_of_tuple(t8Q, [-1, 0]) - (1.040235842137503714 + 2.511351478154959377im)) < tol
+end # shin testset
+
 
 @testset "utils" begin
 
