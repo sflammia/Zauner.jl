@@ -162,7 +162,7 @@ function _sigma_s(z, β)
     n = floor(Int, -z) + floor(Int, β / 2)
     a = q_pochhammer_exp(z / β, -1 / β, -n)
     b = e((6 * (z + n)^2 + 6 * (1 - β) * (z + n) + β^2 - 3 * β + 1) / (24 * β))
-    c = _ds_int_qgk(z + n + 1, β, BigFloat(1), 21)
+    c = double_sine(z + n + 1, β, BigFloat(1))
     a * b * c
 end
 
