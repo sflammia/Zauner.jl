@@ -53,8 +53,8 @@ Assumes `0 < b1 < b2`.
 """
 function _minimal_bulk_shift(w::Float64, b1::Float64, b2::Float64)
     Q = b1 + b2
-    n_min = ceil((w - (Q - b1 / 2)) / b2)
-    n_max = floor((w - b1 / 2) / b2)
+    n_min = cld((w - (Q - b1 / 2)), b2)
+    n_max = fld((w - b1 / 2), b2)
 
     if n_min <= 0 <= n_max
         return 0
@@ -92,18 +92,20 @@ end
 
 
 # some helper functions for the double sine integral
-_g0(w, b1, b2, t) = sinh(((b1 + b2) / 2 - w) * t) / (2t * sinh(b1 * t / 2) * sinh(b2 * t / 2)) - (b1 + b2 - 2w) / (b1 * b2 * t^2)
+_g0(b1on2, b2on2, A, B, t) = sinh(A * t) / (2t * sinh(b1on2 * t) * sinh(b2on2 * t)) - B / t^2
 _g1(w, b1, b2, t) = exp(-w) / (expm1(-b1 * (t / w + 1)) * expm1(-b2 * (t / w + 1)) * (t + w))
 _g(w, b1, b2, t) = _g1(w, b1, b2, t) - _g1(b1 + b2 - w, b1, b2, t)
 
 
 struct G0{T}
-    w::T
-    b1::T
-    b2::T
+    b1on2::T
+    b2on2::T
+    A::T # A = (b1 + b2) / 2 - w
+    B::T # B = (b1 + b2 - 2w) / (b1 * b2)
 end
 
-@inline (g::G0)(t) = _g0(g.w, g.b1, g.b2, t)
+@inline (g::G0)(t) = _g0(g.b1on2, g.b2on2, g.A, g.B, t)
+
 
 struct Gexp{T}
     w::T
@@ -125,12 +127,16 @@ function _log_ds(w, b1, b2; kwargs...)
         return zero(T)
     end
 
+    # boundary term
+    b = -(b1 + b2 - 2w) / (b1 * b2)
+
     # integrate from [0,1]
-    g0 = G0(w, b1, b2)
+    # g0 = G0(w, b1, b2)
+    g0 = G0(b1 / T(2), b2 / T(2), (b1 + b2) / T(2) - w, -b)
     a = quadgk(g0, zero(T), one(T); kwargs...)[1]
 
     # boundary term
-    b = -(b1 + b2 - 2w) / (b1 * b2)
+    # b = -(b1 + b2 - 2w) / (b1 * b2)
 
     # integrate the rest, the change of variables makes it from [0,∞).
     gexp = Gexp(w, b1, b2)
