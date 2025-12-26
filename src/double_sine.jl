@@ -97,6 +97,23 @@ _g1(w, b1, b2, t) = exp(-w) / (expm1(-b1 * (t / w + 1)) * expm1(-b2 * (t / w + 1
 _g(w, b1, b2, t) = _g1(w, b1, b2, t) - _g1(b1 + b2 - w, b1, b2, t)
 
 
+struct G0{T}
+    w::T
+    b1::T
+    b2::T
+end
+
+@inline (g::G0)(t) = _g0(g.w, g.b1, g.b2, t)
+
+struct Gexp{T}
+    w::T
+    b1::T
+    b2::T
+end
+
+@inline (g::Gexp)(t) = exp(-t) * _g(g.w, g.b1, g.b2, t)
+
+
 @doc """
 Log of the double sine function inside the fundamental domain.
 Uses numerical integration using Gauss-Kronrod quadrature via QuadGK.jl.
@@ -109,13 +126,15 @@ function _log_ds(w, b1, b2; kwargs...)
     end
 
     # integrate from [0,1]
-    a = quadgk(t -> _g0(w, b1, b2, t), zero(T), one(T); kwargs...)[1]
+    g0 = G0(w, b1, b2)
+    a = quadgk(g0, zero(T), one(T); kwargs...)[1]
 
     # boundary term
     b = -(b1 + b2 - 2w) / (b1 * b2)
 
     # integrate the rest, the change of variables makes it from [0,∞).
-    c = quadgk(t -> exp(-t) * _g(w, b1, b2, t), zero(T), T(Inf); kwargs...)[1]
+    gexp = Gexp(w, b1, b2)
+    c = quadgk(gexp, zero(T), T(Inf); kwargs...)[1]
 
     return a + b + c
 end
