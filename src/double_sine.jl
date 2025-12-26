@@ -34,69 +34,40 @@ function double_sine(w::Real, b1::Real, b2::Real; kwargs...)
     # ensure both periods are positive
     T = float(promote_type(typeof(w), typeof(b1), typeof(b2)))
     w, b1, b2 = T.(flipsign.((w, b1, b2), b1))
+    b1, b2 = sort((b1, b2)) # b1 < b2 now
 
-    # Find the smallest shifts that make
-    #   w ∈ [Q/4, 3Q/4].
+    # Find small shifts to get into the fundamental domain, but not too close to the boundary.
     # Only needs low precision.
-    m, n = _best_shift(Float64(w), Float64(b1), Float64(b2))
+    n = _minimal_bulk_shift(Float64(w), Float64(b1), Float64(b2))
+    w, shift, sgn = _shift_along(w, b2, b1, n)
 
-    w, shiftcorr1, sgn1 = _shift_along(w, b1, b2, m)
-    w, shiftcorr2, sgn2 = _shift_along(w, b2, b1, n)
-
-    return exp(sgn1 * sgn2 * (_log_ds(w, b1, b2; kwargs...) + shiftcorr1 + shiftcorr2))
+    return exp(sgn * (_log_ds(w, b1, b2; kwargs...) + shift))
 end
 
 
-
 @doc """
-    _best_shift(z::Float64, x::Float64, y::Float64; eps::Float64=0.25)
+    _minimal_bulk_shift(w::Float64, b1::Float64, b2::Float64)
 
-Helper function to find integers (m,n) nearly minimizing |m|+|n| subject to
-    `|z - m*x - n*y - Q/2| ≤ eps*Q`
-where Q = x + y. Note this only needs Float64 precision. This ensures the shifted value
-is within the fundamental domain.
-
-Assumes:
- - `x`, `y > 0`;
- - `z` is moderate-sized;
- - `1/2 ≥ eps > 0` is a large constant like 1/4,
- otherwise output is far from optimal and you should use continued fractions. Being away from the boundary is sufficient for the integral to have good convergence properties, so you should never need small `eps`.
+Helper function to find an integer `n` that shifts `w` to inside the fundamental domain, but at least `b1/2` away from the boundary.
+Assumes `0 < b1 < b2`.
 """
-function _best_shift(z::Float64, x::Float64, y::Float64; eps::Float64=0.25)
-    z /= (x + y)
-    p = max(x, y) / (x + y)
+function _minimal_bulk_shift(w::Float64, b1::Float64, b2::Float64)
+    Q = b1 + b2
+    n_min = ceil((w - (Q - b1 / 2)) / b2)
+    n_max = floor((w - b1 / 2) / b2)
 
-    @assert 0 < p < 1
-    @assert 0 < eps ≤ 0.5
-
-    best_T = typemax(Int)
-    best_m = 0
-    best_n = 0
-
-    k0 = round(Int, (z - 0.5) / p)
-
-    # Test the neighborhood.
-    # I think we might need radius 3 to avoid numerical edge cases, but I haven't seen any errors.
-    for k in (k0-2):(k0+2)
-        n = floor(Int, z - k * p)
-        m = k + n
-        r = z - m * p - n * (1 - p)
-
-        if abs(r - 0.5) ≤ eps
-            T = abs(m) + abs(n)
-            if T < best_T
-                best_T = T
-                best_m = m
-                best_n = n
-            end
-        end
+    if n_min <= 0 <= n_max
+        return 0
+    elseif abs(n_min) < abs(n_max)
+        return n_min
+    else
+        return n_max
     end
-
-    return (x > y ? (best_m, best_n) : (best_n, best_m))
 end
 
+
 @doc """
-Apply a shift by `m * δ1` to a double sine function with periods `δ1` and `δ2` and argument `w`.
+Apply a shift by `-m * δ1` to a double sine function with periods `δ1` and `δ2` and argument `w`.
 """
 @inline function _shift_along(w, δ1, δ2, m)
     T = typeof(w)
