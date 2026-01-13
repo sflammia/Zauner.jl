@@ -56,13 +56,43 @@ end
     and imaginary parts. It is thus plausible that they should give a
     full-rank Jacobian, at least for generic perturbations.
 =#
-_lex_first_inds(d) = [
+# _lex_first_inds(d) = [
+#     [q for q = 1:d÷2];        # real part, first row
+#     [d + q for q = 1:d÷2];        # real part, second row
+#     [2d + q for q = 2:d÷2];        # real part, third row
+#     [d^2 + d + q for q = 1:(d-1)÷2];    # imag part, second row
+#     [d^2 + 2d + q for q = 2:(1-(-1)^d)]  # imag part, one element in the third row for odd d
+# ]
+
+_lex_first_inds_small(d) = [
     [q for q = 1:d÷2];        # real part, first row
     [d + q for q = 1:d÷2];        # real part, second row
     [2d + q for q = 2:d÷2];        # real part, third row
     [d^2 + d + q for q = 1:(d-1)÷2];    # imag part, second row
     [d^2 + 2d + q for q = 2:(1-(-1)^d)]  # imag part, one element in the third row for odd d
 ]
+
+# Leave out row zero, since it does O(d) additional work; not a valid choice unless d ≥ 9.
+# These choices should be more amenable to direct implemention of the gradient, which would be parallelizable.
+_lex_first_inds_big(d) = [
+    [d + q for q = 1:(d-1)÷2];        # real part, row one
+    [2d + q for q = 2:(d-1)÷2];       # real part, row two
+    [3d + q for q = 3:(3+iseven(d))]; # real part, row three
+    [d^2 + d + q for q = 1:(d-1)÷2];  # imag part, row one
+    [d^2 + 2d + q for q = 2:(d-1)÷2]; # imag part, row two
+    [d^2 + 3d + q for q = 3:(3+iseven(d))]
+]
+
+function _lex_first_inds(d)
+    if d < 9
+        # @info "old points"
+        return _lex_first_inds_small(d)
+    else
+        # @info "Using new gradient points."
+        return _lex_first_inds_big(d)
+    end
+end
+
 
 
 # Take the real and imaginary parts with projective normalization and
@@ -200,10 +230,16 @@ function precision_bump!(
     min_digits = ceil(Int, 53 / log2(base))
 
     try
-        # Estimate current accuracy
-        resid = maximum(abs.(f(z)))
-        digits = floor(Int, -log(base, resid))
-        digits = max(digits, min_digits)  # floor at ~Float64 accuracy
+        # Estimate current accuracy at the precision of z (not at old_bits)
+        pbits = precision(z[1])
+        probe_bits = max(old_bits, pbits + 16)   # 16 guard bits
+
+        resid, digits = setprecision(BigFloat, probe_bits) do
+            resid = maximum(abs.(f(z)))
+            digits = floor(Int, -log(base, resid))
+            digits = max(digits, min_digits)
+            return resid, digits
+        end
 
         verbose && println("Increasing precision using Newton's method.")
         verbose && println("Tracking precision in $(basename).")
@@ -222,9 +258,12 @@ function precision_bump!(
             # Recompute accuracy
             step += 1
             verbose && println("$(lpad(step, 4))    $(lpad(digits, 7))    $(lpad(precision(z[1]; base = base), 8))")
-            resid = maximum(abs.(f(z)))
+
+            resid = setprecision(BigFloat, precision(z[1]) + 16) do
+                return maximum(abs.(f(z)))
+            end
             digits = floor(Int, -log(base, resid))
-            digits = max(digits, min_digits) # not really needed, but keeps invariants consistent
+            digits = max(digits, min_digits)
         end
 
         # Final truncation: keep 16 guard bits
