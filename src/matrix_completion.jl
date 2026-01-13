@@ -94,6 +94,11 @@ function rank_one_least_squares(
 
     By = similar(y)
 
+    if verbose
+        println("-"^21)
+        println(" Iter       ‖y_new-y‖")
+        println("-"^21)
+    end
     for it in 1:max_iter
         # gradient wrt y; simplified since B is hermitian
         LinearAlgebra.mul!(By, B, y)
@@ -101,9 +106,13 @@ function rank_one_least_squares(
         y_new /= LinearAlgebra.norm(y_new)
         if it % 10 == 0
             del = LinearAlgebra.norm(y_new - y)
-            verbose && println("At iteration $it, ‖y_new-y‖ = ", del)
+            if verbose
+                del_str = string(round(del; sigdigits=5))
+                println("$(lpad(it, 5))    $(lpad(del_str, 12))")
+            end
             if del < tol
                 y = y_new
+                verbose && println("-"^21)
                 break
             end
         end
@@ -130,6 +139,7 @@ function shift_search(
     test_val = 1.0
     v = zeros(eltype(u), d)
     while shift < prod(size(u))
+        verbose && println("Shift = $(shift)")
         B = initial_B_estimate(u, p, d; shift=shift)
         v = rank_one_least_squares(p, B; tol=tol, max_iter=max_iter, verbose=verbose)
         test_val = sic_overlap_test(v)
