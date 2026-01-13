@@ -37,8 +37,8 @@ function _ensure_ghost!(
 end
 
 
-# Inner loop version
-function pseudonecromancy(
+# Inner loop
+function try_pseudonecromancy(
     F::AdmissibleTuple,
     prec::Int;
     ghost_cache::Union{Nothing,Vector{Complex{BigFloat}}}=nothing,
@@ -47,6 +47,9 @@ function pseudonecromancy(
     base=10 # possible inconsistency in default base
 )
 
+    if !isnothing(ghost_cache)
+        verbose && println("Precisions of initial ghost: $(precision(real(ghost_cache[1])))")
+    end
     Ψ_cache = _ensure_ghost!(F, ghost_cache, prec; verbose=verbose, base=base)
     u = ghost_orbit(F, Ψ_cache)
     verbose && println("Precisions of ghost orbit: $(precision(u[1])) and precision of Ψ_cache = $(precision(real(Ψ_cache[1])))")
@@ -57,19 +60,22 @@ function pseudonecromancy(
         else
             x, p, y, _ = ghost_basis(u; recipes=recipes, verbose=verbose)
         end
-        verbose && println("Precisions of ghost basis: $(precision(x[1][1])) and $(precision(y[1][1]))")
-        A = Zauner._multiplication_matrix(x, p, y)
+        verbose && println("Precisions of ghost bases: $(precision(x[1][1])) and $(precision(y[1][1]))")
+        A = _multiplication_matrix(x, p, y)
         szu = size(u)
 
         # sign-switch A and construct z
         # Note: `prec` should be in bits here.
         Hprimal, Hdual = class_field_bases(F, prec)
+        verbose && println("Precisions of class field bases: $(precision(Hprimal[1])) and $(precision(Hdual[1]))")
 
         z = map(x -> similar(x, ComplexF64), p)
         for i = 1:length(z)
             B = Matrix{Float64}(undef, size(A[i])...)
             for t in CartesianIndices(A[i])
-                B[t] = Float64(_dualize(Hprimal, Hdual, A[i][t], prec))
+                tmp = _dualize(Float64, Hprimal, Hdual, A[i][t], prec)
+                isnothing(tmp) && return (nothing, recipes, Ψ_cache)
+                B[t] = tmp
             end
             vals, vecs = eigen(B)
             z[i] = (vals[1] / vecs[1, 1]) .* vecs[:, 1]
@@ -86,7 +92,9 @@ function pseudonecromancy(
             if log10.(abs.(c)) .< -prec
                 continue # s is zero, no need to dualize
             end
-            s[(1 .+ shift)...] = Float64(_dualize(Hprimal, Hdual, c, prec))
+            tmp = _dualize(Float64, Hprimal, Hdual, c, prec)
+            isnothing(tmp) && return (nothing, recipes, Ψ_cache)
+            s[(1 .+ shift)...] = tmp
         end
 
         # This could be optimized by using FFTs
@@ -123,20 +131,20 @@ function pseudonecromancy(
 
     verbose && "Starting pseudonecromancy computation with initial precision $prec $basename."
     while prec ≤ max_prec
-        try
-            u, recipes, ψ_cache = pseudonecromancy(
-                F,
-                prec;
-                ghost_cache=ψ_cache,
-                recipes=recipes,
-                verbose=verbose,
-                base=base
-            )
+        u, recipes, ψ_cache = try_pseudonecromancy(
+            F,
+            prec;
+            ghost_cache=ψ_cache,
+            recipes=recipes,
+            verbose=verbose,
+            base=base
+        )
+        if isnothing(u)
+            verbose && @warn "Failed to compute pseudonecromancy for precision $prec\nDoubling precision and trying again."
+            prec *= 2
+        else
             return u
-        catch err
-            verbose && @warn "Failed to compute pseudonecromancy for precision $prec, with error:\n$(err)\n Doubling precision and trying again."
         end
-        prec *= 2
     end
 
     error("Failed to achieve pseudonecromancy with $max_prec $basename. Try increasing `max_prec`.")
@@ -265,19 +273,41 @@ end
 
 
 @doc """
-    _dualize( primal::Vector{T}, dual::Vector{T}, x::T, prec::Integer) where T::AbstractFloat
+    _dualize([K::Type,] primal::Vector{T}, dual::Vector{T}, x::T, prec::Integer) where T::AbstractFloat
 
 Internal function that takes an `AbstractFloat` number `x`, rounds it into the `primal` basis, then expands it again in the `dual` basis.
 If `x` is not reliably reconstructed in the `primal` basis at `prec` and `3 * prec ÷ 4`, then it throws an error.
 If `primal` and `dual` are related by a galois automorphism `g`, then ideally this outputs an approximation of `g(x)`.
 """
 function _dualize(primal::Vector{T}, dual::Vector{T}, x::T, prec::Integer) where {T<:AbstractFloat}
-    R = guess_int_null_vec([primal; x], 3 * prec ÷ 4)
-    R2 = guess_int_null_vec([primal; x], prec)
+    R = guess_int_null_vec([primal; x], prec)
 
-    if R == R2 || R == -R2
-        return (dual' * R[1:end-1]) / (-R[end])
+    if isnothing(R)
+        # verbose && println("Unreliable integer relations: dualization failed.")
+        return nothing
     else
-        error("Unreliable integer relations: dualization failed.")
+        return (dual' * R[1:end-1]) / (-R[end])
     end
 end
+
+function _dualize(K::Type, primal::Vector{T}, dual::Vector{T}, x::T, prec::Integer) where {T<:AbstractFloat}
+    R = guess_int_null_vec([primal; x], prec)
+
+    if isnothing(R)
+        # verbose && println("Unreliable integer relations: dualization failed.")
+        return nothing
+    else
+        return K((dual' * R[1:end-1]) / (-R[end]))
+    end
+end
+
+# function _dualize(primal::Vector{T}, dual::Vector{T}, x::T, prec::Integer) where {T<:AbstractFloat}
+#     R = guess_int_null_vec([primal; x], 3 * prec ÷ 4)
+#     R2 = guess_int_null_vec([primal; x], prec)
+
+#     if R == R2 || R == -R2
+#         return (dual' * R[1:end-1]) / (-R[end])
+#     else
+#         error("Unreliable integer relations: dualization failed.")
+#     end
+# end
