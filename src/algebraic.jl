@@ -34,14 +34,14 @@ true
 ```
 """
 wh(m::Integer, n::Integer, d::Integer, T::Type=BigFloat) =
-    [(-cispi(T(1) / d))^(m * n) * (rem(j - k - m, d) == 0) * e((k - 1) * T(n) / d) for j = 1:d, k = 1:d]
+    [(-e(T(1) / (2 * d)))^(m * n) * (rem(j - k - m, d) == 0) * e((k - 1) * T(n) / d) for j = 1:d, k = 1:d]
 
 wh(p::Vector{<:Integer}, d::Integer, T::Type=BigFloat) = wh(p[1], p[2], d, T)
 
 wh(p::Tuple{Integer,Integer}, d::Integer, T::Type=BigFloat) = wh(p[1], p[2], d, T)
 
 wh(m::Integer, n::Integer, v::Vector) =
-    [(-cispi(one(eltype(v)) / length(v)))^((2k - m) * n) * v[mod(k - m, length(v))+1] for k = 0:length(v)-1]
+    [(-e(one(eltype(v)) / (2 * length(v))))^((2k - m) * n) * v[mod(k - m, length(v))+1] for k = 0:length(v)-1]
 
 wh(p::Vector{<:Integer}, v::Vector) = wh(p[1], p[2], v)
 
@@ -59,7 +59,7 @@ Compute `D_{(m,n)} * v` and store result in `out` without allocating a new array
 function wh!(out::AbstractVector, m::Int, n::Int, v::AbstractVector)
     d = length(v)
     #    @assert length(out) == d "Output vector length must match input vector length"
-    ω = -cispi(one(eltype(v)) / d)
+    ω = -e(one(eltype(v)) / (2 * d))
 
     @inbounds for k in 1:d
         k0 = k - 1
