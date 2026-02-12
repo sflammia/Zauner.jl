@@ -45,7 +45,7 @@ q_pochhammer_exp(z, tau, n) = (n ≥ 0 ? q_pochhammer(e(z), e(tau), n) : (1 - e(
 Normalized exponential function, ``e(z) = \exp(2 \pi i z)``.
 """
 function e(z)
-    cispi(2 * z)
+    exp(2 * BigFloat(pi) * im * z)
 end
 
 
@@ -102,7 +102,7 @@ function _principal_ghost(F::AdmissibleTuple)
     dsp[1+1, end-1] = dsp[1+1, 1+1]
     dsp[1+1, end] = dsp[0+1, 1+1]
 
-    ζ = -cispi(BigFloat(1) / d)
+    ζ = -e(BigFloat(1) / (2 * d))
     χ = [ζ^(p * q) for p = 0:1, q = 0:d-1] .* dsp
     χ = ifft(χ, 2)
     χ = circshift(cumprod(χ[2, :] ./ χ[1, :]), 1)
@@ -113,7 +113,7 @@ end
 # use special features of the rank-1 case to avoid calculating all nu.
 function _generic_rank_1_ghost(F::AdmissibleTuple)
     d = Int(F.d)
-    ζ = -cispi(BigFloat(1) / d)
+    ζ = -e(BigFloat(1) / (2 * d))
     QQ = QuadBin(F.A[2, 1], F.A[2, 2] - F.A[1, 1], -F.A[1, 2])
     c = e(-BigFloat(rademacher(F.A)) / 24) / sqrt(BigFloat(d + 1))
 
