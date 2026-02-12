@@ -45,7 +45,7 @@ q_pochhammer_exp(z, tau, n) = (n ≥ 0 ? q_pochhammer(e(z), e(tau), n) : (1 - e(
 Normalized exponential function, ``e(z) = \exp(2 \pi i z)``.
 """
 function e(z)
-    exp(2 * BigFloat(pi) * im * z)
+    cispi(2 * z)
 end
 
 
