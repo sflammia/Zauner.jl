@@ -125,7 +125,7 @@ function sf_phase(t::AdmissibleTuple, p::Vector)
     d = t.d
     s = (d + (d + 1) * (p[1] + 1) * (p[2] + 1)) % 2
     r = exp(-im * pi * BigFloat(rademacher(t.A)) / 12)
-    ξ = -exp(im * pi / d)
+    ξ = -exp(im * pi / BigFloat(d))
     Qp = BigFloat(t.Q.a * p[1]^2 + t.Q.b * p[1] * p[2] + t.Q.c * p[2]^2)
     rjm = BigFloat(t.f)/BigFloat(t.q) # = f_{jm}/f, where f = t.q, for when we generalize to higher rank.
 
