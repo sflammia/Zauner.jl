@@ -2,7 +2,7 @@
 # Removes the need for any finite q-Pochhammer symbols in the computation of the ghost overlaps
 
 # I plan to make some of these functions internal after some testing.
-export lambda_kopp, gamma_kopp, u_tangedal, shin_of_tuple, shin_rm
+export lambda_kopp, gamma_kopp, u_tangedal, shin_of_tuple, shin_rm, sf_phase, rank_1_ghost_var
 
 @doc """
     _sympt(p::Vector, x)
@@ -129,5 +129,25 @@ function sf_phase(t::AdmissibleTuple, p::Vector)
     Qp = BigFloat(t.Q.a * p[1]^2 + t.Q.b * p[1] * p[2] + t.Q.c * p[2]^2)
     rjm = 1 # rank grid = f_{jm}/f_j, for when we generalize to higher rank.
 
-    return (-1)^s * r * ξ^(rjm * Qp)
+    return (-1)^s * r * ξ^(-rjm * Qp)
+end
+
+"""
+    rank_1_ghost_var(t::AdmissibleTuple)
+
+DRAFT FUNCTION
+Alternative computation of a rank 1 ghost
+ATTENTION: Not tested!
+"""
+function rank_1_ghost_var(t::AdmissibleTuple)
+    d = t.d
+    χ = zeros(Complex{BigFloat}, d, 2)
+    χ[1, 1] = 1
+    for j = 1:2*d-1
+        p = radix(j, [d, d])
+        nu = sf_phase(t,p)*shin_of_tuple(t,p)
+        χ[p[2]+1, p[1]+1] = real(nu)
+    end
+    χ = ifft(χ, 1)
+    sqrt(abs(χ[1, 1])) * circshift(cumprod(χ[:, 2] ./ χ[:, 1]), 1)
 end
