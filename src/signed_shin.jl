@@ -37,7 +37,7 @@ function lambda_kopp(A::Matrix, x::BigFloat, p::Vector, d::Int64)
     sum
 end
 function lambda_kopp(t::AdmissibleTuple, p::Vector)
-    lambda_kopp(t.A, t.x,p, t.d)
+    lambda_kopp(t.A, t.x, p, t.d)
 end
 
 
@@ -111,4 +111,23 @@ function shin_rm(A::Matrix, x::BigFloat, p::Vector, d::Int64)
 end
 function shin_rm(t::AdmissibleTuple, p::Vector)
     shin_of_tuple(t, p)
+end
+
+
+"""
+    sf_phase(t::AdmissibleTuple)
+
+DRAFT FUNCTION
+The Shintani--Faddeev phase function, from Definition 1.30 of AFK.
+ATTENTION: Doesn't preserve precision yet!
+"""
+function sf_phase(t::AdmissibleTuple, p::Vector)
+    d = t.d
+    s = (d + (d + 1) * (p[1] + 1) * (p[2] + 1)) % 2
+    r = exp(-im * pi * BigFloat(rademacher(t.A)) / 12)
+    ξ = -exp(im * pi / d)
+    Qp = BigFloat(t.Q.a * p[1]^2 + t.Q.b * p[1] * p[2] + t.Q.c * p[2]^2)
+    rjm = 1 # rank grid = f_{jm}/f_j, for when we generalize to higher rank.
+
+    return (-1)^s * r * ξ^(rjm * Qp)
 end

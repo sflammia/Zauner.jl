@@ -73,7 +73,7 @@ _lex_first_inds_small(d) = [
 ]
 
 # Leave out row zero, since it does O(d) additional work; not a valid choice unless d ≥ 9.
-# These choices should be more amenable to direct implemention of the gradient, which would be parallelizable.
+# These choices should be more amenable to direct implementation of the gradient, which would be parallelizable.
 _lex_first_inds_big(d) = [
     [d + q for q = 1:(d-1)÷2];        # real part, row one
     [2d + q for q = 2:(d-1)÷2];       # real part, row two

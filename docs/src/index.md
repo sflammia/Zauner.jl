@@ -68,7 +68,7 @@ It can also be used with `necromancy` to attempt to reconstruct a 1-SIC, which w
 ψ = ComplexF64.(necromancy(t))
 ```
 
-`Zauner` provides numerical validation by measuring how far the returned objects are from satisfing the overlap conditions or minimizing the "pointwise" frame potential conditions discussed below.
+`Zauner` provides numerical validation by measuring how far the returned objects are from satisfying the overlap conditions or minimizing the "pointwise" frame potential conditions discussed below.
 ```@repl Z
 ghost_overlap_test(v)
 sic_overlap_test(ψ)
