@@ -2,7 +2,7 @@
 # Removes the need for any finite q-Pochhammer symbols in the computation of the ghost overlaps
 
 # I plan to make some of these functions internal after some testing.
-export lambda_kopp, gamma_kopp, u_tangedal, shin_of_tuple, shin_rm, sf_phase, rank_1_ghost_var
+export lambda_kopp, gamma_kopp, u_tangedal, shin_of_tuple, shin_rm, sf_phase, rank_1_ghost_var, ghost_proj_var
 
 @doc """
     _sympt(p::Vector, x)
@@ -151,4 +151,24 @@ function rank_1_ghost_var(t::AdmissibleTuple)
     end
     χ = ifft(χ, 1)
     sqrt(abs(χ[1, 1])) * circshift(cumprod(χ[:, 2] ./ χ[:, 1]), 1)
+end
+
+"""
+    ghost_proj_var(t::AdmissibleTuple)
+
+DRAFT FUNCTION
+Alternative computation of ghost projector
+Currently just for rank 1
+Here for testing purposes
+Later will be useful for higher rank
+ATTENTION: Not tested!
+"""
+function ghost_proj_var(t::AdmissibleTuple)
+    d = t.d
+    sum = zeros(Complex{BigFloat}, d, d)
+    for p = 0:d-1
+        for q = 0:d-1
+            sum += sf_phase(t,p)*shin_of_tuple(t,p)*wh(p,q,d)
+        end
+    end
 end
