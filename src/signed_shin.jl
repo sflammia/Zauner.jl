@@ -137,8 +137,7 @@ end
 
 DRAFT FUNCTION
 Alternative computation of a rank 1 ghost
-Works for principal ghost in both even and odd dimension d <= 8
-Currently fails for non-prinipal ghosts; suspect sf_phase is wrong
+Passes tests for all SICs in both even and odd dimension d <= 8
 """
 function rank_1_ghost_var(t::AdmissibleTuple)
     d = t.d
