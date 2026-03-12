@@ -127,7 +127,7 @@ function sf_phase(t::AdmissibleTuple, p::Vector)
     r = exp(-im * pi * BigFloat(rademacher(t.A)) / 12)
     ξ = -exp(im * pi / d)
     Qp = BigFloat(t.Q.a * p[1]^2 + t.Q.b * p[1] * p[2] + t.Q.c * p[2]^2)
-    rjm = 1 # rank grid = f_{jm}/f_j, for when we generalize to higher rank.
+    rjm = BigFloat(t.f)/BigFloat(t.q) # = f_{jm}/f, where f = t.q, for when we generalize to higher rank.
 
     return (-1)^s * r * ξ^(-rjm * Qp)
 end
@@ -137,7 +137,8 @@ end
 
 DRAFT FUNCTION
 Alternative computation of a rank 1 ghost
-ATTENTION: Not tested!
+Works for principal ghost in both even and odd dimension d <= 8
+Currently fails for non-prinipal ghosts; suspect sf_phase is wrong
 """
 function rank_1_ghost_var(t::AdmissibleTuple)
     d = t.d
@@ -160,8 +161,7 @@ DRAFT FUNCTION
 Alternative computation of ghost projector
 Currently just for rank 1
 Here for testing purposes
-Later will be useful for higher rank
-ATTENTION: Not tested!
+Later will be useful for higher rank, with modifications
 """
 function ghost_proj_var(t::AdmissibleTuple)
     d = t.d
@@ -169,9 +169,9 @@ function ghost_proj_var(t::AdmissibleTuple)
     for p = 0:d-1
         for q = 0:d-1
             if [p,q] == [0,0]
-                sum += wh(0,0,d)/BigFloat(d)
+                sum += wh(0,0,d)/BigFloat(d) # Multiply by r for higher rank
             else
-                sum += sf_phase(t,[p,q])*shin_of_tuple(t,[p,q])*wh(p,q,d)/(d*sqrt(BigFloat(d+1)))
+                sum += sf_phase(t,[p,q])*shin_of_tuple(t,[p,q])*wh(p,q,d)/(d*sqrt(BigFloat(d+1))) # Modify for higher rank
             end
         end
     end
