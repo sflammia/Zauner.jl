@@ -141,12 +141,13 @@ ATTENTION: Not tested!
 """
 function rank_1_ghost_var(t::AdmissibleTuple)
     d = t.d
+    ζ = -e(BigFloat(1) / (2 * d))
     χ = zeros(Complex{BigFloat}, d, 2)
     χ[1, 1] = 1
     for j = 1:2*d-1
         p = radix(j, [d, d])
         nu = sf_phase(t,p)*shin_of_tuple(t,p)
-        χ[p[2]+1, p[1]+1] = real(nu)
+        χ[p[2]+1, p[1]+1] = ζ^(p[2] * p[1]) * real(nu)
     end
     χ = ifft(χ, 1)
     sqrt(abs(χ[1, 1])) * circshift(cumprod(χ[:, 2] ./ χ[:, 1]), 1)
