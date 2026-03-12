@@ -146,7 +146,7 @@ function rank_1_ghost_var(t::AdmissibleTuple)
     χ[1, 1] = 1
     for j = 1:2*d-1
         p = radix(j, [d, d])
-        nu = sf_phase(t,p)*shin_of_tuple(t,p)
+        nu = sf_phase(t,p)*shin_of_tuple(t,p)/sqrt(BigFloat(d+1))
         χ[p[2]+1, p[1]+1] = ζ^(p[2] * p[1]) * real(nu)
     end
     χ = ifft(χ, 1)
