@@ -168,7 +168,7 @@ function ghost_proj_var(t::AdmissibleTuple)
     sum = zeros(Complex{BigFloat}, d, d)
     for p = 0:d-1
         for q = 0:d-1
-            sum += sf_phase(t,p)*shin_of_tuple(t,p)*wh(p,q,d)
+            sum += sf_phase(t,[p,q])*shin_of_tuple(t,[p,q])*wh(p,q,d)
         end
     end
 end
