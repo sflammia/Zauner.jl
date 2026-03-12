@@ -119,7 +119,7 @@ end
 
 DRAFT FUNCTION
 The Shintani--Faddeev phase function, from Definition 1.30 of AFK.
-ATTENTION: Doesn't preserve precision yet!
+(Now preserves precision)
 """
 function sf_phase(t::AdmissibleTuple, p::Vector)
     d = t.d
