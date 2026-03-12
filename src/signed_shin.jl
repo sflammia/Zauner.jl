@@ -171,4 +171,5 @@ function ghost_proj_var(t::AdmissibleTuple)
             sum += sf_phase(t,[p,q])*shin_of_tuple(t,[p,q])*wh(p,q,d)
         end
     end
+    sum
 end
